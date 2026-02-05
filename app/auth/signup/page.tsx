@@ -1,6 +1,6 @@
 import AuthForm from '@/components/features/auth/AuthForm'
 
-export default function LoginPage() {
+export default function SignupPage() {
 
   return (
 
@@ -10,13 +10,13 @@ export default function LoginPage() {
 
         <div className="text-center">
 
-          <h1 className="text-3xl font-bold text-gray-900">Welcome Back</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Welcome</h1>
 
-          <p className="mt-2 text-gray-600">Sign in to your account</p>
+          <p className="mt-2 text-gray-600">Create an account</p>
 
         </div>
 
-        <AuthForm title="Login" submitLabel="Log in" />
+        <AuthForm title="Sign up" submitLabel="Create account" />
 
       </div>
 
