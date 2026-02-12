@@ -68,12 +68,13 @@ CREATE POLICY "users_update_policy"
   USING (auth.uid() = id)
   WITH CHECK (auth.uid() = id);
 
--- Policy 4: Users cannot delete their own records
--- User deletion should be handled by admins or through auth.users CASCADE
--- Uncomment below to allow users to delete their own records:
--- CREATE POLICY "users_delete_policy"
---   ON users FOR DELETE TO authenticated
---   USING (auth.uid() = id);
+-- Policy 4: Users can delete their own accounts
+-- Frontend should show confirmation popup before deletion
+CREATE POLICY "users_delete_policy"
+  ON users
+  FOR DELETE
+  TO authenticated
+  USING (auth.uid() = id);
 
 -- 4. CREATE INDEXES FOR PERFORMANCE
 
