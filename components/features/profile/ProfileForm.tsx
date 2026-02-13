@@ -194,7 +194,7 @@ export default function ProfileForm({
           <button
             type="button"
             onClick={handleCancelClick}
-            className="px-4 py-2 border rounded text-gray-700"
+            className="px-4 py-2 border rounded text-gray-700 hover:bg-red-100"
           >
             Cancel
           </button>
