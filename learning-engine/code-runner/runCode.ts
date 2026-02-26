@@ -1,42 +1,45 @@
-import vm from "vm";
+import vm from "vm";    
+// this brings in Node.js's vm module which is the tool that lets us run jacascript code in an isolated space
+// it's sort of like creating a blank room to put the student's code inside and then running it there 
 
 /**
  * Result returned by the runCode function
  */
+// this is what the grader gives back
 export interface RunCodeResult {
-  passed: boolean;
-  output: string | null;
-  error: string | null;
-  details?: TestCaseResult[];
+  passed: boolean;   // true or false if all tests passed
+  output: string | null;   // formatted results text or nothing
+  error: string | null;   // error message or nothing
+  details?: TestCaseResult[];   // array of individual test case results
 }
 
 /**
  * Result for an individual test case
  */
 interface TestCaseResult {
-  input: unknown[];
-  expected: unknown;
-  actual: unknown;
-  passed: boolean;
+  input: unknown[];   // the input values for the test case
+  expected: unknown;   // the expected output value (what we want back)
+  actual: unknown;   // what the student's code actually returned
+  passed: boolean;   // do the outputs match? did it pass or fail?
 }
 
 /**
  * Definition of a test case
  */
 interface TestCase {
-  input: unknown[];
-  expected: unknown;
+  input: unknown[];   // the input values for the test case
+  expected: unknown;   // the expected output value (what we want back)
 }
 
 /**
  * Definition of an exercise
  */
 interface Exercise {
-  id: string;
-  title: string;
-  description: string;
-  functionName: string;
-  testCases: TestCase[];
+  id: string;      // a unique identifier for the exercise
+  title: string;   // the title of the exercise
+  description: string;   // a description of the exercise
+  functionName: string;   // the name of the function to test
+  testCases: TestCase[];   // an array of test cases to run against the student's code
 }
 
 /**
@@ -69,21 +72,24 @@ const sampleExercise: Exercise = {
  * @returns RunCodeResult with pass/fail status, output, and error information
  */
 export function runCode(
-  code: string,
-  exercise: Exercise = sampleExercise
+  code: string,     // the student's JavaScript code as a string
+  exercise: Exercise = sampleExercise   // the exercise to test against (defaults to sampleExercise if no exercise is provided)
 ): RunCodeResult {
   const results: TestCaseResult[] = [];
 
   try {
-    // Create a VM context for code execution
+    // Create a VM context for code execution 
     const context = vm.createContext({});
 
     // Execute the student's code to define their function
+    // this runs the student's code in the isolated context
     vm.runInContext(code, context, {
-      timeout: 5000, // 5 second timeout to prevent infinite loops
+      timeout: 5000, // 5 second timeout to prevent infinite loops (prevents code from running forever)
     });
+    // if student wrote broken code, it will fail here and jump to the catch block that returns passed: fail, etc.
 
     // Check if the required function exists
+    // this makes sure that the student named the function the right thing
     const studentFunction = context[exercise.functionName];
     if (typeof studentFunction !== "function") {
       return {
@@ -93,12 +99,12 @@ export function runCode(
       };
     }
 
-    // Run each test case
+    // Loops through test cases and runs each test case
     for (const testCase of exercise.testCases) {
       try {
         // Call the student's function with test inputs
-        const callCode = `${exercise.functionName}(${testCase.input.map((arg) => JSON.stringify(arg)).join(", ")})`;
-        const actual = vm.runInContext(callCode, context, {
+        const callCode = `${exercise.functionName}(${testCase.input.map((arg) => JSON.stringify(arg)).join(", ")})`;   // builds the call as a string
+        const actual = vm.runInContext(callCode, context, {     // runs the call in the isolated context
           timeout: 1000, // 1 second per test case
         });
 
@@ -162,19 +168,20 @@ export function runCode(
  * Deep equality comparison for comparing expected vs actual values
  */
 function deepEqual(a: unknown, b: unknown): boolean {
-  if (a === b) return true;
+  if (a === b) return true;    // if same num, string, boolean, etc. it's true
 
-  if (typeof a !== typeof b) return false;
+  if (typeof a !== typeof b) return false;   // if different types, it's false
 
-  if (a === null || b === null) return a === b;
+  if (a === null || b === null) return a === b;   // if one is null, it's false
 
   if (Array.isArray(a) && Array.isArray(b)) {
-    if (a.length !== b.length) return false;
-    return a.every((val, idx) => deepEqual(val, b[idx]));
+    if (a.length !== b.length) return false;   // if different lengths, it's false
+    return a.every((val, idx) => deepEqual(val, b[idx]));   // checks each value in the array
   }
+  // uses recursion to check each value in the array
 
   if (typeof a === "object" && typeof b === "object") {
-    const aObj = a as Record<string, unknown>;
+    const aObj = a as Record<string, unknown>;   
     const bObj = b as Record<string, unknown>;
     const aKeys = Object.keys(aObj);
     const bKeys = Object.keys(bObj);
