@@ -4,8 +4,7 @@ import { useState } from "react";
 import DashboardNav from "@/components/features/dashboard/DashboardNav";
 import StudentDashboard from "@/components/features/dashboard/StudentDashboard";
 
-//Will uncomment on merge with partner branch
-/*import { InstructorDashboard } from "@/components/features/dashboard/InstructorDashboard";*/
+import { InstructorDashboard } from "@/components/features/dashboard/InstructorDashboard";
 
 type Role = "Student" | "Instructor";
 
@@ -37,9 +36,7 @@ export default function DashboardPage() {
         {/* Conditional Rendering */}
         {role === "Student" && <StudentDashboard />}
 
-        {/* UNCOMMENT ON MERGE
-        role === "Instructor" && <InstructorDashboard />
-        */}
+        {role === "Instructor" && <InstructorDashboard />}
       </main>
     </div>
   );
