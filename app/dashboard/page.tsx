@@ -4,32 +4,43 @@ import { useState } from "react";
 import DashboardNav from "@/components/features/dashboard/DashboardNav";
 import StudentDashboard from "@/components/features/dashboard/StudentDashboard";
 
+//Will uncomment on merge with partner branch
+/*import { InstructorDashboard } from "@/components/features/dashboard/InstructorDashboard";*/
+
 type Role = "Student" | "Instructor";
 
 export default function DashboardPage() {
-    //useState for Student/Instructor view
-    const [role, setRole] = useState<Role>("Student");
+  const [role, setRole] = useState<Role>("Student");
 
-    return (
-        <div>
-            <DashboardNav />
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <DashboardNav />
 
-            <div className="max-w-6xl mx-auto p-6">
+      <main className="max-w-7xl mx-auto px-6 py-8">
+        
+        {/* Role Selector (Temporary) */}
+        <div className="mb-6 flex items-center gap-3">
+          <label className="text-sm font-medium text-gray-700">
+            View As:
+          </label>
 
-                {/* Role Selector (Temporary obviously*/}
-                <select
-                    value={role}
-                    onChange={(e) => setRole(e.target.value as Role)}
-                    className="border rounded p-2 mb-6"
-                >
-                    <option value="Student">Student</option>
-                    <option value="Instructor">Instructor</option>
-                </select>
-
-                {/* Conditional rendering */}
-                {role === "Student" && <StudentDashboard />}
-            </div>
+          <select
+            value={role}
+            onChange={(e) => setRole(e.target.value as Role)}
+            className="border border-gray-300 rounded-md p-2 text-gray-700 bg-white"
+          >
+            <option value="Student">Student</option>
+            <option value="Instructor">Instructor</option>
+          </select>
         </div>
-    )
-}
 
+        {/* Conditional Rendering */}
+        {role === "Student" && <StudentDashboard />}
+
+        {/* UNCOMMENT ON MERGE
+        role === "Instructor" && <InstructorDashboard />
+        */}
+      </main>
+    </div>
+  );
+}
