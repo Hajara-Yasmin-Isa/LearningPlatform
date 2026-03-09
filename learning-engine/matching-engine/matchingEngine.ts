@@ -50,7 +50,8 @@ export function matchingEngine(
   studentMatches: StudentMatch[]
 ): MatchingResult {
   // --- Input validation ---
-  
+
+  // are both inputs actually arrays?
   if (!Array.isArray(pairs) || !Array.isArray(studentMatches)) {
     return {
       correct: false,
@@ -61,6 +62,7 @@ export function matchingEngine(
     };
   }
 
+  // is the pairs array empty?
   if (pairs.length === 0) {
     return {
       correct: false,
@@ -72,6 +74,7 @@ export function matchingEngine(
   }
 
   // Check for missing data inside pairs
+  // does every correct pair have a left and right?
   for (const pair of pairs) {
     if (!pair.left || !pair.right) {
       return {
@@ -85,6 +88,7 @@ export function matchingEngine(
   }
 
   // Check for missing data inside student matches
+  // does every student match have a left and right?
   for (const match of studentMatches) {
     if (!match.left || !match.right) {
       return {
@@ -99,6 +103,7 @@ export function matchingEngine(
   }
 
   // Check for duplicate left items in student matches
+  // did the student match the same left item to multiple different right items? (match same term twice?)
   const submittedLefts = studentMatches.map((m) => m.left);
   const uniqueLefts = new Set(submittedLefts);
   if (uniqueLefts.size !== submittedLefts.length) {
@@ -113,6 +118,7 @@ export function matchingEngine(
   }
 
   // Check for mismatched number of pairs
+  // did the student submit the right number of matches?
   if (studentMatches.length !== pairs.length) {
     return {
       correct: false,
@@ -125,7 +131,14 @@ export function matchingEngine(
 
   // --- Validation logic ---
 
-  // Build a lookup map from correct pairs: left → right
+  // Build a hash map/dictionary from correct pairs: left → right
+  // this will allow us to find the value (right answer) by its key (left item)
+  // after this runs, answerKey will look like this:
+  // {
+  //   "term": "definition",
+  //   "term2": "definition2",
+  //   ... (for every term in the exercise)
+  // }
   const answerKey = new Map<string, string>();
   for (const pair of pairs) {
     answerKey.set(pair.left, pair.right);
