@@ -23,7 +23,7 @@ export async function getCourseById(courseId: string): Promise<CourseWithInstruc
     .eq('id', courseId)
     .single()
 
-  // PGRST116 = no rows found = course doesn't exist, return null gracefully
+  // PGRST116 = no rows found = course doesn't exist, return null
   if (error && error.code !== 'PGRST116') throw new Error(error.message)
   return data
 }
@@ -38,7 +38,7 @@ export async function enrollInCourse(userId: string, courseId: string): Promise<
     .insert({ user_id: userId, course_id: courseId })
 
   if (error) {
-    // Supabase error code 23505 = unique constraint violation = already enrolled
+    // Supabase error code 23505 = unique constraint violation = for when user is already enrolled
     if (error.code === '23505') throw new Error('Already enrolled in this course')
     throw new Error(error.message)
   }
