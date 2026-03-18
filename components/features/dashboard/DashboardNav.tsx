@@ -1,5 +1,5 @@
-//Trying to use Link from nextJS Link basically is just href links. AI says to use it so I am gonna see how it is.
-//If its not good we can resort to the regular old links
+"use client";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -12,13 +12,13 @@ export default function DashboardNav(){
     // up in the navigation bar
     const linkStyle = (path: string) =>
         pathname === path
-        ? "front-semibold text-blue-600"
+        ? "font-semibold text-blue-600"
         : "text-gray-600 hover:text-black"
 
     //Return statement. Nav bar with Links in them. Uses 
     return (
         <nav className="w-full border-b bg-white">
-            <div className="max-w-6x1 mx-auto flex gap-6 p-4">
+            <div className="max-w-6xl mx-auto flex gap-6 p-4">
                 <Link href="/dashboard" className={linkStyle("/dashboard")}>Dashboard</Link>
                 <Link href="/profile" className={linkStyle("/profile")}>Profile</Link>
                 <Link href="/settings" className={linkStyle("/settings")}>Settings</Link>
