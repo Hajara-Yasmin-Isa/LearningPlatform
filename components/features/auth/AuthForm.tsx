@@ -2,64 +2,58 @@
 
 import { useState } from "react";
 
-interface AuthFormProps { 
-    title: string;
-    submitLabel: string;
+interface AuthFormProps {
+  submitLabel: string;
 }
 
-export default function AuthForm({title, submitLabel}: AuthFormProps) {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+export default function AuthForm({ submitLabel }: AuthFormProps) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    console.log("Placeholder submit- input values:", { email, password });
+  }
 
-    /*
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className="glass-strong rounded-2xl shadow-md p-8 space-y-5"
+    >
+      <div>
+        <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1.5">
+          Email address
+        </label>
+        <input
+          id="email"
+          type="email"
+          placeholder="you@example.com"
+          className="w-full rounded-xl border border-white/70 bg-white/50 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition backdrop-blur-sm"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+      </div>
 
-        handleSubmit() is the call for backend logic
-        e.preventDefault() prevents the browser from reloading
-        This is sufficing the requirement for "Placeholder submit handler using console.log"
-        Backend logic is handled here, but for now it is asked to just use a console log.
+      <div>
+        <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-1.5">
+          Password
+        </label>
+        <input
+          id="password"
+          type="password"
+          placeholder="••••••••"
+          className="w-full rounded-xl border border-white/70 bg-white/50 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition backdrop-blur-sm"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+      </div>
 
-    */
-    function handleSubmit(e: React.FormEvent) {
-        e.preventDefault();
-        console.log("Placeholder submit- input values:", {email, password});
-    }
-
-    return (
-        <form
-            onSubmit={handleSubmit}
-            
-            /*
-                Inside the tailwind CSS, I added a text-gray-900 because during night the global.css
-                sets the color of text to white. This forces the text black so it'll be readable either way.
-            */
-
-            className="w-full max-w-sm space-y-4 rounded-lg border p-6 bg-white text-gray-900"
-            >
-                <h1 className="text-2xl font-semibold">{title}</h1>
-
-                <input 
-                type="email"
-                placeholder="Email"
-                className="w-full rounded border p-2 text-gray-900"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                />
-
-                <input
-                type="password"
-                placeholder="Password"
-                className="w-full rounded border p-2 text-gray-900"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                />
-
-                <button
-                    type="submit"
-                    className="w-full rounded bg-black p-2 text-white"
-                >
-                    {submitLabel}
-                </button>
-            </form>
-    );
+      <button
+        type="submit"
+        className="w-full rounded-xl bg-yellow-500 hover:bg-yellow-600 py-2.5 text-white font-semibold transition-colors shadow-sm mt-2"
+      >
+        {submitLabel}
+      </button>
+    </form>
+  );
 }
