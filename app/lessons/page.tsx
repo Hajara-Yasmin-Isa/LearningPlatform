@@ -11,7 +11,7 @@ export default function LessonsPage() {
             Overall Course Progress
           </h2>
           <PercentageDisplay 
-            value={65} 
+            value={45} 
             label="Total Completion" 
           />
         </div>
