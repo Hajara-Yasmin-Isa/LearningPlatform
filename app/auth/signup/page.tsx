@@ -1,27 +1,37 @@
+import Link from 'next/link'
+import Image from 'next/image'
 import AuthForm from '@/components/features/auth/AuthForm'
 
 export default function SignupPage() {
-
   return (
+    <div className="min-h-[80vh] flex items-center justify-center py-12 px-4">
+      <div className="w-full max-w-md">
 
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-
-      <div className="max-w-md w-full space-y-8 p-8">
-
-        <div className="text-center">
-
-          <h1 className="text-3xl font-bold text-gray-900">Welcome</h1>
-
-          <p className="mt-2 text-gray-600">Create an account</p>
-
+        {/* Brand mark */}
+        <div className="text-center mb-8">
+          <Image
+            src="/logo.png"
+            alt="Littafin Fasaha logo"
+            width={56}
+            height={56}
+            className="rounded-full mx-auto mb-4 shadow-md"
+          />
+          <h1 className="text-2xl font-bold text-slate-900">Create your account</h1>
+          <p className="text-slate-500 mt-1 text-sm">
+            Start learning computing in Hausa today — it&apos;s free
+          </p>
         </div>
 
-        <AuthForm title="Sign up" submitLabel="Create account" />
+        <AuthForm submitLabel="Create account" />
+
+        <p className="text-center text-sm text-slate-500 mt-6">
+          Already have an account?{' '}
+          <Link href="/auth/login" className="text-yellow-600 font-semibold hover:text-yellow-700">
+            Log in
+          </Link>
+        </p>
 
       </div>
-
     </div>
-
-  );
-
+  )
 }
