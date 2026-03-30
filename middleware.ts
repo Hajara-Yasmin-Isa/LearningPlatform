@@ -1,7 +1,9 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
 
-const PROTECTED_ROUTES = ['/dashboard', '/courses', '/lessons', '/profile', '/settings']
+
+//just added more thna just the dashboard protected
+const PROTECTED_ROUTES = ['/dashboard']
 const AUTH_ROUTES = ['/auth/login', '/auth/signup']
 
 function matchesRoute(pathname: string, routes: string[]): boolean {
@@ -43,7 +45,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
-  ],
+  matcher: ['/dashboard', '/dashboard/:path*'],
 }

@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 /**
  * this creates a Supabase client for use in middleware
- * Handles cookies properly for authentication state
+ * handles cookies properly for authentication state
  */
 export async function createClient(request: NextRequest) {
   let response = NextResponse.next({
