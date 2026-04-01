@@ -44,3 +44,30 @@ export interface UserProgress {
 export interface LessonWithSections extends Lesson {
   sections: Section[]
 }
+
+export interface Course {
+  id: string
+  title: string
+  description: string | null
+  thumbnail_url: string | null
+  difficulty: 'Beginner' | 'Intermediate' | 'Advanced'
+  duration_minutes: number | null
+  instructor_id: string
+  published: boolean
+  created_at: string
+}
+
+export interface Enrollment {
+  id: string
+  user_id: string
+  course_id: string
+  enrolled_at: string
+}
+
+// Course joined with instructor's basic info from the users table
+export interface CourseWithInstructor extends Course {
+  users: {
+    name: string
+    username: string
+  } | null
+}
