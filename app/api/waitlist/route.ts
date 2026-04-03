@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/ssr'
+import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -10,12 +10,15 @@ export async function POST(request: NextRequest) {
   }
 
   const cookieStore = await cookies()
-  const supabase = createClient(
+
+  const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() { return cookieStore.getAll() },
+        getAll() {
+          return cookieStore.getAll()
+        },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) =>
             cookieStore.set(name, value, options)
@@ -28,11 +31,10 @@ export async function POST(request: NextRequest) {
   const { error } = await supabase.from('waitlist').insert({ email })
 
   if (error) {
-    // Unique constraint violation — email already on the list
     if (error.code === '23505') {
-      return NextResponse.json({ error: "You're already on the list!" }, { status: 409 })
+      return NextResponse.json({ error: "Kana cikin jeri tuni!" }, { status: 409 })
     }
-    return NextResponse.json({ error: 'Something went wrong. Please try again.' }, { status: 500 })
+    return NextResponse.json({ error: 'Wani abu ya faru. Don Allah sake gwadawa.' }, { status: 500 })
   }
 
   return NextResponse.json({ success: true }, { status: 201 })
