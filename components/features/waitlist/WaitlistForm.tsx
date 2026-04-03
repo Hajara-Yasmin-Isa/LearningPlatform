@@ -17,15 +17,19 @@ export default function WaitlistForm() {
       body: JSON.stringify({ email }),
     })
 
-    const data = await res.json()
+    await res.json()
 
     if (res.ok) {
       setStatus('success')
-      setMessage("Kana cikin jeri! Za mu sanar da kai lokacin ƙaddamarwa.")
+      setMessage("Mun karɓi adireshin imel ɗinka. Za mu sanar da kai lokacin ƙaddamarwa.")
       setEmail('')
     } else {
       setStatus('error')
-      setMessage(data.error || 'Wani abu ya faru. Don Allah sake gwadawa.')
+      if (res.status === 409) {
+        setMessage("Ka riga ka yi rajista da wannan imel ɗin.")
+      } else {
+        setMessage("An samu matsala — Sake gwadawa.")
+      }
     }
   }
 
