@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import ComingSoonOverlay from '@/components/features/waitlist/ComingSoonOverlay'
 
 const features = [
   {
@@ -21,6 +22,7 @@ const features = [
 export default function Home() {
   return (
     <div className="space-y-20 pb-12">
+      {process.env.NEXT_PUBLIC_COMING_SOON === 'true' && <ComingSoonOverlay />}
 
       {/* Hero */}
       <section className="text-center py-16 px-4">
@@ -119,29 +121,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA Banner */}
-      <section className="glass rounded-2xl p-12 text-center shadow-lg border border-yellow-200/60">
-        <h2 className="text-3xl font-bold text-slate-900 mb-4">
-          Ready to start your journey?
-        </h2>
-        <p className="text-slate-600 mb-8 text-lg max-w-xl mx-auto">
-          Join learners discovering computing in Hausa for the first time.
-        </p>
-        <div className="flex flex-wrap gap-4 justify-center">
-          <Link
-            href="/auth/signup"
-            className="px-8 py-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded-xl font-semibold transition-colors text-lg shadow-md"
-          >
-            Create Free Account
-          </Link>
-          <Link
-            href="/auth/login"
-            className="px-8 py-3 glass hover:bg-white/80 text-slate-700 rounded-xl font-semibold transition-colors text-lg shadow-sm border border-slate-200/60"
-          >
-            Log In
-          </Link>
-        </div>
-      </section>
 
     </div>
   )
