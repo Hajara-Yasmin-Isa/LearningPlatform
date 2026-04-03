@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
 
   // Send confirmation email
   await resend.emails.send({
-    from: 'Littafin Fasaha <onboarding@resend.dev>',
+    from: 'Littafin Fasaha <noreply@littafinfasaha.com>',
     to: email,
     subject: 'Barka da shigowa! Mun karɓi saƙonka — Littafin Fasaha',
     html: `
