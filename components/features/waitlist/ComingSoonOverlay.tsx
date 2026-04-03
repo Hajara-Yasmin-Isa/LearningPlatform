@@ -5,21 +5,21 @@ import WaitlistForm from './WaitlistForm'
 
 export default function ComingSoonOverlay() {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4"
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center px-4"
       style={{ backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', background: 'rgba(240, 249, 255, 0.55)' }}
     >
-      <div className="glass-strong rounded-3xl shadow-2xl p-10 max-w-lg w-full text-center space-y-6 border border-white/80">
+      {/* Logo above the card */}
+      <div className="flex justify-center mb-4">
+        <Image
+          src="/logo.png"
+          alt="Littafin Fasaha logo"
+          width={90}
+          height={90}
+          className="rounded-full shadow-lg"
+        />
+      </div>
 
-        {/* Logo at top */}
-        <div className="flex justify-center">
-          <Image
-            src="/logo.png"
-            alt="Littafin Fasaha logo"
-            width={80}
-            height={80}
-            className="rounded-full shadow-md"
-          />
-        </div>
+      <div className="glass-strong rounded-3xl shadow-2xl p-10 max-w-lg w-full text-center space-y-6 border border-white/80">
 
         {/* Animated emojis */}
         <div className="flex justify-center items-center gap-3">
