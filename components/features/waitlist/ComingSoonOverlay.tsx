@@ -10,7 +10,18 @@ export default function ComingSoonOverlay() {
     >
       <div className="glass-strong rounded-3xl shadow-2xl p-10 max-w-lg w-full text-center space-y-6 border border-white/80">
 
-        {/* Animated emoji */}
+        {/* Logo at top */}
+        <div className="flex justify-center">
+          <Image
+            src="/logo.png"
+            alt="Littafin Fasaha logo"
+            width={80}
+            height={80}
+            className="rounded-full shadow-md"
+          />
+        </div>
+
+        {/* Animated emojis */}
         <div className="flex justify-center items-center gap-3">
           <span className="text-5xl animate-bounce" style={{ animationDelay: '0ms' }}>🛠️</span>
           <span className="text-5xl animate-bounce" style={{ animationDelay: '150ms' }}>⚙️</span>
@@ -32,19 +43,10 @@ export default function ComingSoonOverlay() {
         {/* Waitlist form */}
         <WaitlistForm />
 
-        {/* Subtext */}
-        <div className="flex flex-col items-center gap-2">
-          <Image
-            src="/logo.png"
-            alt="Littafin Fasaha logo"
-            width={36}
-            height={36}
-            className="rounded-full shadow-sm"
-          />
-          <p className="text-xs text-slate-400">
-            &copy; {new Date().getFullYear()} Littafin Fasaha &mdash; Dukkan haƙƙin mallaka an kiyaye su.
-          </p>
-        </div>
+        {/* Copyright */}
+        <p className="text-xs text-slate-400">
+          &copy; {new Date().getFullYear()} Littafin Fasaha &mdash; Dukkan haƙƙin mallaka an kiyaye su.
+        </p>
 
       </div>
     </div>
