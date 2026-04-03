@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import WaitlistForm from './WaitlistForm'
 
 export default function ComingSoonOverlay() {
@@ -32,9 +33,18 @@ export default function ComingSoonOverlay() {
         <WaitlistForm />
 
         {/* Subtext */}
-        <p className="text-xs text-slate-400">
-          &copy; {new Date().getFullYear()} Littafin Fasaha
-        </p>
+        <div className="flex flex-col items-center gap-2">
+          <Image
+            src="/logo.png"
+            alt="Littafin Fasaha logo"
+            width={36}
+            height={36}
+            className="rounded-full shadow-sm"
+          />
+          <p className="text-xs text-slate-400">
+            &copy; {new Date().getFullYear()} Littafin Fasaha &mdash; Dukkan haƙƙin mallaka an kiyaye su.
+          </p>
+        </div>
 
       </div>
     </div>
