@@ -15,7 +15,6 @@ export default function ComingSoonOverlay() {
           alt="Littafin Fasaha logo"
           width={90}
           height={90}
-          className="rounded-full shadow-lg"
         />
       </div>
 
