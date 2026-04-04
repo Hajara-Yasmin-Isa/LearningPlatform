@@ -10,6 +10,10 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'Littafin Fasaha',
   description: 'Learn computing and technology through Hausa — interactive courses by Hajara-Yasmin Isa.',
+  icons: {
+    icon: '/logo.png',
+    apple: '/logo.png',
+  },
 }
 
 export default function RootLayout({
