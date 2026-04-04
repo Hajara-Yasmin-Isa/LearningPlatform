@@ -22,7 +22,7 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <AuthForm submitLabel="Log in" />
+        <AuthForm submitLabel="Log in" mode="login" />
 
         <p className="text-center text-sm text-slate-500 mt-6">
           Don&apos;t have an account?{' '}
