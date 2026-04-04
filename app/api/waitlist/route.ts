@@ -40,39 +40,57 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Wani abu ya faru. Don Allah sake gwadawa.' }, { status: 500 })
   }
 
-  // Send confirmation email
+ // Send confirmation email
   await resend.emails.send({
-    from: 'Littafin Fasaha <noreply@littafinfasaha.com>',
+    from: 'Littafin Fasaha <hello@littafinfasaha.com>', // Use hello@ instead of noreply for a friendlier feel
     to: email,
-    subject: 'Barka da shigowa! Mun karɓi saƙonka — Littafin Fasaha',
+    subject: 'Barka da shigowa! 🚀 — Littafin Fasaha',
     html: `
-      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 500px; margin: 0 auto; padding: 40px 20px; color: #1e293b; background-color: #ffffff; border: 1px solid #f1f5f9;">
-        <h1 style="font-size: 24px; color: #0f172a; margin-bottom: 16px;">Maraba da shigowa! 🚀</h1>
+      <div style="background-color: #f9fafb; padding: 40px 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+        <div style="max-width: 560px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+          
 
-        <p style="font-size: 16px; line-height: 1.8; color: #334155;">
-          Sannu da shigowa cikin jerin waɗanda za su fara samun labarin <strong>Littafin Fasaha</strong>.
-        </p>
+          
+          <div style="text-align: center; padding: 40px 40px 10px 40px;">
+            <a href="https://littafinfasaha.com" target="_blank">
+              <img 
+                src="https://littafinfasaha.com/logo.png" 
+                alt="Littafin Fasaha Logo" 
+                width="120" 
+                style="border: none; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; display: block; margin: 0 auto 30px auto;"
+              />
+            </a>
+            <h2 style="color: #1e293b; font-size: 24px; font-weight: 700; margin: 0;">Maraba da shigowa!</h2>
+          </div>
 
-        <p style="font-size: 16px; line-height: 1.8; color: #334155;">
-          Burinmu shi ne kawo sauyi a yadda ake koyon dabarun kwamfuta da koding a harshen Hausa.
-        </p>
+          <div style="padding: 0 50px 40px 50px; text-align: center; color: #475569; line-height: 1.6;">
+            <p style="font-size: 16px; margin-bottom: 20px;">
+              Sannu da shigowa cikin jerin waɗanda za su fara samun labarin <strong>Littafin Fasaha</strong>.
+            </p>
+            
+            <p style="font-size: 16px; margin-bottom: 24px;">
+              Burinmu shi ne kawo sauƙi a duk abin da ya shafi kwamfuta a harshen Hausa. 
+              Za mu sanar da ku da zarar mun buɗe ƙofofinmu don fara karatu.
+            </p>
 
-        <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 24px 0; border-left: 4px solid #3b82f6;">
-          <p style="margin: 0; font-size: 14px; color: #475569;">
-            <strong>Abin da ke tafe:</strong> Za mu sanar da kai da zarar mun buɗe kofofinmu don fara karatu. Ka kasance cikin shiri!
-          </p>
+            <p style="font-size: 16px; font-weight: 600; color: #3b82f6; margin-bottom: 40px;">
+              Muna godiya da goyon bayanku!
+            </p>
+
+            <div style="border-top: 1px solid #f1f5f9; padding-top: 20px; text-align: left;">
+              <p style="margin: 0; font-size: 14px; color: #64748b;">Gaisuwar mu,</p>
+              <p style="margin: 0; font-size: 15px; font-weight: 700; color: #1e293b;">Littafin Fasaha</p>
+              <p style="margin: 0; font-size: 13px; color: #94a3b8;">Founder, Littafin Fasaha</p>
+            </div>
+          </div>
         </div>
 
-        <p style="font-size: 16px; line-height: 1.8; color: #334155;">
-          Mungode da goyon bayanka wajen gina wannan tarihi.<br />
-          <strong>Hajara-Yasmin Isa</strong>
-        </p>
-
-        <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 32px 0;" />
-
-        <p style="font-size: 12px; color: #94a3b8; text-align: center;">
-          &copy; ${new Date().getFullYear()} Littafin Fasaha. An kiyaye dukkan haƙƙin mallaka.
-        </p>
+        <div style="text-align: center; margin-top: 24px;">
+          <p style="font-size: 12px; color: #94a3b8;">
+            &copy; ${new Date().getFullYear()} Littafin Fasaha. <br />
+            Kuna karɓar wannan saƙon ne saboda kun yi rajista a littafinfasaha.com
+          </p>
+        </div>
       </div>
     `,
   })
