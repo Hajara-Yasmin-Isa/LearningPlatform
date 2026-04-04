@@ -78,17 +78,29 @@ export async function POST(request: NextRequest) {
             </p>
 
             <div style="border-top: 1px solid #f1f5f9; padding-top: 20px; text-align: left;">
-              <p style="margin: 0; font-size: 14px; color: #64748b;">Gaisuwar mu,</p>
-              <p style="margin: 0; font-size: 15px; font-weight: 700; color: #1e293b;">Littafin Fasaha</p>
-              <p style="margin: 0; font-size: 13px; color: #94a3b8;">Founder, Littafin Fasaha</p>
+              <p style="margin: 0; font-size: 14px; color: #64748b;">Mun gode,</p>
+              <p style="margin: 0; font-size: 15px; font-weight: 700; color: #1e293b;">Tawagar Littafin Fasaha</p>
+              <p style="margin: 0; font-size: 13px; color: #94a3b8;">Founder, Hajara-Yasmin Isa</p>
             </div>
           </div>
+        </div>
+
+        <div style="text-align: center; padding-bottom: 30px;">
+          <p style="margin-bottom: 15px; font-size: 13px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Ku biyo mu (Follow Us)</p>
+  
+            <a href="https://www.instagram.com/littafin_fasaha/" target="_blank" style="text-decoration: none; margin: 0 10px;">
+              <img src="https://cdn-icons-png.flaticon.com/512/174/174855.png" alt="Instagram" width="24" height="24" style="display: inline-block; opacity: 0.6;">
+            </a>
+
+          <a href="https://www.linkedin.com/company/littafin-fasaha/" target="_blank" style="text-decoration: none; margin: 0 10px;">
+            <img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" alt="LinkedIn" width="24" height="24" style="display: inline-block; opacity: 0.6;">
+          </a>
         </div>
 
         <div style="text-align: center; margin-top: 24px;">
           <p style="font-size: 12px; color: #94a3b8;">
             &copy; ${new Date().getFullYear()} Littafin Fasaha. <br />
-            Kuna karɓar wannan saƙon ne saboda kun yi rajista a littafinfasaha.com
+            Kana ganin wannan saƙon ne saboda ka yi rajista a littafinfasaha.com
           </p>
         </div>
       </div>
