@@ -33,8 +33,9 @@ export default function ComingSoonOverlay() {
             Wani abu mai girma yana zuwa
           </h2>
           <p className="text-slate-600 text-sm leading-relaxed">
-            Littafin Fasaha na nan tafe. Muna gina sabon dandalin koyon dabarun
-            kwamfuta a harshen Hausa. Shigar da imel ɗinka domin ka kasance
+            Littafin Fasaha na nan tafe. Muna gina sabon dandalin 
+            koyon duk abin da ya shafi kwamfuta a harshen Hausa. 
+            Shigar da imel ɗinka domin ka kasance
             cikin waɗanda za su fara sani.
           </p>
         </div>
