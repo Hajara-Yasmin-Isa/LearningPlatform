@@ -97,13 +97,14 @@ export async function POST(request: NextRequest) {
           </a>
         </div>
 
-        <div style="text-align: center; margin-top: 24px;">
-          <p style="font-size: 12px; color: #94a3b8;">
-            &copy; ${new Date().getFullYear()} Littafin Fasaha. <br />
-            Kana ganin wannan saƙon ne saboda ka yi rajista a littafinfasaha.com
+        <div style="text-align: center; margin-top: 32px; border-top: 1px solid #f1f5f9; padding-top: 20px;">
+          <p style="font-size: 12px; color: #94a3b8; line-height: 1.5; margin: 0;">
+            &copy; ${new Date().getFullYear()} <strong>Littafin Fasaha</strong> — Dukkan haƙƙin mallaka an kiyaye su.
+         </p>
+          <p style="font-size: 11px; color: #cbd5e1; margin-top: 8px;">
+            Kuna ganin wannan saƙon ne saboda kun yi rajista a <a href="https://littafinfasaha.com" style="color: #94a3b8; text-decoration: underline;">littafinfasaha.com</a>
           </p>
         </div>
-      </div>
     `,
   })
 
