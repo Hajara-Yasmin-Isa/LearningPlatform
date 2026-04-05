@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
 
             <div style="border-top: 1px solid #f1f5f9; padding-top: 20px; text-align: left;">
               <p style="margin: 0; font-size: 14px; color: #64748b;">Mun gode,</p>
-              <p style="margin: 0; font-size: 15px; font-weight: 700; color: #1e293b;">Tawagar Littafin Fasaha</p>
+              <p style="margin: 0; font-size: 15px; font-weight: 700; color: #1e293b;">Ƙungiyar Littafin Fasaha</p>
               <p style="margin: 0; font-size: 13px; color: #94a3b8;">Founder, Hajara-Yasmin Isa</p>
             </div>
           </div>
