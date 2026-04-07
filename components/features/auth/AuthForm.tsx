@@ -1,18 +1,57 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase/client";
 
 interface AuthFormProps {
   submitLabel: string;
+  mode: "login" | "signup";
 }
 
-export default function AuthForm({ submitLabel }: AuthFormProps) {
+export default function AuthForm({ submitLabel, mode }: AuthFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [signupSuccess, setSignupSuccess] = useState(false);
+  const router = useRouter();
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    console.log("Placeholder submit- input values:", { email, password });
+    setError(null);
+    setLoading(true);
+
+    try {
+      if (mode === "login") {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) {
+          setError(error.message);
+        } else {
+          router.push("/dashboard");
+        }
+      } else {
+        const { error } = await supabase.auth.signUp({ email, password });
+        if (error) {
+          setError(error.message);
+        } else {
+          setSignupSuccess(true);
+        }
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (signupSuccess) {
+    return (
+      <div className="glass-strong rounded-2xl shadow-md p-8 space-y-3 text-center">
+        <h2 className="text-xl font-semibold text-slate-900">Check your email</h2>
+        <p className="text-slate-600 text-sm">
+          We sent a confirmation link to <strong>{email}</strong>. Click it to activate your account before logging in.
+        </p>
+      </div>
+    );
   }
 
   return (
@@ -48,11 +87,16 @@ export default function AuthForm({ submitLabel }: AuthFormProps) {
         />
       </div>
 
+      {error && (
+        <p className="text-sm text-red-600">{error}</p>
+      )}
+
       <button
         type="submit"
-        className="w-full rounded-xl bg-yellow-500 hover:bg-yellow-600 py-2.5 text-white font-semibold transition-colors shadow-sm mt-2"
+        disabled={loading}
+        className="w-full rounded-xl bg-yellow-500 hover:bg-yellow-600 py-2.5 text-white font-semibold transition-colors shadow-sm mt-2 disabled:opacity-60 disabled:cursor-not-allowed"
       >
-        {submitLabel}
+        {loading ? "Please wait..." : submitLabel}
       </button>
     </form>
   );

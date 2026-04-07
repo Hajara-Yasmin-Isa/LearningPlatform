@@ -22,7 +22,7 @@ export default function SignupPage() {
           </p>
         </div>
 
-        <AuthForm submitLabel="Create account" />
+        <AuthForm submitLabel="Create account" mode="signup" />
 
         <p className="text-center text-sm text-slate-500 mt-6">
           Already have an account?{' '}
