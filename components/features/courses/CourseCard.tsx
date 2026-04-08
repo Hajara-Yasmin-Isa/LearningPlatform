@@ -3,6 +3,8 @@ import { CourseWithInstructor } from '@/types/database'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
+//Course Card props: CourseWithInstructor extends a Course class which has all the information whose members can be accessed
+//by the . operator
 interface CourseCardProps {
   course: CourseWithInstructor
   isEnrolled: boolean

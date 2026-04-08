@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { getAllPublishedCourses, getUserEnrollments } from '@/lib/supabase/courses'
 import { CourseGrid } from '@/components/features/courses/CourseGrid'
 import { CourseWithInstructor, Enrollment } from '@/types/database'
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client' // Fixed import
 
 export default function CoursesPage() {
   // State
@@ -21,8 +21,6 @@ export default function CoursesPage() {
       try {
         setLoading(true)
         setError(null)
-
-        const supabase = createClient()
 
         // Get current user
         const {
