@@ -43,7 +43,11 @@ export function CourseCard({ course, isEnrolled, userId }: CourseCardProps) {
       setEnrolled(true)
     } catch (err: any) {
       // Handles "already enrolled" and other errors
-      alert(err.message)
+      if (err.message.includes('Already enrolled')) {
+        alert('You are already enrolled in this course.')
+          } else {
+        alert('Something went wrong. Please try again.')
+        }
     } finally {
       setLoading(false)
     }
@@ -77,11 +81,12 @@ export function CourseCard({ course, isEnrolled, userId }: CourseCardProps) {
         Instructor: {course.users?.name}
       </p>
 
+      {/* If course.duration_minutes exists then render*/}
       {course.duration_minutes && (
         <p className="text-xs text-gray-500">
-            Duration (minutes): {course.duration_minutes}
+          Duration (minutes): {course.duration_minutes}
         </p>
-        )}
+      )}
 
       {/* Buttons */}
       <div className="mt-auto">
