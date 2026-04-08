@@ -10,14 +10,46 @@ interface CourseCardProps {
 }
 
 export function CourseCard({ course, isEnrolled, userId }: CourseCardProps) {
-// Difficulty Colors
+
+  // Router (for redirect if not logged in)
+  const router = useRouter()
+
+  // Local state so UI updates without refresh
+  const [enrolled, setEnrolled] = useState(isEnrolled)
+  const [loading, setLoading] = useState(false)
+
+  // Difficulty Colors
   const difficultyColors = {
     Beginner: 'bg-green-100 text-green-700',
     Intermediate: 'bg-yellow-100 text-yellow-700',
     Advanced: 'bg-orange-100 text-orange-700',
   }
 
-// UI Skeleton
+  // Handle enroll button click
+  const handleEnroll = async () => {
+    // If user not logged in → redirect
+    if (!userId) {
+      router.push('/auth/login')
+      return
+    }
+
+    try {
+      setLoading(true)
+
+      // Call Supabase function
+      await enrollInCourse(userId, course.id)
+
+      // Update UI instantly
+      setEnrolled(true)
+    } catch (err: any) {
+      // Handles "already enrolled" and other errors
+      alert(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // UI Skeleton
   return (
     <div className="border rounded-lg p-4 shadow-sm flex flex-col gap-3">
       <img
@@ -45,9 +77,15 @@ export function CourseCard({ course, isEnrolled, userId }: CourseCardProps) {
         Instructor: {course.users?.name}
       </p>
 
+      {course.duration_minutes && (
+        <p className="text-xs text-gray-500">
+            Duration (minutes): {course.duration_minutes}
+        </p>
+        )}
+
       {/* Buttons */}
       <div className="mt-auto">
-        {isEnrolled ? (
+        {enrolled ? ( // use LOCAL state, not prop
           <div className="flex justify-between items-center">
             <span className="text-green-600 text-sm font-medium">
               Enrolled
@@ -57,8 +95,12 @@ export function CourseCard({ course, isEnrolled, userId }: CourseCardProps) {
             </button>
           </div>
         ) : (
-          <button className="w-full bg-black text-white py-2 rounded-md text-sm">
-            Enroll
+          <button
+            onClick={handleEnroll}
+            disabled={loading}
+            className="w-full bg-black text-white py-2 rounded-md text-sm disabled:opacity-50"
+          >
+            {loading ? 'Enrolling...' : 'Enroll'}
           </button>
         )}
       </div>
