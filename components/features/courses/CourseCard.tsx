@@ -66,14 +66,14 @@ export function CourseCard({ course, isEnrolled, userId }: CourseCardProps) {
 
       <div className="flex justify-between items-center">
         <h2 className="text-lg font-semibold">{course.title}</h2>
-        <span
-          className={`text-xs px-2 py-1 rounded ${
+      </div>
+
+      <p className={`text-xs px-2 py-1 rounded ${
             difficultyColors[course.difficulty as keyof typeof difficultyColors]
           }`}
         >
           {course.difficulty}
-        </span>
-      </div>
+        </p>
 
       <p className="text-sm text-gray-600 line-clamp-2">
         {course.description}
