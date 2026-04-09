@@ -59,7 +59,7 @@ export function CourseCard({ course, isEnrolled, userId }: CourseCardProps) {
   return (
     <div className="border rounded-lg p-4 shadow-sm flex flex-col gap-3">
       <img
-        src={course.thumbnail_url || '/placeholder.png'}
+        src={course.thumbnail_url || '/courseImagePlaceholder.png'}
         alt={course.title}
         className="w-full h-40 object-cover rounded-md"
       />
@@ -86,7 +86,7 @@ export function CourseCard({ course, isEnrolled, userId }: CourseCardProps) {
       {/* If course.duration_minutes exists then render*/}
       {course.duration_minutes && (
         <p className="text-xs text-gray-500">
-          Duration (minutes): {course.duration_minutes}
+          Duration: {course.duration_minutes} minutes
         </p>
       )}
 
