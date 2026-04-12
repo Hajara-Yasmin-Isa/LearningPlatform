@@ -71,3 +71,11 @@ export interface CourseWithInstructor extends Course {
     username: string
   } | null
 }
+
+// A lesson with the current user's completion status
+export interface UserLesson {
+  id: string
+  title: string
+  completed: boolean
+  total: number
+}

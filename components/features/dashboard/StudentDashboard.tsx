@@ -1,18 +1,18 @@
 'use client'
 
 import { useState, useEffect } from "react"
-import LessonCard  from "./LessonCard"
-import StatsCard  from "./StatsCard"
+import LessonCard from "./LessonCard"
+import StatsCard from "./StatsCard"
 import { supabase } from "@/lib/supabase/client"
-import { getUserLessons, UserLesson } from "@/lib/supabase/queries"
+import { getUserLessons } from "@/lib/supabase/queries"
+import { UserLesson } from "@/types/database"
 
 export default function StudentDashboard() {
-  const [lessons, setLessons] = useState<UserLesson[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [lessons, setLessons] = useState<UserLesson[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function fetchLessons() {
-      // get the logged in user
       const { data: { user } } = await supabase.auth.getUser()
 
       if (!user) {
@@ -28,9 +28,8 @@ export default function StudentDashboard() {
     fetchLessons()
   }, [])
 
-  // calculate the stats from the fetched data
-  const lessonsCompleted = lessons.filter((l) => l.completed === 1).length
-  const activeLessons = lessons.filter((l) => l.completed === 0).length
+  const lessonsCompleted = lessons.filter((l) => l.completed === true).length
+  const activeLessons = lessons.filter((l) => l.completed === false).length
   const overallProgress = lessons.length > 0
     ? Math.round((lessonsCompleted / lessons.length) * 100)
     : 0
@@ -38,7 +37,7 @@ export default function StudentDashboard() {
   const stats = [
     { label: "Lessons Completed", value: String(lessonsCompleted) },
     { label: "Active Lessons", value: String(activeLessons) },
-    { label: "Overall Progress", value: String(overallProgress) + '%' },
+    { label: "Overall Progress", value: `${overallProgress}%` },
   ]
 
   return (
@@ -84,13 +83,12 @@ export default function StudentDashboard() {
             No lessons yet — browse the course catalog to get started.
           </p>
         ) : (
-          /* Grid Tailwind uses grid-cols-#. Its size based so for small device 1, up to 3 on something big like web */
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {lessons.map((lesson) => (
               <LessonCard
                 key={lesson.id}
                 title={lesson.title}
-                completed={lesson.completed}
+                completed={lesson.completed ? 1 : 0}
                 total={lesson.total}
               />
             ))}

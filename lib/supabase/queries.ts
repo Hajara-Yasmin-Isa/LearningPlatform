@@ -1,43 +1,36 @@
 import { supabase } from '@/lib/supabase/client'
+import { UserLesson } from '@/types/database'
 
-//  lesson returned by getUserLessons
-// 
-export interface UserLesson {
-  id: string
-  title: string
-  completed: number  // 0 or 1 whether this lesson is marked complete
-  total: number      // always 1 each lesson
-}
-
-// Fetches all lessons and joins with the user's progress data.
-// Uses a left join so lessons with no progress record still appear (completed defaults to 0).
+// Fetches all lessons and the current user's progress for each one.
+// Uses two separate queries — one for all lessons, one for this user's progress —
+// then merges them. This avoids the PostgREST limitation where .eq() on a
+// joined table filters the embedded result but cannot act as a true JOIN condition,
+// which would otherwise risk exposing other users' progress data.
 export async function getUserLessons(userId: string): Promise<UserLesson[]> {
-  const { data, error } = await supabase
-    .from('lessons')
-    .select(`
-      id,
-      title,
-      user_progress!left (
-        completed
-      )
-    `)
-    .eq('user_progress.user_id', userId)
-    .order('lesson_order', { ascending: true })
+  const [lessonsResult, progressResult] = await Promise.all([
+    supabase
+      .from('lessons')
+      .select('id, title')
+      .order('lesson_order', { ascending: true }),
+    supabase
+      .from('user_progress')
+      .select('lesson_id, completed')
+      .eq('user_id', userId),
+  ])
 
-  if (error || !data) {
-    console.error('Error fetching lessons:', error)
+  if (lessonsResult.error) {
+    console.error('Error fetching lessons:', lessonsResult.error)
     return []
   }
 
-  return data.map((lesson) => {
-    // take the first progress row — filtered to this user in the query above
-    const progress = Array.isArray(lesson.user_progress) ? lesson.user_progress[0] : lesson.user_progress
+  const progressMap = new Map(
+    (progressResult.data ?? []).map((p) => [p.lesson_id, p.completed])
+  )
 
-    return {
-      id: lesson.id,
-      title: lesson.title,
-      completed: progress?.completed ? 1 : 0,
-      total: 1,
-    }
-  })
+  return (lessonsResult.data ?? []).map((lesson) => ({
+    id: lesson.id,
+    title: lesson.title,
+    completed: progressMap.get(lesson.id) ?? false,
+    total: 1,
+  }))
 }
