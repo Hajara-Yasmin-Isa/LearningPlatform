@@ -1,24 +1,45 @@
 'use client'
 
-import LessonCard  from "./LessonCard"
-import StatsCard  from "./StatsCard"
-
-//DUMMY data that is mapped onto LessonCard.tsx component
-const DUMMY_LESSONS = [
-  { title: 'Spanish Basics', completed: 3, total: 5 },
-  { title: 'Grammar Foundations', completed: 2, total: 4 },
-  { title: 'Conversation Practice', completed: 1, total: 6 },
-  { title: 'Listening Exercises', completed: 4, total: 8 },
-]
-
-//Dummy stats mapped onto StatsCard.tsx component.
-const STATS = [
-  { label: 'Lessons Completed', value: '5' },
-  { label: 'Active Lessons', value: '4' },
-  { label: 'Overall Progress', value: '48%' },
-]
+import { useState, useEffect } from "react"
+import LessonCard from "./LessonCard"
+import StatsCard from "./StatsCard"
+import { supabase } from "@/lib/supabase/client"
+import { getUserLessons } from "@/lib/supabase/queries"
+import { UserLesson } from "@/types/database"
 
 export default function StudentDashboard() {
+  const [lessons, setLessons] = useState<UserLesson[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchLessons() {
+      const { data: { user } } = await supabase.auth.getUser()
+
+      if (!user) {
+        setLoading(false)
+        return
+      }
+
+      const data = await getUserLessons(user.id)
+      setLessons(data)
+      setLoading(false)
+    }
+
+    fetchLessons()
+  }, [])
+
+  const lessonsCompleted = lessons.filter((l) => l.completed === true).length
+  const activeLessons = lessons.filter((l) => l.completed === false).length
+  const overallProgress = lessons.length > 0
+    ? Math.round((lessonsCompleted / lessons.length) * 100)
+    : 0
+
+  const stats = [
+    { label: "Lessons Completed", value: String(lessonsCompleted) },
+    { label: "Active Lessons", value: String(activeLessons) },
+    { label: "Overall Progress", value: `${overallProgress}%` },
+  ]
+
   return (
     <div className="space-y-8">
 
@@ -39,7 +60,7 @@ export default function StudentDashboard() {
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {STATS.map((stat) => (
+          {stats.map((stat) => (
             <StatsCard
               key={stat.label}
               label={stat.label}
@@ -55,17 +76,24 @@ export default function StudentDashboard() {
           My Lessons
         </h2>
 
-        {/* Grid Tailwind uses grid-cols-#. Its size based so for small device 1, up to 3 on something big like web */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {DUMMY_LESSONS.map((lesson) => (
-            <LessonCard
-              key={lesson.title}
-              title={lesson.title}
-              completed={lesson.completed}
-              total={lesson.total}
-            />
-          ))}
-        </div>
+        {loading ? (
+          <p className="text-sm text-gray-500">Loading your lessons...</p>
+        ) : lessons.length === 0 ? (
+          <p className="text-sm text-gray-500">
+            No lessons yet — browse the course catalog to get started.
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {lessons.map((lesson) => (
+              <LessonCard
+                key={lesson.id}
+                title={lesson.title}
+                completed={lesson.completed ? 1 : 0}
+                total={lesson.total}
+              />
+            ))}
+          </div>
+        )}
       </section>
 
     </div>
