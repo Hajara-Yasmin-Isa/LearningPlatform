@@ -39,8 +39,8 @@ export default function CoursesPage() {
           const enrollmentsData = await getUserEnrollments(uid)
           setEnrollments(enrollmentsData)
         }
-      } catch (err: any) {
-        setError(err.message)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Something went wrong.')
       } finally {
         setLoading(false)
       }

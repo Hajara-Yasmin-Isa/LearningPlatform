@@ -1,3 +1,6 @@
+'use client'
+
+import Link from 'next/link'
 import { enrollInCourse } from "@/lib/supabase/courses"
 import { CourseWithInstructor } from '@/types/database'
 import { useState } from 'react'
@@ -19,6 +22,7 @@ export function CourseCard({ course, isEnrolled, userId }: CourseCardProps) {
   // Local state so UI updates without refresh
   const [enrolled, setEnrolled] = useState(isEnrolled)
   const [loading, setLoading] = useState(false)
+  const [enrollError, setEnrollError] = useState<string | null>(null)
 
   // Difficulty Colors
   const difficultyColors = {
@@ -37,19 +41,12 @@ export function CourseCard({ course, isEnrolled, userId }: CourseCardProps) {
 
     try {
       setLoading(true)
-
-      // Call Supabase function
+      setEnrollError(null)
       await enrollInCourse(userId, course.id)
-
-      // Update UI instantly
       setEnrolled(true)
-    } catch (err: any) {
-      // Handles "already enrolled" and other errors
-      if (err.message.includes('Already enrolled')) {
-        alert('You are already enrolled in this course.')
-          } else {
-        alert('Something went wrong. Please try again.')
-        }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Something went wrong.'
+      setEnrollError(message.includes('Already enrolled') ? 'You are already enrolled.' : 'Something went wrong. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -91,15 +88,19 @@ export function CourseCard({ course, isEnrolled, userId }: CourseCardProps) {
       )}
 
       {/* Buttons */}
+      {enrollError && (
+        <p className="text-red-500 text-xs mt-1">{enrollError}</p>
+      )}
+
       <div className="mt-auto">
         {enrolled ? ( // use LOCAL state, not prop
           <div className="flex justify-between items-center">
             <span className="text-green-600 text-sm font-medium">
               Enrolled
             </span>
-            <button className="text-sm text-blue-600">
+            <Link href={`/courses/${course.id}`} className="text-sm text-blue-600">
               View Course
-            </button>
+            </Link>
           </div>
         ) : (
           <button
