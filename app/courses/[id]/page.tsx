@@ -4,33 +4,34 @@ import { getCourseById } from "@/lib/supabase/courses"
 //404 not found
 import { notFound } from 'next/navigation'
 
+import { enrollInCourse } from "@/lib/supabase/courses"
+import { supabase } from "@/lib/supabase/client"
+
 export default async function CourseDetailPage({ params }: {params: {id: string}}) {
-    // const course = await getCourseById(params.id)
+    const course = await getCourseById(params.id)
+    const id = await params.id
     
-    // if (!course) {
-    //     notFound()
-    // } 
+    if (!course) {
+        notFound()
+    } 
+    
+    //This has to be fixed. I think the DB Lesson table does not have a column to refer to what course it is a lesson for.
+    const { data: lessons, error} = await supabase
+        .from("lessons")
+        .select("*")
+        .eq('id', id)
+        .order("lesson_order", { ascending: true })
+
+        if (error) {
+            throw new Error(error.message)
+        }
 
     /* SAMPLE COURSE AND LESSONS DATA */
-
-    const course = {
-  id: 'test',
-  title: 'Sample Course',
-  description: 'This is a sample course description.',
-  difficulty: 'Beginner',
-  duration_minutes: 90,
-  users: { name: 'Test Instructor' },
-}
-
-    const lessons = [
-  { id: '1', title: 'Introduction', lesson_order: 1 },
-  { id: '2', title: 'Basics', lesson_order: 2 },
-  { id: '3', title: 'Advanced Concepts', lesson_order: 3 },
-]
+    const isEnrolled = true
         
     return (
     <div>
-        <h1 className="text-2x1 font-bold">{course.title}</h1>
+        <h1 className="text-2xl font-bold">{course.title}</h1>
         <p className="text-gray-600">{course.description}</p>
 
         <p className="text-sm">Instructor: {course.users?.name}</p>
@@ -44,15 +45,28 @@ export default async function CourseDetailPage({ params }: {params: {id: string}
         <div className="border rounded-lg bg-slate-500">
             <ul className="px-2 py-2 mt-4 space-y-5">
                 
-            {lessons.map((lesson) => 
+            {lessons?.map((lesson) => 
                 <li key={lesson.id} className="border p-2 rounded-lg bg-slate-200">
                     {lesson.title}
                 </li>
             )}
         </ul>
         </div>
-        
-    </div>
+
+        <div className="mt-6">
+                {!isEnrolled ? (
+                    <button className="bg-black text-white px-4 py-2 rounded">
+                        Enroll
+                    </button>
+                ) : (
+                    <a href={`/lessons/${lessons[0]?.id}`}>
+                        <button className="bg-blue-600 text-white px-4 py-2 rounded">
+                            Continue Learning
+                        </button>
+                    </a>
+                )}
+            </div>
+        </div>
     
         )
 
