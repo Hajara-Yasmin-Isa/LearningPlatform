@@ -4,12 +4,12 @@ import { getCourseById } from "@/lib/supabase/courses"
 //404 not found
 import { notFound } from 'next/navigation'
 
-import { enrollInCourse } from "@/lib/supabase/courses"
 import { supabase } from "@/lib/supabase/client"
+
 
 export default async function CourseDetailPage({ params }: {params: {id: string}}) {
     const course = await getCourseById(params.id)
-    const id = await params.id
+    const id = params.id
     
     if (!course) {
         notFound()
@@ -25,9 +25,6 @@ export default async function CourseDetailPage({ params }: {params: {id: string}
         if (error) {
             throw new Error(error.message)
         }
-
-    /* SAMPLE COURSE AND LESSONS DATA */
-    const isEnrolled = true
         
     return (
     <div>
@@ -53,18 +50,8 @@ export default async function CourseDetailPage({ params }: {params: {id: string}
         </ul>
         </div>
 
-        <div className="mt-6">
-                {!isEnrolled ? (
-                    <button className="bg-black text-white px-4 py-2 rounded">
-                        Enroll
-                    </button>
-                ) : (
-                    <a href={`/lessons/${lessons[0]?.id}`}>
-                        <button className="bg-blue-600 text-white px-4 py-2 rounded">
-                            Continue Learning
-                        </button>
-                    </a>
-                )}
+            <div className="mt-6">
+
             </div>
         </div>
     
