@@ -23,6 +23,14 @@ export default function LoginPage() {
         </div>
 
         <AuthForm submitLabel="Log in" mode="login" />
+        <p className="text-center text-sm text-slate-500 mt-4">
+          <Link 
+            href="/auth/forgot-password" 
+            className="text-yellow-600 font-semibold hover:text-yellow-700"
+          >
+            Forgot password?
+          </Link>
+        </p>
 
         <p className="text-center text-sm text-slate-500 mt-6">
           Don&apos;t have an account?{' '}
