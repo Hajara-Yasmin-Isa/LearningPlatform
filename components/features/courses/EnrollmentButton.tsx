@@ -11,7 +11,7 @@ interface EnrollButtonProps {
     firstLessonId?: string
 }
 
-export function EnrollButton({
+export function EnrollmentButton({
     userId,
     courseId,
     isEnrolled,
