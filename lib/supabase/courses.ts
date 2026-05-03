@@ -71,3 +71,29 @@ export async function isUserEnrolled(userId: string, courseId: string): Promise<
   if (error && error.code !== 'PGRST116') throw new Error(error.message)
   return data !== null
 }
+
+// Get all courses (published and unpublished) for a specific instructor
+// Used by : instructor dashboard to show their full course list
+export async function getInstructorCourses(instructorId: string): Promise<CourseWithInstructor[]> {
+  const { data, error } = await supabase
+    .from('courses')
+    .select(`*, users(name, username)`)
+    .eq('instructor_id', instructorId)
+    .order('created_at', {ascending : false})
+
+  
+  if (error) throw new Error(error.message) 
+  return data ?? [];
+}
+
+// Count how many students are enrolled in a specific course
+// Used by: instructor dashboard to show enrollment numbers per course
+export async function getCourseEnrollmentCount(courseId: string): Promise<number> {
+  const { count, error }  = await supabase
+    .from('enrollments')
+    .select('*', {count: 'exact', head:true})
+    .eq('course_id', courseId);
+
+  if (error) throw new Error(error.message)
+  return count ?? 0
+}
