@@ -12,15 +12,16 @@ import { supabase } from "@/lib/supabase/client"
 //Check user enrolled for enroll button
 import { isUserEnrolled } from "@/lib/supabase/courses"
 
+import { getLessonsByCourse } from "@/lib/supabase/lessons"
 
-export default async function CourseDetailPage({ params }: { params: { id: string } }) {
 
-    /*Grabbing information*/
+export default async function CourseDetailPage({ params }: { params: Promise<{ id: string }> }) {
+
+    //fixing PR39: Changed from params: { id: string } to promise, params: Promise<{ id: string }>
 
     //Grab course ID
-    const course = await getCourseById(params.id)
-    const id = params.id
-    console.log(id)
+    const { id } = await params
+    const course = await getCourseById(id)
 
     //Grab User ID
     const {
@@ -39,9 +40,7 @@ export default async function CourseDetailPage({ params }: { params: { id: strin
         isEnrolled = await isUserEnrolled(userId, course.id)
     }
 
-    //Console log test to see if the lessons are queried. Should be removed.
-    const { data } = await supabase .from("lessons").select("*")
-    console.log(data)
+    const { data } = getLessonsByCourse(id)
 
     //This has to be fixed. I think the DB Lesson table does not have a column to refer to what course it is a lesson for.
     //UPDATE: The column was added called "course_id" (I believe thats what its called)
