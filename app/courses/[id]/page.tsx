@@ -7,12 +7,14 @@ import { EnrollmentButton } from "@/components/features/courses/EnrollmentButton
 //404 not found
 import { notFound } from 'next/navigation'
 
-import { supabase } from "@/lib/supabase/client"
+//Fixing PR39: No longer importing supabase, instead creating supabase server client
+import { createServerClient } from "@/lib/supabase/server"
 
 //Check user enrolled for enroll button
 import { isUserEnrolled } from "@/lib/supabase/courses"
 
 import { getLessonsByCourse } from "@/lib/supabase/lessons"
+import { Lesson } from "@/types/database"
 
 
 export default async function CourseDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -23,7 +25,10 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
     const { id } = await params
     const course = await getCourseById(id)
 
-    //Grab User ID
+    //Create supabase client
+    const supabase = createServerClient()
+
+    //Grab user from supabase
     const {
         data: { user },
     } = await supabase.auth.getUser()
@@ -39,21 +44,16 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
     if (userId) {
         isEnrolled = await isUserEnrolled(userId, course.id)
     }
+    
+    //Safe way to see if Lessons do not exist. Creates lessonError which is passed into the return JSX 
+    let lessons: Lesson[] = []
+    let lessonError: string | null = null
 
-    const { data } = getLessonsByCourse(id)
-
-    //This has to be fixed. I think the DB Lesson table does not have a column to refer to what course it is a lesson for.
-    //UPDATE: The column was added called "course_id" (I believe thats what its called)
-    //This is the SQL query to pull lessons
-    const { data: lessons, error } = await supabase
-        .from("lessons")
-        .select("*")
-        .eq("course_id", id)
-        .order("lesson_order", { ascending: true })
-
-
-    if (error) {
-        throw new Error(error.message)
+    try {
+        lessons = await getLessonsByCourse(id)
+    } catch (err) {
+        lessonError =
+            err instanceof Error ? err.message : "Failed to load lessons"
     }
 
     // UI Skeleton
@@ -72,6 +72,10 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
             </p>
             <div className="border rounded-lg bg-slate-500">
                 <ul className="px-2 py-2 mt-4 space-y-5">
+                    {/*Show userfacing error instead of crashing page if lesson did not load*/}
+                    {lessonError && (
+                        <p className="text-red-500">{lessonError}</p>
+                    )}
                     {/*If lessons length is 0, fall back UI*/}
                     {lessons?.length === 0 && (
                         <p className="font-bold">No lessons available yet.</p>
