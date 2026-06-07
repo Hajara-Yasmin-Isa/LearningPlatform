@@ -80,3 +80,16 @@ export async function markSectionComplete(
 
   if (error) throw new Error(error.message)
 }
+
+// Fetches all lessons for a given course, ordered by lesson_order ascending
+// Returns [] (not an error) if the course exists but has no lessons yet
+export async function getLessonsByCourse(courseId: string): Promise<Lesson[]> {
+  const { data, error } = await supabase
+    .from('lessons')
+    .select('*')
+    .eq('course_id', courseId)
+    .order('lesson_order', { ascending: true })
+
+  if (error) throw new Error(error.message)
+  return data ?? []
+}
