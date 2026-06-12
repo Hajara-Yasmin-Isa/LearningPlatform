@@ -1,7 +1,42 @@
+'use client'
+
 import Link from 'next/link'
 import Image from 'next/image'
 
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+
+import { supabase } from '@/lib/supabase/client'
+import { User } from '@supabase/supabase-js'
+
 export function Header() {
+  const [user, setUser] = useState<User | null>(null)
+  const router = useRouter()
+
+useEffect(() => {
+  const initialUser = async () => {
+    const {
+      data : { user }
+    } = await supabase.auth.getUser()
+    setUser(user)
+  };
+  initialUser()
+
+  const {
+    data: { subscription },
+  } = supabase.auth.onAuthStateChange((event, session) => {
+    setUser(session?.user ?? null)
+  })
+
+  return () => {
+    subscription.unsubscribe()
+  }
+}, []);
+
+  const logout = async () => {
+    await supabase.auth.signOut()
+    router.push('/')
+  }  
   return (
     <header className="sticky top-0 z-50 glass border-b border-white/50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -29,11 +64,28 @@ export function Header() {
           {/* Nav */}
           <nav className="flex items-center gap-6">
             <Link
-              href="/lessons"
+              href="/courses"
               className="text-slate-600 hover:text-slate-900 transition-colors font-medium text-sm"
             >
               Courses
             </Link>
+          { user ? (
+            <>
+            <Link
+              href="/dashboard"
+              className="text-slate-600 hover:text-slate-900 transition-colors font-medium text-sm"
+            >
+            Dashboard
+            </Link>
+            <button
+              onClick={logout}
+              className="text-slate-600 hover:text-slate-900 transition-colors font-medium text-sm"
+            >
+              Log out
+            </button>
+          </>
+        ) : (
+          <>
             <Link
               href="/auth/login"
               className="text-slate-600 hover:text-slate-900 transition-colors font-medium text-sm"
@@ -46,8 +98,9 @@ export function Header() {
             >
               Get Started
             </Link>
+            </>
+          )}
           </nav>
-
         </div>
       </div>
     </header>
