@@ -39,7 +39,7 @@ export function EnrollmentButton({
 
 
     return (
-        <div className="mt-6">
+        <div>
             {!isEnrolled ? (
                 <button
                     onClick={handleEnroll}
@@ -49,10 +49,9 @@ export function EnrollmentButton({
                     {loading ? 'Enrolling...' : 'Enroll'}
                 </button>
             ) : (
-                <a href={`/lessons/${firstLessonId}`}>
-                    <button className="bg-blue-600 text-white px-4 py-2 rounded">
+                <a href={`/lessons/${firstLessonId}`}
+                    className="bg-blue-600 text-white px-4 py-2 rounded inline-block">    
                         Continue Learning
-                    </button>
                 </a>
             )}
         </div>
