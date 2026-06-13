@@ -35,10 +35,12 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
 
     const userId = user?.id ?? null
 
+    //NextJS notFound() page if course does not exist
     if (!course) {
         notFound()
     }
 
+    //Code block to check if user is enrolled
     let isEnrolled = false
 
     if (userId) {
