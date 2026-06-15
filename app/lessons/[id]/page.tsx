@@ -3,18 +3,34 @@ import { supabase } from "@/lib/supabase/client"
 import { notFound } from "next/navigation"
 import ExerciseBlock from "@/components/features/lessons/ExerciseBlock"
 
+//Temporary fix
+import { createServerClient } from '@/lib/supabase/server'
+
+
 export default async function LessonViewerPage({ params }: { params: Promise<{ id: string }> }) {
 
     //Store lesson id
     const { id } = await params
-
+/*
     //Grab lesson
     const lesson = await getLessonWithSections(id)
 
+    
     //If lesson not found, notFound()
     if (!lesson) {
         notFound()
     }
+*/
+    //Temporary fix
+    const supabase = await createServerClient()
+    const { data: lesson } = await supabase
+        .from('lessons')
+        .select('*, sections(*, exercises(*))')
+        .eq('id', id)
+        .order('section_order', { referencedTable: 'sections', ascending: true })
+        .single()
+
+    if (!lesson) notFound()
 
     //Store user data
     //Server-side auth will be added Sprint 2 according to Trello Card, so probably will be adjusted
