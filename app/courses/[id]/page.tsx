@@ -1,8 +1,8 @@
-import { getCourseById } from "@/lib/supabase/courses"
+import { getCourseById, isUserEnrolled } from "@/lib/supabase/courses"
+import { getLessonsByCourse } from "@/lib/supabase/lessons"
 import { EnrollmentButton } from "@/components/features/courses/EnrollmentButton"
 import { notFound } from 'next/navigation'
-import { supabase } from "@/lib/supabase/client"
-import { isUserEnrolled } from "@/lib/supabase/courses"
+import { createServerClient } from "@/lib/supabase/server"
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
@@ -18,10 +18,8 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
 
     const course = await getCourseById(id)
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser()
-
+    const supabase = await createServerClient()
+    const { data: { user } } = await supabase.auth.getUser()
     const userId = user?.id ?? null
 
     if (!course) {
@@ -29,19 +27,16 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
     }
 
     let isEnrolled = false
-
     if (userId) {
         isEnrolled = await isUserEnrolled(userId, course.id)
     }
 
-    const { data: lessons, error } = await supabase
-        .from("lessons")
-        .select("*")
-        .eq("course_id", id)
-        .order("lesson_order", { ascending: true })
-
-    if (error) {
-        throw new Error(error.message)
+    let lessons = []
+    let lessonError: string | null = null
+    try {
+        lessons = await getLessonsByCourse(id)
+    } catch (err) {
+        lessonError = err instanceof Error ? err.message : 'Failed to load lessons'
     }
 
     return (
@@ -70,10 +65,13 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
             </div>
 
             <ul className="space-y-2 mt-4">
-                {lessons?.length === 0 && (
+                {lessonError && (
+                    <li className="text-red-500">{lessonError}</li>
+                )}
+                {!lessonError && lessons.length === 0 && (
                     <li className="font-bold">No lessons available yet.</li>
                 )}
-                {lessons?.map((lesson, index) => (
+                {lessons.map((lesson, index) => (
                     <li
                         key={lesson.id}
                         className="border rounded-lg p-3 flex items-center gap-3"
