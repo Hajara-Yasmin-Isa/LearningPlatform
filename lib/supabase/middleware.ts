@@ -6,11 +6,7 @@ import { NextResponse, type NextRequest } from 'next/server'
  * handles cookies properly for authentication state
  */
 export async function createClient(request: NextRequest) {
-  let response = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
-  })
+  let response = NextResponse.next({ request })
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
