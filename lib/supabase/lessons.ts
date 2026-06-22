@@ -93,3 +93,20 @@ export async function getLessonsByCourse(courseId: string): Promise<Lesson[]> {
   if (error) throw new Error(error.message)
   return data ?? []
 }
+
+// Fetches the section immediately after the given one within the same lesson
+// Returns null if the current section is the last one in the lesson
+export async function getNextSection(
+  lessonId: string,
+  currentSectionOrder: number
+): Promise<Section | null> {
+  const { data, error } = await supabase
+    .from('sections')
+    .select('*')
+    .eq('lesson_id', lessonId)
+    .eq('section_order', currentSectionOrder + 1)
+    .single()
+
+  if (error && error.code !== 'PGRST116') throw new Error(error.message)
+  return data ?? null
+}
