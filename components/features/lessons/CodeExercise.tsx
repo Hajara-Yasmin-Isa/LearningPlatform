@@ -49,7 +49,12 @@ export default function CodeExercise({ exercise, onComplete }: CodeExerciseProps
         <div>
             <p className="font-medium">{exercise.question}</p>
             <textarea className="font-mono w-full border rounded p-3" value={code} onChange={(e) => setCode(e.target.value)} />
-            <button onClick={handleRun}>Run Code</button>
+            <button
+                onClick={handleRun}
+                className="bg-blue-300 text-blue-900 px-4 py-2 rounded hover:bg-blue-300"
+            >
+                Run Code
+            </button>
 
             {result && (
                 <div>
