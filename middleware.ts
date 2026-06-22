@@ -3,7 +3,7 @@ import { updateSession } from '@/lib/supabase/middleware'
 
 
 //just added more thna just the dashboard protected
-const PROTECTED_ROUTES = ['/dashboard']
+const PROTECTED_ROUTES = ['/dashboard', '/lessons', '/courses']
 const AUTH_ROUTES = ['/auth/login', '/auth/signup']
 
 function matchesRoute(pathname: string, routes: string[]): boolean {
@@ -45,5 +45,12 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard', '/dashboard/:path*', '/auth/login', '/auth/signup'],
+  matcher: [
+    '/dashboard',
+    '/dashboard/:path*',
+    '/lessons/:path*',
+    '/courses/:path*',
+    '/auth/login',
+    '/auth/signup',
+  ],
 }
