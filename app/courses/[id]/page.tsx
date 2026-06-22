@@ -1,8 +1,8 @@
-import { getCourseById } from "@/lib/supabase/courses"
+import { getCourseById, isUserEnrolled } from "@/lib/supabase/courses"
+import { getLessonsByCourse } from "@/lib/supabase/lessons"
 import { EnrollmentButton } from "@/components/features/courses/EnrollmentButton"
 import { notFound } from 'next/navigation'
-import { supabase } from "@/lib/supabase/client"
-import { isUserEnrolled } from "@/lib/supabase/courses"
+import { createServerClient } from "@/lib/supabase/server"
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
@@ -16,11 +16,11 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
 
     const { id } = await params
 
+    const supabase = await createServerClient()
+
     const course = await getCourseById(id)
 
-    const {
-        data: { user },
-    } = await supabase.auth.getUser()
+    const { data: { user } } = await supabase.auth.getUser()
 
     const userId = user?.id ?? null
 
@@ -34,15 +34,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
         isEnrolled = await isUserEnrolled(userId, course.id)
     }
 
-    const { data: lessons, error } = await supabase
-        .from("lessons")
-        .select("*")
-        .eq("course_id", id)
-        .order("lesson_order", { ascending: true })
-
-    if (error) {
-        throw new Error(error.message)
-    }
+    const lessons = await getLessonsByCourse(id, supabase)
 
     return (
         <div className="max-w-4xl mx-auto px-6 py-10">
