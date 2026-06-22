@@ -1,4 +1,4 @@
-import { supabase } from './client'
+import { supabase as browserClient } from './client'
 import { Lesson, Section, Exercise, UserProgress } from '@/types/database'
 
 // Extended types for nested query results — defined here since database.ts cannot be modified
@@ -11,10 +11,15 @@ export interface LessonWithSections extends Lesson {
   sections: SectionWithExercises[]
 }
 
+type SupabaseClient = typeof browserClient
+
 // Fetches a lesson, all its sections, and all exercises within each section
 // Used by: lesson viewer (Card A) to render the full lesson tree
-export async function getLessonWithSections(lessonId: string): Promise<LessonWithSections | null> {
-  const { data, error } = await supabase
+export async function getLessonWithSections(
+  lessonId: string,
+  client: SupabaseClient = browserClient
+): Promise<LessonWithSections | null> {
+  const { data, error } = await client
     .from('lessons')
     .select(`
       *,
@@ -45,9 +50,10 @@ export async function getLessonWithSections(lessonId: string): Promise<LessonWit
 // Used by: lesson viewer to mark which sections are already completed
 export async function getUserProgress(
   userId: string,
-  lessonId: string
+  lessonId: string,
+  client: SupabaseClient = browserClient
 ): Promise<UserProgress[]> {
-  const { data, error } = await supabase
+  const { data, error } = await client
     .from('user_progress')
     .select('*')
     .eq('user_id', userId)
@@ -62,9 +68,10 @@ export async function getUserProgress(
 export async function markSectionComplete(
   userId: string,
   lessonId: string,
-  sectionId: string
+  sectionId: string,
+  client: SupabaseClient = browserClient
 ): Promise<void> {
-  const { error } = await supabase
+  const { error } = await client
     .from('user_progress')
     .upsert(
       {
@@ -74,7 +81,6 @@ export async function markSectionComplete(
         completed: true,
         last_accessed: new Date().toISOString(),
       },
-      // Conflict target: one row per (user_id, lesson_id, section_id)
       { onConflict: 'user_id,lesson_id,section_id' }
     )
 
@@ -83,8 +89,11 @@ export async function markSectionComplete(
 
 // Fetches all lessons for a given course, ordered by lesson_order ascending
 // Returns [] (not an error) if the course exists but has no lessons yet
-export async function getLessonsByCourse(courseId: string): Promise<Lesson[]> {
-  const { data, error } = await supabase
+export async function getLessonsByCourse(
+  courseId: string,
+  client: SupabaseClient = browserClient
+): Promise<Lesson[]> {
+  const { data, error } = await client
     .from('lessons')
     .select('*')
     .eq('course_id', courseId)
@@ -98,9 +107,10 @@ export async function getLessonsByCourse(courseId: string): Promise<Lesson[]> {
 // Returns null if the current section is the last one in the lesson
 export async function getNextSection(
   lessonId: string,
-  currentSectionOrder: number
+  currentSectionOrder: number,
+  client: SupabaseClient = browserClient
 ): Promise<Section | null> {
-  const { data, error } = await supabase
+  const { data, error } = await client
     .from('sections')
     .select('*')
     .eq('lesson_id', lessonId)
