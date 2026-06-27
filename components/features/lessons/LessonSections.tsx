@@ -12,24 +12,58 @@ interface SectionWithExercises extends Section {
 
 interface LessonSectionsProps {
     sections: SectionWithExercises[]
+    courseId: string
 }
 
 
-export default function LessonSections({ sections }: LessonSectionsProps) {
+export default function LessonSections({ courseId, sections }: LessonSectionsProps) {
     const [activeSectionIndex, setActiveSectionIndex] = useState(0)
     const currentSection = sections[activeSectionIndex]
-    const [completedSections, setCompletedSections] = useState<Set<number>>(new Set())
+    const isLastSection = activeSectionIndex === sections.length - 1
+    const [completedExercises, setCompletedExercises] = useState<Set<string>>(new Set())
+    const [isComplete, setIsComplete] = useState(false)
 
-    const handleSectionComplete = () => {
-        setCompletedSections((prev) => {
+    const isSectionComplete =
+        currentSection.exercises.every(ex =>
+            completedExercises.has(ex.id)
+        )
+
+    const handleExerciseComplete = (exerciseId: string) => {
+        setCompletedExercises(prev => {
             const next = new Set(prev)
-            next.add(activeSectionIndex)
+            next.add(exerciseId)
             return next
         })
     }
 
+    function handleNext() {
+        if (!isSectionComplete) return
+
+        if (isLastSection && isSectionComplete) {
+            setIsComplete(true)
+            return
+        }
+
+        setActiveSectionIndex((i) => i + 1)
+    }
+
+
+    function handlePrevious() {
+        setActiveSectionIndex((i) => Math.max(0, i - 1))
+    }
+
+    if (isComplete) {
+        return (
+            <p>
+                Lesson complete! Back to{" "}
+                <a href={`/courses/${courseId}`}>course</a>
+            </p>
+        )
+    }
+
     //UI Skeleton
     return (
+
         <div className="mt-8 space-y-10">
 
             <div key={currentSection.id}>
@@ -42,12 +76,34 @@ export default function LessonSections({ sections }: LessonSectionsProps) {
                         <ExerciseBlock
                             key={exercise.id}
                             exercise={exercise}
-                            onComplete={() => { handleSectionComplete }}
+                            onComplete={() => handleExerciseComplete(exercise.id)}
                         />
                     ))}
+
+                </div>
+                <div className="flex justify-between mt-6">
+                    <button
+                        onClick={handlePrevious}
+                        disabled={activeSectionIndex === 0}
+                        className="px-5 py-2 bg-gray-200 text-gray-800 rounded-lg disabled:opacity-40 hover:bg-gray-300 transition-colors"
+                    >
+                        ← Previous
+                    </button>
+
+
+                    <button
+                        onClick={handleNext}
+                        disabled={!isSectionComplete}
+                        className="px-5 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-40 hover:bg-blue-700 transition-colors"
+                    >
+                        {isLastSection ? 'Finish Lesson' : 'Next Section →'}
+                    </button>
                 </div>
             </div>
 
         </div>
+
+
     )
+
 }
