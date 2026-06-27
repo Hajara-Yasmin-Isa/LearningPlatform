@@ -3,6 +3,7 @@ import { getLessonsByCourse } from "@/lib/supabase/lessons"
 import { EnrollmentButton } from "@/components/features/courses/EnrollmentButton"
 import { notFound } from 'next/navigation'
 import { createServerClient } from "@/lib/supabase/server"
+import { getUserProgress } from "@/lib/supabase/lessons"
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
@@ -23,6 +24,15 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
     const { data: { user } } = await supabase.auth.getUser()
 
     const userId = user?.id ?? null
+
+    //Get user progress, if userId is null then progress = []
+    const progress = userId ? await getUserProgress(userId, id) : []
+
+    const completedLessonIds = new Set(
+        progress
+            .filter(row => row.completed && row.section_id === null)
+            .map(row => row.lesson_id)
+    )
 
     if (!course) {
         notFound()
