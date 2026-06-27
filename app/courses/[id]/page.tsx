@@ -29,6 +29,8 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
     //Get user progress, if userId is null then progress = []
     const progress = userId ? await getUserProgress(userId, id) : []
 
+    console.log(progress)
+
     const completedLessonIds = new Set(
         progress
             .filter(row => row.completed && row.section_id === null)
