@@ -59,15 +59,21 @@ export async function getUserEnrollments(userId: string): Promise<Enrollment[]> 
 
 // Check if a specific user is enrolled in a specific course
 // Returns true/false - used to show "Enroll" vs "Enrolled" on CourseCard
-export async function isUserEnrolled(userId: string, courseId: string): Promise<boolean> {
-  const { data, error } = await supabase
-    .from('enrollments')
-    .select('id')
-    .eq('user_id', userId)
-    .eq('course_id', courseId)
-    .single()
+// Can take a third argument, supabase, helpful for when called 
+// npin server components where createServerClient() is called
+export async function isUserEnrolled(
+  userId: string,
+  courseId: string,
+  client = supabase
+) {
+    const { data, error } = await client
+        .from("enrollments")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("course_id", courseId)
+        .maybeSingle()
 
   // PGRST116 = no rows found = not enrolled (not a real error)
   if (error && error.code !== 'PGRST116') throw new Error(error.message)
-  return data !== null
+    return data !== null
 }

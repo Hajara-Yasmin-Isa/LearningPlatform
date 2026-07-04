@@ -44,7 +44,8 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
     let isEnrolled = false
 
     if (userId) {
-        isEnrolled = await isUserEnrolled(userId, course.id)
+        //Now isUserEnrolled accepts supabase client
+        isEnrolled = await isUserEnrolled(userId, course.id, supabase)
         console.log("ENROLLMENT userId, course.id, isEnrolled:", userId, course.id, isEnrolled)
     }
 
@@ -73,6 +74,9 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
                     Duration: {course.duration_minutes} minutes
                 </span>
             </div>
+            {!isEnrolled && (
+                <p className="mt-4 text-sm text-gray-500">Enroll to access lessons</p>
+            )}
 
             <ul className="space-y-2 mt-4">
                 {lessons?.length === 0 && (
