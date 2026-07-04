@@ -3,6 +3,7 @@
 import ExerciseBlock from './ExerciseBlock'
 import { Exercise, Section } from '@/types/database'
 import { useState } from 'react'
+import Link from 'next/link'
 
 
 
@@ -17,16 +18,25 @@ interface LessonSectionsProps {
 
 
 export default function LessonSections({ courseId, sections }: LessonSectionsProps) {
+
+    // If sections.length === 0 we return no sections immediately.
+    // Guard against lessons with no sections before accessing sections[activeSectionIndex].
+    if (sections.length === 0) return <p className="text-gray-500 mt-8">No sections yet.</p>
+
     const [activeSectionIndex, setActiveSectionIndex] = useState(0)
     const currentSection = sections[activeSectionIndex]
     const isLastSection = activeSectionIndex === sections.length - 1
     const [completedExercises, setCompletedExercises] = useState<Set<string>>(new Set())
     const [isComplete, setIsComplete] = useState(false)
+    
 
     const isSectionComplete =
+        currentSection.exercises.length === 0 ||
         currentSection.exercises.every(ex =>
             completedExercises.has(ex.id)
         )
+
+        
 
     const handleExerciseComplete = (exerciseId: string) => {
         setCompletedExercises(prev => {
@@ -39,7 +49,7 @@ export default function LessonSections({ courseId, sections }: LessonSectionsPro
     function handleNext() {
         if (!isSectionComplete) return
 
-        if (isLastSection && isSectionComplete) {
+        if (isLastSection) {
             setIsComplete(true)
             return
         }
@@ -56,10 +66,12 @@ export default function LessonSections({ courseId, sections }: LessonSectionsPro
         return (
             <p>
                 Lesson complete! Back to{" "}
-                <a href={`/courses/${courseId}`}>course</a>
+                <Link href={`/courses/${courseId}`}>course</Link>
             </p>
         )
     }
+
+    
 
     //UI Skeleton
     return (
