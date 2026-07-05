@@ -4,10 +4,11 @@ import { notFound, redirect } from "next/navigation";
 import { isUserEnrolled } from "@/lib/supabase/courses";
 export default async function LessonsPage({
   params, 
-}: { params: Promise<{ id: string }> 
+}: { 
+  params: { id: string }
 }) {
-  const { id } = await params;
-  const supabase = createServerClient();
+  const { id } = params;
+  const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser()
   
       if (!user) {
@@ -17,7 +18,7 @@ export default async function LessonsPage({
       if (!lesson) {
         notFound()
       }
-      const courseId = (lesson as typeof lesson & { course_id: string }).course_id
+      const courseId = lesson.course_id
       const enrolled = await isUserEnrolled(user.id, courseId)
       if (!enrolled) {
         redirect(`/courses/${courseId}?message=enroll-first`)

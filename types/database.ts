@@ -3,6 +3,7 @@
 
 export interface Lesson {
   id: string
+  course_id: string
   title: string
   description: string | null
   lesson_order: number
