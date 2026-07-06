@@ -1,9 +1,8 @@
 import { getCourseById, isUserEnrolled } from "@/lib/supabase/courses"
-import { getLessonsByCourse } from "@/lib/supabase/lessons"
+import { getLessonsByCourse, getUserProgressForCourse } from "@/lib/supabase/lessons"
 import { EnrollmentButton } from "@/components/features/courses/EnrollmentButton"
 import { notFound } from 'next/navigation'
 import { createServerClient } from "@/lib/supabase/server"
-import { getUserProgress } from "@/lib/supabase/lessons"
 import Link from "next/link"
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
@@ -26,17 +25,6 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
 
     const userId = user?.id ?? null
 
-    //Get user progress, if userId is null then progress = []
-    const progress = userId ? await getUserProgress(userId, id) : []
-
-    console.log(progress)
-
-    const completedLessonIds = new Set(
-        progress
-            .filter(row => row.completed && row.section_id === null)
-            .map(row => row.lesson_id)
-    )
-
     if (!course) {
         notFound()
     }
@@ -44,12 +32,14 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
     let isEnrolled = false
 
     if (userId) {
-        //Now isUserEnrolled accepts supabase client
         isEnrolled = await isUserEnrolled(userId, course.id, supabase)
-        console.log("ENROLLMENT userId, course.id, isEnrolled:", userId, course.id, isEnrolled)
     }
 
     const lessons = await getLessonsByCourse(id, supabase)
+
+    const completedLessonIds = new Set(
+        userId ? await getUserProgressForCourse(userId, id, supabase) : []
+    )
 
     return (
         <div className="max-w-4xl mx-auto px-6 py-10">
