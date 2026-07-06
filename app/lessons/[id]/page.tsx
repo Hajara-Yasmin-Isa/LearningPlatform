@@ -27,7 +27,10 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
         <div className="max-w-3xl mx-auto px-6 py-10">
             <h1 className="text-2xl font-bold">{lesson.title}</h1>
 
-            <LessonSections sections={lesson.sections} />
+            <LessonSections
+                sections={lesson.sections}
+                courseId={lesson.course_id}
+            />
         </div>
     )
 }
