@@ -71,32 +71,33 @@ export default function CoursesPage() {
   }
 
   // Main UI
-  // Filter courses to only those the user is enrolled in
-  const myCourses = courses.filter(course => enrollments.some(
-    enrollment => enrollment.course_id === course.id
-      )
-    )
+  const enrolledCourseIds = new Set(enrollments.map(e => e.course_id))
+  const myCourses = courses.filter(course => enrolledCourseIds.has(course.id))
+  const otherCourses = courses.filter(course => !enrolledCourseIds.has(course.id))
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">Courses</h1>
-        {userId !== null && enrollments.length > 0 && (
-          <>
+
+      {userId !== null && myCourses.length > 0 && (
+        <>
           <h2 className="text-xl font-semibold mb-4">My Courses</h2>
-          <div className = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" >
-          {myCourses.map(course => (
-            <CourseCard
-              key={course.id}
-              course={course}
-              isEnrolled={true}
-              userId={userId}
-            />
-          ))}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {myCourses.map(course => (
+              <CourseCard
+                key={course.id}
+                course={course}
+                isEnrolled={true}
+                userId={userId}
+              />
+            ))}
           </div>
         </>
       )}
+
       <h2 className="text-xl font-semibold mb-4 mt-10">All Courses</h2>
       <CourseGrid
-        courses={courses}
+        courses={otherCourses}
         enrollments={enrollments}
         userId={userId}
       />
