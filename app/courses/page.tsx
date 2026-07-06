@@ -71,15 +71,15 @@ export default function CoursesPage() {
   }
 
   // Main UI
-  const enrolledCourseIds = new Set(enrollments.map(e => e.course_id))
-  const myCourses = courses.filter(course => enrolledCourseIds.has(course.id))
-  const otherCourses = courses.filter(course => !enrolledCourseIds.has(course.id))
+  const myCourses = courses.filter(course =>
+    enrollments.some(e => e.course_id === course.id)
+  )
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">Courses</h1>
 
-      {userId !== null && myCourses.length > 0 && (
+      {userId !== null && enrollments.length > 0 && (
         <>
           <h2 className="text-xl font-semibold mb-4">My Courses</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -97,7 +97,7 @@ export default function CoursesPage() {
 
       <h2 className="text-xl font-semibold mb-4 mt-10">All Courses</h2>
       <CourseGrid
-        courses={otherCourses}
+        courses={courses}
         enrollments={enrollments}
         userId={userId}
       />
