@@ -18,16 +18,14 @@ interface LessonSectionsProps {
 
 
 export default function LessonSections({ courseId, sections }: LessonSectionsProps) {
-
-    // If sections.length === 0 we return no sections immediately.
-    // Guard against lessons with no sections before accessing sections[activeSectionIndex].
-    if (sections.length === 0) return <p className="text-gray-500 mt-8">No sections yet.</p>
-
     const [activeSectionIndex, setActiveSectionIndex] = useState(0)
-    const currentSection = sections[activeSectionIndex]
-    const isLastSection = activeSectionIndex === sections.length - 1
     const [completedExercises, setCompletedExercises] = useState<Set<string>>(new Set())
     const [isComplete, setIsComplete] = useState(false)
+
+    if (sections.length === 0) return <p className="text-gray-500 mt-8">No sections yet.</p>
+
+    const currentSection = sections[activeSectionIndex]
+    const isLastSection = activeSectionIndex === sections.length - 1
     
 
     const isSectionComplete =
