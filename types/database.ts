@@ -65,6 +65,13 @@ export interface Enrollment {
   enrolled_at: string
 }
 
+// A course a user is enrolled in, with how many sections they've completed
+export interface EnrolledCourseWithProgress {
+  course: Course
+  sectionsCompleted: number
+  totalSections: number
+}
+
 // Course joined with instructor's basic info from the users table
 export interface CourseWithInstructor extends Course {
   users: {
