@@ -1,8 +1,9 @@
 import { getCourseById, isUserEnrolled } from "@/lib/supabase/courses"
-import { getLessonsByCourse } from "@/lib/supabase/lessons"
+import { getLessonsByCourse, getUserProgressForCourse } from "@/lib/supabase/lessons"
 import { EnrollmentButton } from "@/components/features/courses/EnrollmentButton"
 import { notFound } from 'next/navigation'
 import { createServerClient } from "@/lib/supabase/server"
+import Link from "next/link"
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
@@ -31,10 +32,14 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
     let isEnrolled = false
 
     if (userId) {
-        isEnrolled = await isUserEnrolled(userId, course.id)
+        isEnrolled = await isUserEnrolled(userId, course.id, supabase)
     }
 
     const lessons = await getLessonsByCourse(id, supabase)
+
+    const completedLessonIds = new Set(
+        userId ? await getUserProgressForCourse(userId, id, supabase) : []
+    )
 
     return (
         <div className="max-w-4xl mx-auto px-6 py-10">
@@ -46,13 +51,12 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
                     Instructor: {course.users?.name ?? 'Unknown'}
                 </span>
                 <span
-                    className={`text-xs px-2 py-1 rounded ${
-                        course.difficulty === 'Beginner'
-                            ? 'bg-green-100 text-green-700'
-                            : course.difficulty === 'Intermediate'
+                    className={`text-xs px-2 py-1 rounded ${course.difficulty === 'Beginner'
+                        ? 'bg-green-100 text-green-700'
+                        : course.difficulty === 'Intermediate'
                             ? 'bg-yellow-100 text-yellow-700'
                             : 'bg-orange-100 text-orange-700'
-                    }`}
+                        }`}
                 >
                     {course.difficulty}
                 </span>
@@ -60,17 +64,36 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ i
                     Duration: {course.duration_minutes} minutes
                 </span>
             </div>
+            {!isEnrolled && (
+                <p className="mt-4 text-sm text-gray-500">Enroll to access lessons</p>
+            )}
 
             <ul className="space-y-2 mt-4">
                 {lessons?.length === 0 && (
                     <li className="font-bold">No lessons available yet.</li>
                 )}
                 {lessons?.map((lesson, index) => (
+
                     <li
                         key={lesson.id}
                         className="border rounded-lg p-3 flex items-center gap-3"
                     >
-                        Lesson {index + 1}: {lesson.title}
+
+                        { isEnrolled ? (
+                            <Link href={`/lessons/${lesson.id}`} className="flex items-center gap-2">
+                                {completedLessonIds.has(lesson.id) && (
+                                    <span className="text-green-600 font-bold">✓</span>
+                                )}
+                                Lesson {index + 1}: {lesson.title}
+                            </Link>
+                        ) : (
+                            <span className="flex items-center gap-2">
+                                {completedLessonIds.has(lesson.id) && (
+                                    <span className="text-green-600 font-bold">✓</span>
+                                )}
+                                Lesson {index + 1}: {lesson.title}
+                            </span>
+                        )}
                     </li>
                 ))}
             </ul>

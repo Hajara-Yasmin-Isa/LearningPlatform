@@ -103,6 +103,30 @@ export async function getLessonsByCourse(
   return data ?? []
 }
 
+// Fetches all lesson-level completion rows for a user across an entire course
+// Returns an array of lesson IDs the user has fully completed (section_id IS NULL, completed = true)
+export async function getUserProgressForCourse(
+  userId: string,
+  courseId: string,
+  client: SupabaseClient = browserClient
+): Promise<string[]> {
+  const lessons = await getLessonsByCourse(courseId, client)
+  if (lessons.length === 0) return []
+
+  const lessonIds = lessons.map(l => l.id)
+
+  const { data, error } = await client
+    .from('user_progress')
+    .select('lesson_id')
+    .eq('user_id', userId)
+    .eq('completed', true)
+    .is('section_id', null)
+    .in('lesson_id', lessonIds)
+
+  if (error) throw new Error(error.message)
+  return (data ?? []).map(row => row.lesson_id)
+}
+
 // Fetches the section immediately after the given one within the same lesson
 // Returns null if the current section is the last one in the lesson
 export async function getNextSection(
