@@ -40,11 +40,11 @@ export default async function CourseDetailPage({ params, searchParams }: { param
 
     return (
         <div className="max-w-4xl mx-auto px-6 py-10">
-            { message === "enroll-first" && (
-    <p className="bg-yellow-50 border border-yellow-300 text-yellow-800 px-4 py-2 rounded mb-4">
-        Please enroll in this course to access lessons.
-    </p>
-)}
+            {message === "enroll-first" && (
+                <p className="bg-yellow-50 border border-yellow-300 text-yellow-800 px-4 py-2 rounded mb-4">
+                    Please enroll in this course to access lessons.
+                </p>
+            )}
             <h1 className="text-3xl font-bold">{course.title}</h1>
             <p className="text-gray-600 mt-2 text-base leading-relaxed">{course.description}</p>
             <div className="flex items-center gap-4 mt-4 flex-wrap">
