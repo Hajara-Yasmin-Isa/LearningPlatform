@@ -29,6 +29,8 @@ export interface Exercise {
   options: string[] | null
   exercise_order: number
   created_at: string
+  function_name: string | null
+  test_cases: Array<{ input: unknown[], expected: unknown }> | null
 }
 
 export interface UserProgress {
