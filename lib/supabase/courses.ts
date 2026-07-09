@@ -18,16 +18,62 @@ interface ProgressWithCourseId {
   lessons: { course_id: string | null } | null
 }
 
-/** Returns published courses joined with instructor info; throws on unexpected error. */
-export async function getAllPublishedCourses(): Promise<CourseWithInstructor[]> {
-  const { data, error } = await supabase
+interface CourseWithLessonCountRaw extends Course {
+  users: { name: string; username: string } | null
+  lessons: { count: number }[]
+}
+
+function toCourseWithInstructor(raw: CourseWithLessonCountRaw): CourseWithInstructor {
+  const { lessons, ...course } = raw
+  return { ...course, lessonCount: lessons?.[0]?.count ?? 0 }
+}
+
+/** Returns published courses joined with instructor info and lesson count; throws on unexpected error. */
+export async function getAllPublishedCourses(client: SupabaseClient = supabase): Promise<CourseWithInstructor[]> {
+  const { data, error } = await client
     .from('courses')
-    .select(`*, users(name, username)`)
+    .select(`*, users(name, username), lessons(count)`)
     .eq('published', true)
     .order('created_at', { ascending: false })
 
   if (error) throw new Error(error.message)
-  return data ?? []
+  return ((data ?? []) as unknown as CourseWithLessonCountRaw[]).map(toCourseWithInstructor)
+}
+
+/**
+ * Searches published courses by title/description substring and/or difficulty.
+ * Falls back to getAllPublishedCourses when both filters are empty. Never throws — returns [] on any error.
+ */
+export async function searchCourses(
+  query: string,
+  difficulty: string | null,
+  client: SupabaseClient = supabase
+): Promise<CourseWithInstructor[]> {
+  try {
+    if (!query && !difficulty) {
+      return await getAllPublishedCourses(client)
+    }
+
+    let request = client
+      .from('courses')
+      .select(`*, users(name, username), lessons(count)`)
+      .eq('published', true)
+
+    if (query) {
+      request = request.or(`title.ilike.%${query}%,description.ilike.%${query}%`)
+    }
+    if (difficulty) {
+      request = request.eq('difficulty', difficulty)
+    }
+
+    const { data, error } = await request.order('created_at', { ascending: false })
+    if (error) throw error
+
+    return ((data ?? []) as unknown as CourseWithLessonCountRaw[]).map(toCourseWithInstructor)
+  } catch (error) {
+    console.error('[searchCourses] error:', error)
+    return []
+  }
 }
 
 /** Returns a course by id joined with instructor info, or null if not found; throws on unexpected error. */
