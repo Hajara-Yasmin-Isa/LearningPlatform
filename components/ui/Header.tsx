@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import { User } from '@supabase/supabase-js'
+import BetaBadge from './BetaBadge'
 
 export function Header() {
   const [user, setUser] = useState<User | null>(null)
@@ -34,7 +35,6 @@ export function Header() {
     <header className="sticky top-0 z-50 glass border-b border-white/50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-
           {/* Logo + Brand */}
           <Link href="/" className="flex items-center gap-3">
             <Image
@@ -52,7 +52,13 @@ export function Header() {
                 Computing in Hausa
               </span>
             </div>
+
+          {/* Beta Badge */}
+          <BetaBadge></BetaBadge>
+
           </Link>
+
+
 
           {/* Nav */}
           <nav className="flex items-center gap-6">
