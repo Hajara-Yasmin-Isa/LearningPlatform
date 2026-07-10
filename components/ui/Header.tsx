@@ -20,7 +20,7 @@ export function Header() {
     }
     fetchUser()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_,  session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
       setUser(session?.user ?? null)
     })
 
@@ -54,25 +54,25 @@ export function Header() {
               </span>
             </div>
 
-          {/* Beta Badge */}
-          <BetaBadge></BetaBadge>
+            {/* Beta Badge */}
+            <BetaBadge></BetaBadge>
 
           </Link>
-          
+
 
           {/* Nav */}
           <nav className="hidden md:flex items-center gap-6">
-          
-          {/* Welcome Message */}
-          {user ? (
-            <>
-            <div className="hidden md:block text-slate-400 text-sm">Hi, {user.user_metadata?.full_name ?? user.email?.split('@')[0]}!</div>
-            </>
-          ): (
-            <>
-            </>
-          )}
-          
+
+            {/* Welcome Message */}
+            {user ? (
+              <>
+                <div className="hidden md:block text-slate-400 text-sm">Hi, {user.user_metadata?.full_name ?? user.email?.split('@')[0]}!</div>
+              </>
+            ) : (
+              <>
+              </>
+            )}
+
             <Link
               href="/courses"
               className="text-slate-600 hover:text-slate-900 transition-colors font-medium text-sm"
@@ -111,8 +111,91 @@ export function Header() {
               </>
             )}
           </nav>
+
+          {/* Mobile Hamburger Menu */}
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="md:hidden text-slate-700"
+          >
+            ☰
+          </button>
+
         </div>
       </div>
+      {menuOpen && (
+        <div className="md:hidden border-t border-white/50 bg-white shadow-sm">
+          <nav className="flex flex-col p-4 space-y-3">
+
+            <Link
+              href="/courses"
+              onClick={() => setMenuOpen(false)}
+              className="text-slate-700 hover:text-slate-900"
+            >
+              Courses
+            </Link>
+
+            {user && (
+              <Link
+                href="/dashboard"
+                onClick={() => setMenuOpen(false)}
+                className="text-slate-700 hover:text-slate-900"
+              >
+                My Dashboard
+              </Link>
+            )}
+
+            <div className="flex items-center justify-between text-slate-400">
+              <span>AI Tutor</span>
+              <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs">
+                Coming Soon
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between text-slate-400">
+              <span>Discussions</span>
+              <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs">
+                Coming Soon
+              </span>
+            </div>
+
+            <Link
+              href="/auth/profile"
+              onClick={() => setMenuOpen(false)}
+              className="text-slate-700 hover:text-slate-900"
+            >
+              Settings
+            </Link>
+
+            <Link
+              href="/help"
+              onClick={() => setMenuOpen(false)}
+              className="text-slate-700 hover:text-slate-900"
+            >
+              Help
+            </Link>
+
+            <Link
+              href="/contact"
+              onClick={() => setMenuOpen(false)}
+              className="text-slate-700 hover:text-slate-900"
+            >
+              Contact
+            </Link>
+
+            {user && (
+              <button
+                onClick={async () => {
+                  setMenuOpen(false)
+                  await logout()
+                }}
+                className="text-left text-slate-700 hover:text-slate-900"
+              >
+                Log out
+              </button>
+            )}
+          </nav>
+        </div>
+      )}
     </header>
   )
 }
