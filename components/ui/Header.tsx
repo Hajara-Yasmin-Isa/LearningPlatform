@@ -88,8 +88,8 @@ export function Header() {
                   Dashboard
                 </Link>
                 <Link
-                  href="/settings"
-                  className="text-slate-600 hover-text-slate-900 transition-colors font-medium text-sm"
+                  href="/auth/profile"
+                  className="text-slate-600 hover:text-slate-900 transition-colors font-medium text-sm"
                 >
                   Settings
                 </Link>
