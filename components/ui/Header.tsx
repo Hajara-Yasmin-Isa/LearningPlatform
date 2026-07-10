@@ -57,11 +57,21 @@ export function Header() {
           <BetaBadge></BetaBadge>
 
           </Link>
-
-
+          
 
           {/* Nav */}
           <nav className="flex items-center gap-6">
+          
+          {/* Welcome Message */}
+          {user ? (
+            <>
+            <div className="text-slate-400 text-sm">Hi, {user.user_metadata?.full_name ?? user.email?.split('@')[0]}!</div>
+            </>
+          ): (
+            <>
+            </>
+          )}
+          
             <Link
               href="/courses"
               className="text-slate-600 hover:text-slate-900 transition-colors font-medium text-sm"
