@@ -10,6 +10,7 @@ import BetaBadge from './BetaBadge'
 
 export function Header() {
   const [user, setUser] = useState<User | null>(null)
+  const [menuOpen, setMenuOpen] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -60,12 +61,12 @@ export function Header() {
           
 
           {/* Nav */}
-          <nav className="flex items-center gap-6">
+          <nav className="hidden md:flex items-center gap-6">
           
           {/* Welcome Message */}
           {user ? (
             <>
-            <div className="text-slate-400 text-sm">Hi, {user.user_metadata?.full_name ?? user.email?.split('@')[0]}!</div>
+            <div className="hidden md:block text-slate-400 text-sm">Hi, {user.user_metadata?.full_name ?? user.email?.split('@')[0]}!</div>
             </>
           ): (
             <>
