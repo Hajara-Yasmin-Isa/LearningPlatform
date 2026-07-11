@@ -55,30 +55,7 @@ export default function ProfilePage() {
           </div>
         </div>
         {/* TEMPORARY Change Profile Data (to test Instructor role)*/}
-        <button
-        onClick={() =>
-            setProfile((prev) =>
-            prev.role === "Student"
-                ? {
-                    name: "Dr. Smith",
-                    email: "smith@example.com",
-                    bio: "Teaching advanced software engineering.",
-                    role: "Instructor",
-                    department: "Computer Science",
-                }
-                : {
-                    name: "John Doe",
-                    email: "john@example.com",
-                    bio: "Computer Science student.",
-                    role: "Student",
-                    gradeLevel: "Senior",
-                }
-            )
-        }
-        className="mb-4 px-4 py-2 bg-gray-500 rounded hover:bg-black"
-        >
-        Toggle Role
-        </button>
+      
 
         {/* Form */}
         <ProfileForm

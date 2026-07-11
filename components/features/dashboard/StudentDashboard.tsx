@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import LessonCard from "./LessonCard"
 import StatsCard from "./StatsCard"
 import { supabase } from "@/lib/supabase/client"
-import { getUserLessons } from "@/lib/supabase/queries"
+import { getEnrolledCoursesWithLessons } from "@/lib/supabase/courses"
 import { UserLesson } from "@/types/database"
 
 export default function StudentDashboard() {
@@ -20,7 +20,7 @@ export default function StudentDashboard() {
         return
       }
 
-      const data = await getUserLessons(user.id)
+      const data = await getEnrolledCoursesWithLessons(user.id)
       setLessons(data)
       setLoading(false)
     }
