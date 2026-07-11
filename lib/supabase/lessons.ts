@@ -142,3 +142,43 @@ export async function getNextSection(
   if (error && error.code !== 'PGRST116') throw new Error(error.message)
   return data ?? null
 }
+
+/** Returns true if all sections for the lesson are complete and writes a lesson-level completion row; throws on unexpected error. */
+export async function checkAndMarkLessonComplete(
+  userId: string,
+  lessonId: string,
+  client: SupabaseClient = browserClient
+): Promise<boolean> {
+  const lesson = await getLessonWithSections(lessonId, client)
+  if (!lesson) return false
+  const totalSections = lesson.sections.length
+  if (totalSections === 0) return false
+
+  const { data, error } = await client
+    .from('user_progress')
+    .select('section_id')
+    .eq('user_id', userId)
+    .eq('lesson_id', lessonId)
+    .eq('completed', true)
+    .not('section_id', 'is', null)
+
+  if (error) throw new Error(error.message)
+  if ((data ?? []).length !== totalSections) return false
+
+  const { error: upsertError } = await client
+    .from('user_progress')
+    .upsert(
+      {
+        user_id: userId,
+        lesson_id: lessonId,
+        section_id: null,
+        completed: true,
+        last_accessed: new Date().toISOString(),
+      },
+      { onConflict: 'user_id,lesson_id,section_id' }
+    )
+
+  if (upsertError) throw new Error(upsertError.message)
+
+  return true
+}

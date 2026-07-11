@@ -80,6 +80,7 @@ export interface CourseWithInstructor extends Course {
     name: string
     username: string
   } | null
+  lessonCount: number
 }
 
 // A lesson with the current user's completion status
