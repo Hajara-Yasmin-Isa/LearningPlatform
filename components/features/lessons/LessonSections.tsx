@@ -4,7 +4,7 @@ import ExerciseBlock from './ExerciseBlock'
 import { Exercise, Section, Lesson } from '@/types/database'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { getUserProgress, markSectionComplete, getLessonsByCourse } from '@/lib/supabase/lessons'
+import { getUserProgress, markSectionComplete, getLessonsByCourse, checkAndMarkLessonComplete } from '@/lib/supabase/lessons'
 
 
 
@@ -27,33 +27,33 @@ export default function LessonSections({ courseId, sections, userId, lessonId, l
     const [isComplete, setIsComplete] = useState(false)
     const [completedSections, setCompletedSections] = useState<Set<string>>(new Set())
     const [nextLesson, setNextLesson] = useState<Lesson | null>(null)
-
-
+    const [saveError, setSaveError] = useState<string | null>(null)
 
     useEffect(() => {
         if (!userId) return
-        getUserProgress(userId, lessonId).then((rows) => {
-            console.log('restored progress rows:', rows)
-            const done = rows
-                .filter((row) => row.completed && row.section_id !== null)
-                .map((row) => row.section_id as string)
-            setCompletedSections(new Set(done))
-        })
+        getUserProgress(userId, lessonId)
+            .then((rows) => {
+                const done = new Set(
+                    rows
+                        .filter((row) => row.completed && row.section_id !== null)
+                        .map((row) => row.section_id as string)
+                )
+                setCompletedSections(done)
+                // Resume at the first section the student hasn't completed yet
+                const firstIncomplete = sections.findIndex((s) => !done.has(s.id))
+                if (firstIncomplete > 0) setActiveSectionIndex(firstIncomplete)
+            })
+            .catch(console.error)
     }, [userId, lessonId])
 
     if (sections.length === 0) return <p className="text-gray-500 mt-8">No sections yet.</p>
 
     const currentSection = sections[activeSectionIndex]
     const isLastSection = activeSectionIndex === sections.length - 1
-    
 
     const isSectionComplete =
         currentSection.exercises.length === 0 ||
-        currentSection.exercises.every(ex =>
-            completedExercises.has(ex.id)
-        )
-
-        
+        currentSection.exercises.every(ex => completedExercises.has(ex.id))
 
     const handleExerciseComplete = (exerciseId: string) => {
         setCompletedExercises(prev => {
@@ -63,22 +63,33 @@ export default function LessonSections({ courseId, sections, userId, lessonId, l
         })
     }
 
-    async function handleNext() {
-        if (!isSectionComplete) return
-
-        await saveSectionComplete(currentSection.id)
-
-        if (isLastSection) {
-            setIsComplete(true)
-            const lessons = await getLessonsByCourse(courseId)
-            const next = lessons.find((l) => l.lesson_order === lessonOrder + 1) ?? null
-            setNextLesson(next)
-            return
-        }
-
-        setActiveSectionIndex((i) => i + 1)
+    async function saveSectionComplete(sectionId: string) {
+        if (!userId || completedSections.has(sectionId)) return
+        await markSectionComplete(userId, lessonId, sectionId)
+        setCompletedSections((prev) => new Set(prev).add(sectionId))
     }
 
+    async function handleNext() {
+        if (!isSectionComplete) return
+        setSaveError(null)
+        try {
+            await saveSectionComplete(currentSection.id)
+
+            if (isLastSection) {
+                if (userId) await checkAndMarkLessonComplete(userId, lessonId)
+                const lessons = await getLessonsByCourse(courseId)
+                const next = lessons.find((l) => l.lesson_order === lessonOrder + 1) ?? null
+                setNextLesson(next)
+                setIsComplete(true)
+                return
+            }
+
+            setActiveSectionIndex((i) => i + 1)
+        } catch (err) {
+            setSaveError('Failed to save progress. Please try again.')
+            console.error(err)
+        }
+    }
 
     function handlePrevious() {
         setActiveSectionIndex((i) => Math.max(0, i - 1))
@@ -112,19 +123,9 @@ export default function LessonSections({ courseId, sections, userId, lessonId, l
         )
     }
 
-    async function saveSectionComplete(sectionId: string) {
-    if (!userId || completedSections.has(sectionId)) return
-    await markSectionComplete(userId, lessonId, sectionId)
-    setCompletedSections((prev) => new Set(prev).add(sectionId))
-}
-
-    
-
     //UI Skeleton
     return (
-
         <div className="mt-8 space-y-10">
-
             <div key={currentSection.id}>
                 <p className="space-y-4">Section {activeSectionIndex + 1} of {sections.length}</p>
                 <h2 className="text-xl font-semibold mb-2">
@@ -143,8 +144,10 @@ export default function LessonSections({ courseId, sections, userId, lessonId, l
                             onComplete={() => handleExerciseComplete(exercise.id)}
                         />
                     ))}
-
                 </div>
+                {saveError && (
+                    <p className="text-red-500 text-sm mt-2">{saveError}</p>
+                )}
                 <div className="flex justify-between mt-6">
                     <button
                         onClick={handlePrevious}
@@ -153,8 +156,6 @@ export default function LessonSections({ courseId, sections, userId, lessonId, l
                     >
                         ← Previous
                     </button>
-
-
                     <button
                         onClick={handleNext}
                         disabled={!isSectionComplete}
@@ -164,10 +165,6 @@ export default function LessonSections({ courseId, sections, userId, lessonId, l
                     </button>
                 </div>
             </div>
-
         </div>
-
-
     )
-
 }
