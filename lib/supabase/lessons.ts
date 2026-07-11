@@ -143,6 +143,7 @@ export async function getNextSection(
   return data ?? null
 }
 
+/** Returns true if all sections for the lesson are complete and writes a lesson-level completion row; throws on unexpected error. */
 export async function checkAndMarkLessonComplete(
   userId: string,
   lessonId: string,
@@ -151,10 +152,11 @@ export async function checkAndMarkLessonComplete(
   const lesson = await getLessonWithSections(lessonId, client)
   if (!lesson) return false
   const totalSections = lesson.sections.length
-  if (totalSections == 0) return false
-  const { data, error} = await client
+  if (totalSections === 0) return false
+
+  const { data, error } = await client
     .from('user_progress')
-    .select('selection_id')
+    .select('section_id')
     .eq('user_id', userId)
     .eq('lesson_id', lessonId)
     .eq('completed', true)
@@ -162,6 +164,7 @@ export async function checkAndMarkLessonComplete(
 
   if (error) throw new Error(error.message)
   if ((data ?? []).length !== totalSections) return false
+
   const { error: upsertError } = await client
     .from('user_progress')
     .upsert(
@@ -179,5 +182,3 @@ export async function checkAndMarkLessonComplete(
 
   return true
 }
-
-
