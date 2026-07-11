@@ -2,27 +2,24 @@
 
 import { useState, useEffect } from "react";
 
-type Role = "Student" | "Instructor";
-
 export interface ProfileData {
   name: string;
   email: string;
   bio: string;
-  role: Role;
-  gradeLevel?: string;
-  department?: string;
 }
 
 interface ProfileFormProps {
   data: ProfileData;
   isEditing: boolean;
-  onSave: (updatedData: ProfileData) => void;
+  saving: boolean;
+  onSave: (updatedData: ProfileData) => void | Promise<void>;
   onCancel: () => void;
 }
 
 export default function ProfileForm({
   data,
   isEditing,
+  saving,
   onSave,
   onCancel,
 }: ProfileFormProps) {
@@ -56,13 +53,6 @@ export default function ProfileForm({
       newErrors.email = "Invalid email format";
     }
 
-    if (formData.role === "Student" && !formData.gradeLevel?.trim()) {
-      newErrors.gradeLevel = "Grade level is required";
-    }
-
-    if (formData.role === "Instructor" && !formData.department?.trim()) {
-      newErrors.department = "Department is required";
-    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -87,13 +77,13 @@ export default function ProfileForm({
           Name
         </label>
         <input
-          type="text"
-          name="name"
-          value={formData.name}
-          onChange={handleChange}
-          disabled={!isEditing}
-          className="mt-1 w-full border rounded px-3 py-2 disabled:bg-gray-100 text-gray-700"
-        />
+      type="text"
+      name="name"
+      value={formData.name}
+      onChange={handleChange}
+      disabled={!isEditing}
+      className="mt-1 w-full border rounded px-3 py-2 disabled:bg-gray-100 text-gray-700"
+  />
         {errors.name && (
           <p className="text-sm text-red-500 mt-1 ">{errors.name}</p>
         )}
@@ -108,9 +98,8 @@ export default function ProfileForm({
           type="email"
           name="email"
           value={formData.email}
-          onChange={handleChange}
-          disabled={!isEditing}
-          className="mt-1 w-full border rounded px-3 py-2 disabled:bg-gray-100 text-gray-700"
+          readOnly
+          className="mt-1 w-full border rounded px-3 py-2 bg-gray-100 text-gray-700"
         />
         {errors.email && (
           <p className="text-sm text-red-500 mt-1">{errors.email}</p>
@@ -132,61 +121,6 @@ export default function ProfileForm({
         />
       </div>
 
-      {/* Role (display only) */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700">
-          Role
-        </label>
-        <input
-          type="text"
-          value={formData.role}
-          disabled
-          className="mt-1 w-full border rounded px-3 py-2 bg-gray-100 text-gray-700"
-        />
-      </div>
-
-      {/* Role-specific fields */}
-      {formData.role === "Student" && (
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Grade Level
-          </label>
-          <input
-            type="text"
-            name="gradeLevel"
-            value={formData.gradeLevel || ""}
-            onChange={handleChange}
-            disabled={!isEditing}
-            className="mt-1 w-full border rounded px-3 py-2 disabled:bg-gray-100 text-gray-700"
-          />
-          {errors.gradeLevel && (
-            <p className="text-sm text-red-500 mt-1">
-              {errors.gradeLevel}
-            </p>
-          )}
-        </div>
-      )}
-
-      {formData.role === "Instructor" && (
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Department
-          </label>
-          <input
-            type="text"
-            name="department"
-            value={formData.department || ""}
-            onChange={handleChange}
-            disabled={!isEditing}
-            className="mt-1 w-full border rounded px-3 py-2 disabled:bg-gray-100 text-gray-700"
-          />
-          {errors.department && (
-            <p className="text-sm text-red-500 mt-1">
-              {errors.department}
-            </p>
-          )}
-        </div>
-      )}
 
       {/* Editing Controls */}
       {isEditing && (
@@ -200,12 +134,13 @@ export default function ProfileForm({
           </button>
 
           <button
-            type="button"
-            onClick={handleSaveClick}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
-            Save
-          </button>
+          type="button"
+          onClick={handleSaveClick}
+          disabled={saving}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+  {saving ? "Saving..." : "Save"}
+</button>
         </div>
       )}
     </div>

@@ -1,38 +1,58 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ProfileAvatar from "@/components/features/profile/ProfileAvatar";
 import ProfileForm from "@/components/features/profile/ProfileForm";
-
-
-type Role = "Student" | "Instructor";
+import { supabase } from "@/lib/supabase/client";
 
 interface ProfileData {
   name: string;
   email: string;
   bio: string;
-  role: Role;
-  gradeLevel?: string;
-  department?: string;
 }
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<ProfileData>({
-    name: "John Doe",
-    email: "john@example.com",
-    bio: "Passionate learner and future engineer.",
-    role: "Student",
-    gradeLevel: "Sophomore",
+    name: "",
+    email: "",
+    bio: "",
   });
 
   const [isEditing, setIsEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
 
+  useEffect(() => {
+    async function loadProfile() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
+      if (!user) return;
 
-  const handleSave = (updatedData: ProfileData) => {
-    console.log("Saved profile:", updatedData);
-    setProfile(updatedData);
-    setIsEditing(false);
+      setProfile({
+        name:
+          user.user_metadata?.full_name ??
+          user.email?.split("@")[0] ??
+          "",
+        email: user.email ?? "",
+        bio: "",
+      });
+    }
+
+    loadProfile();
+  }, []);
+
+  const handleSave = async (updatedData: ProfileData) => {
+    setSaving(true);
+
+    try {
+      // TODO: Replace with updateUserProfile(name, bio)
+      // when Backend Task 3 is merged.
+      setProfile(updatedData);
+      setIsEditing(false);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleCancel = () => {
@@ -42,25 +62,22 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-3xl mx-auto bg-white shadow rounded-lg p-8 space-y-6">
-
         {/* Header */}
         <div className="flex items-center gap-6">
           <ProfileAvatar size={96} />
 
-          <div className="flex items-center gap text">
-            <h1 className="text-2xl font-bold text-blue-700">{profile.name}</h1>
-            <span className="inline-block mt-1 px-3 py-1 mx-4 text-sm bg-blue-100 text-blue-700 rounded-full">
-              {profile.role}
-            </span>
+          <div>
+            <h1 className="text-2xl font-bold text-blue-700">
+              {profile.name}
+            </h1>
           </div>
         </div>
-        {/* TEMPORARY Change Profile Data (to test Instructor role)*/}
-      
 
         {/* Form */}
         <ProfileForm
           data={profile}
           isEditing={isEditing}
+          saving={saving}
           onSave={handleSave}
           onCancel={handleCancel}
         />
@@ -77,7 +94,6 @@ export default function ProfilePage() {
             </button>
           </div>
         )}
-
       </div>
     </div>
   );

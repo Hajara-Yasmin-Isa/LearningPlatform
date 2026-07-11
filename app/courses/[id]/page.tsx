@@ -39,10 +39,6 @@ export default async function CourseDetailPage({ params, searchParams }: { param
 
     const lessons = await getLessonsByCourse(id, supabase)
 
-    const completedLessonIds = new Set(
-        userId ? await getUserProgressForCourse(userId, id, supabase) : []
-    )
-
     return (
         <div className="max-w-4xl mx-auto px-6 py-10">
             {message === "enroll-first" && (
@@ -70,20 +66,35 @@ export default async function CourseDetailPage({ params, searchParams }: { param
                     Duration: {course.duration_minutes} minutes
                 </span>
             </div>
-
+            <h2 className="text-xl font-semibold mt-8 mb-3">
+            Course Lessons
+            </h2>
             <ul className="space-y-2 mt-4">
                 {lessons?.length === 0 && (
                     <li className="font-bold">No lessons available yet.</li>
                 )}
-                {lessons?.map((lesson, index) => (
-                    <li
-                        key={lesson.id}
-                        className="border rounded-lg p-3 flex items-center gap-3"
-                    >
-                        Lesson {index + 1}: {lesson.title}
-                    </li>
-                    )
-                ))}
+                {lessons?.map((lesson, index) =>
+    isEnrolled ? (
+        <li key={lesson.id}>
+            <Link
+                href={`/lessons/${lesson.id}`}
+                className="block border rounded-lg p-3 hover:bg-indigo-50 transition-colors"
+            >
+                Lesson {index + 1}: {lesson.title}
+            </Link>
+        </li>
+    ) : (
+        <li
+            key={lesson.id}
+            className="border rounded-lg p-3 flex items-center gap-2 text-gray-400"
+        >
+            <span>🔒</span>
+            <span>
+                Lesson {index + 1}: {lesson.title}
+            </span>
+        </li>
+    )
+)}
             </ul>
 
             {isEnrolled && lessons?.length > 0 && (
