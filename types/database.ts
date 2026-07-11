@@ -29,6 +29,8 @@ export interface Exercise {
   options: string[] | null
   exercise_order: number
   created_at: string
+  function_name: string | null
+  test_cases: Array<{ input: unknown[], expected: unknown }> | null
 }
 
 export interface UserProgress {
@@ -63,6 +65,13 @@ export interface Enrollment {
   user_id: string
   course_id: string
   enrolled_at: string
+}
+
+// A course a user is enrolled in, with how many sections they've completed
+export interface EnrolledCourseWithProgress {
+  course: Course
+  sectionsCompleted: number
+  totalSections: number
 }
 
 // Course joined with instructor's basic info from the users table

@@ -5,6 +5,7 @@ import { getAllPublishedCourses, getUserEnrollments } from '@/lib/supabase/cours
 import { CourseGrid } from '@/components/features/courses/CourseGrid'
 import { CourseWithInstructor, Enrollment } from '@/types/database'
 import { supabase } from '@/lib/supabase/client' // Fixed import
+import { CourseCard } from '@/components/features/courses/CourseCard'
 
 export default function CoursesPage() {
   // State
@@ -70,10 +71,31 @@ export default function CoursesPage() {
   }
 
   // Main UI
+  const myCourses = courses.filter(course =>
+    enrollments.some(e => e.course_id === course.id)
+  )
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">Courses</h1>
 
+      {userId !== null && enrollments.length > 0 && (
+        <>
+          <h2 className="text-xl font-semibold mb-4">My Courses</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {myCourses.map(course => (
+              <CourseCard
+                key={course.id}
+                course={course}
+                isEnrolled={true}
+                userId={userId}
+              />
+            ))}
+          </div>
+        </>
+      )}
+
+      <h2 className="text-xl font-semibold mb-4 mt-10">All Courses</h2>
       <CourseGrid
         courses={courses}
         enrollments={enrollments}
