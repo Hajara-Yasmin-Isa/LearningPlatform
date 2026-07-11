@@ -42,51 +42,47 @@ export async function getAllPublishedCourses(client: SupabaseClient = supabase):
 
 /**
  * Searches published courses by title/description substring and/or difficulty.
- * Falls back to getAllPublishedCourses when both filters are empty. Never throws — returns [] on any error.
+ * Falls back to getAllPublishedCourses when both filters are empty; throws on unexpected error.
  */
 export async function searchCourses(
   query: string,
   difficulty: string | null,
   client: SupabaseClient = supabase
 ): Promise<CourseWithInstructor[]> {
-  try {
-    if (!query && !difficulty) {
-      return await getAllPublishedCourses(client)
-    }
-
-    let request = client
-      .from('courses')
-      .select(`*, users(name, username), lessons(count)`)
-      .eq('published', true)
-
-    if (query) {
-      request = request.or(`title.ilike.%${query}%,description.ilike.%${query}%`)
-    }
-    if (difficulty) {
-      request = request.eq('difficulty', difficulty)
-    }
-
-    const { data, error } = await request.order('created_at', { ascending: false })
-    if (error) throw error
-
-    return ((data ?? []) as unknown as CourseWithLessonCountRaw[]).map(toCourseWithInstructor)
-  } catch (error) {
-    console.error('[searchCourses] error:', error)
-    return []
+  if (!query && !difficulty) {
+    return getAllPublishedCourses(client)
   }
+
+  let request = client
+    .from('courses')
+    .select(`*, users(name, username), lessons(count)`)
+    .eq('published', true)
+
+  if (query) {
+    request = request.or(`title.ilike.%${query}%,description.ilike.%${query}%`)
+  }
+  if (difficulty) {
+    request = request.eq('difficulty', difficulty)
+  }
+
+  const { data, error } = await request.order('created_at', { ascending: false })
+  if (error) throw new Error(error.message)
+
+  return ((data ?? []) as unknown as CourseWithLessonCountRaw[]).map(toCourseWithInstructor)
 }
 
-/** Returns a course by id joined with instructor info, or null if not found; throws on unexpected error. */
+/** Returns a course by id joined with instructor info and lesson count, or null if not found; throws on unexpected error. */
 export async function getCourseById(courseId: string): Promise<CourseWithInstructor | null> {
   const { data, error } = await supabase
     .from('courses')
-    .select(`*, users(name, username)`)
+    .select(`*, users(name, username), lessons(count)`)
     .eq('id', courseId)
     .single()
 
   // PGRST116 = no rows found = course doesn't exist, return null
   if (error && error.code !== 'PGRST116') throw new Error(error.message)
-  return data
+  if (!data) return null
+  return toCourseWithInstructor(data as unknown as CourseWithLessonCountRaw)
 }
 
 /**
