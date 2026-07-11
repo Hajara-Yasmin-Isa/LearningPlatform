@@ -1,9 +1,10 @@
 'use client'
 
 import ExerciseBlock from './ExerciseBlock'
-import { Exercise, Section } from '@/types/database'
-import { useState } from 'react'
+import { Exercise, Section, Lesson } from '@/types/database'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { getUserProgress, markSectionComplete, getLessonsByCourse } from '@/lib/supabase/lessons'
 
 
 
@@ -14,13 +15,31 @@ interface SectionWithExercises extends Section {
 interface LessonSectionsProps {
     sections: SectionWithExercises[]
     courseId: string
+    userId: string | null
+    lessonId: string
+    lessonOrder: number
 }
 
 
-export default function LessonSections({ courseId, sections }: LessonSectionsProps) {
+export default function LessonSections({ courseId, sections, userId, lessonId, lessonOrder }: LessonSectionsProps) {
     const [activeSectionIndex, setActiveSectionIndex] = useState(0)
     const [completedExercises, setCompletedExercises] = useState<Set<string>>(new Set())
     const [isComplete, setIsComplete] = useState(false)
+    const [completedSections, setCompletedSections] = useState<Set<string>>(new Set())
+    const [nextLesson, setNextLesson] = useState<Lesson | null>(null)
+
+
+
+    useEffect(() => {
+        if (!userId) return
+        getUserProgress(userId, lessonId).then((rows) => {
+            console.log('restored progress rows:', rows)
+            const done = rows
+                .filter((row) => row.completed && row.section_id !== null)
+                .map((row) => row.section_id as string)
+            setCompletedSections(new Set(done))
+        })
+    }, [userId, lessonId])
 
     if (sections.length === 0) return <p className="text-gray-500 mt-8">No sections yet.</p>
 
@@ -44,11 +63,16 @@ export default function LessonSections({ courseId, sections }: LessonSectionsPro
         })
     }
 
-    function handleNext() {
+    async function handleNext() {
         if (!isSectionComplete) return
+
+        await saveSectionComplete(currentSection.id)
 
         if (isLastSection) {
             setIsComplete(true)
+            const lessons = await getLessonsByCourse(courseId)
+            const next = lessons.find((l) => l.lesson_order === lessonOrder + 1) ?? null
+            setNextLesson(next)
             return
         }
 
@@ -62,12 +86,37 @@ export default function LessonSections({ courseId, sections }: LessonSectionsPro
 
     if (isComplete) {
         return (
-            <p>
-                Lesson complete! Back to{" "}
-                <Link href={`/courses/${courseId}`}>course</Link>
-            </p>
+            <div className="bg-green-50 border border-green-200 rounded-xl p-8 mt-10 text-center">
+                <p className="text-3xl mb-2">🎉</p>
+                <p className="text-green-800 font-semibold text-xl">Lesson complete!</p>
+                <p className="text-green-700 text-sm mt-1 mb-6">Great work. Keep going.</p>
+                {nextLesson ? (
+                    <Link
+                        href={`/lessons/${nextLesson.id}`}
+                        className="bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-lg font-semibold text-sm transition-colors"
+                    >
+                        Next Lesson: {nextLesson.title} →
+                    </Link>
+                ) : (
+                    <div>
+                        <p className="text-green-700 font-medium mb-3">You've finished all the lessons in this course!</p>
+                        <Link
+                            href="/dashboard"
+                            className="bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-lg font-semibold text-sm transition-colors"
+                        >
+                            Back to Dashboard →
+                        </Link>
+                    </div>
+                )}
+            </div>
         )
     }
+
+    async function saveSectionComplete(sectionId: string) {
+    if (!userId || completedSections.has(sectionId)) return
+    await markSectionComplete(userId, lessonId, sectionId)
+    setCompletedSections((prev) => new Set(prev).add(sectionId))
+}
 
     
 
@@ -78,7 +127,12 @@ export default function LessonSections({ courseId, sections }: LessonSectionsPro
 
             <div key={currentSection.id}>
                 <p className="space-y-4">Section {activeSectionIndex + 1} of {sections.length}</p>
-                <h2 className="text-xl font-semibold mb-2">{currentSection.title}</h2>
+                <h2 className="text-xl font-semibold mb-2">
+                    {currentSection.title}
+                    {completedSections.has(currentSection.id) && (
+                        <span className="text-green-500 ml-2 text-lg">✓</span>
+                    )}
+                </h2>
                 <p className="text-gray-700 leading-relaxed mb-4">{currentSection.content}</p>
 
                 <div className="space-y-4">
