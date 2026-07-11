@@ -3,6 +3,7 @@ import { getLessonsByCourse } from "@/lib/supabase/lessons"
 import { EnrollmentButton } from "@/components/features/courses/EnrollmentButton"
 import { notFound } from 'next/navigation'
 import { createServerClient } from "@/lib/supabase/server"
+import Link from "next/link"
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
@@ -66,20 +67,38 @@ export default async function CourseDetailPage({ params, searchParams }: { param
                     Duration: {course.duration_minutes} minutes
                 </span>
             </div>
-
+            <h2 className = "text-xl font-semibold mt-8 mb-3">
+                Course Lessons
+            </h2>
             <ul className="space-y-2 mt-4">
                 {lessons?.length === 0 && (
                     <li className="font-bold">No lessons available yet.</li>
                 )}
                 {lessons?.map((lesson, index) => (
-                    <li
+                    isEnrolled ? (
+                        <li key={lesson.id}>
+                            <Link href={`/lessons/${lesson.id}`}
+                               className="block border rounded-lg p-3 hover:bg-indigo-50 transition-colors"
+                               >
+                               Lesson {index + 1}: {lesson.title}
+                            </Link>
+                        </li>
+                    ) : (
+                        <li
                         key={lesson.id}
-                        className="border rounded-lg p-3 flex items-center gap-3"
-                    >
-                        Lesson {index + 1}: {lesson.title}
+                        className="border rounded-lg p-3 flex items-center gap-3 text-gray-400" >
+                            🔒 Lesson {index + 1}: {lesson.title}
+            
                     </li>
+                    )
                 ))}
             </ul>
+
+            {isEnrolled && lessons?.length > 0 && (
+                <Link href={`/lessons/${lessons[0].id}`} className="inline-block mt-6 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors">
+                    Continue Learning →
+                </Link>
+            )}
 
             <div className="mt-8">
                 <EnrollmentButton
