@@ -14,3 +14,10 @@ ALTER TABLE beta_feedback ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can insert their own feedback"
   ON beta_feedback FOR INSERT TO authenticated
   WITH CHECK (auth.uid() = user_id);
+
+-- Admin-only read access, added per hisa2's review feedback so an in-app
+-- admin dashboard can view submissions later without a further migration
+CREATE POLICY "beta_feedback_select_policy"
+  ON beta_feedback FOR SELECT
+  TO authenticated
+  USING (auth.jwt() ->> 'role' = 'admin');
