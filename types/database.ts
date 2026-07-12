@@ -72,8 +72,6 @@ export interface EnrolledCourseWithProgress {
   course: Course
   sectionsCompleted: number
   totalSections: number
-  lastAccessedLessonId: string | null
-
 }
 
 // Course joined with instructor's basic info from the users table

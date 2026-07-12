@@ -203,10 +203,7 @@ export async function getEnrolledCoursesWithProgress(
     course: enrollment.courses,
     sectionsCompleted: sectionsCompletedByCourseId.get(enrollment.course_id) ?? 0,
     totalSections: totalSectionsByCourseId.get(enrollment.course_id) ?? 0,
-    lastAccessedLessonId: null,
   }))
-
-  
 }
 export async function isCourseComplete(
   userId: string,
