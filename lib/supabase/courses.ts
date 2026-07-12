@@ -1,5 +1,6 @@
 import { supabase } from './client'
 import { Course, CourseWithInstructor, Enrollment, EnrolledCourseWithProgress } from '@/types/database'
+import { getLessonsByCourse } from './lessons'
 
 // Error handling convention for this file: throws on unexpected Supabase
 // errors; single-row lookups return null/false for "not found" (PGRST116);
@@ -203,4 +204,25 @@ export async function getEnrolledCoursesWithProgress(
     sectionsCompleted: sectionsCompletedByCourseId.get(enrollment.course_id) ?? 0,
     totalSections: totalSectionsByCourseId.get(enrollment.course_id) ?? 0,
   }))
+}
+export async function isCourseComplete(
+  userId: string,
+  courseId: string,
+  client: SupabaseClient = supabase
+): Promise<boolean> {
+  const lessons = await getLessonsByCourse(courseId, client)
+  if (lessons.length === 0) return false
+
+  const lessonIds = lessons.map(l => l.id)
+
+  const { data, error } = await client
+    .from('user_progress')
+    .select('lesson_id')
+    .eq('user_id', userId)
+    .eq('completed', true)
+    .is('section_id', null)
+    .in('lesson_id', lessonIds)
+
+  if (error) throw new Error(error.message)
+  return (data ?? []).length === lessons.length
 }
