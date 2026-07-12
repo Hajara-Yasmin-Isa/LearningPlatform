@@ -182,3 +182,38 @@ export async function checkAndMarkLessonComplete(
 
   return true
 }
+
+/** Returns completed section IDs for a user and lesson, or [] if none; throws on unexpected error. */
+export async function getCompletedSectionsForLesson(
+  userId: string,
+  lessonId: string,
+  client: SupabaseClient = browserClient
+): Promise<string[]> {
+  const { data, error } = await client
+    .from('user_progress')
+    .select('section_id')
+    .eq('user_id', userId)
+    .eq('lesson_id', lessonId)
+    .eq('completed', true)
+    .not('section_id', 'is', null)
+
+  if (error) throw new Error(error.message)
+  return (data ?? []).map(row => row.section_id as string)
+}
+
+/** Returns the next lesson in a course after the given order, or null if none; throws on unexpected error. */
+export async function getNextLesson(
+  courseId: string,
+  currentLessonOrder: number,
+  client: SupabaseClient = browserClient
+): Promise<Lesson | null> {
+  const { data, error } = await client
+    .from('lessons')
+    .select('*')
+    .eq('course_id', courseId)
+    .eq('lesson_order', currentLessonOrder + 1)
+    .single()
+
+  if (error && error.code !== 'PGRST116') throw new Error(error.message)
+  return data ?? null
+}
