@@ -75,7 +75,7 @@ export default function CoursesPage() {
       <div className="flex justify-between">
 
         <h1 className="text-2xl font-bold mb-6">Courses</h1>
-        <input className="rounded-xl border border-white/70 bg-white/50 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition backdrop-blur-sm" 
+        <input className="mb-6 rounded-xl border border-white/70 bg-white/50 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition backdrop-blur-sm" 
         type="text" placeholder="Search courses..." />
       </div>
 
