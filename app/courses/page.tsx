@@ -33,6 +33,7 @@ export default function CoursesPage() {
         setUserId(uid)
 
         // Fetch all courses
+        // TODO: Incorporate Backend Task 3
         const coursesData = await getAllPublishedCourses()
         setCourses(coursesData)
 
@@ -88,7 +89,7 @@ export default function CoursesPage() {
           <select
             value={difficulty}
             onChange={(e) => setDifficulty(e.target.value)}
-            className="rounded-xl border border-white/70 bg-white/50 px-4 py-2.5 text-slate-900 focus:outline-none focus:ring-2 focus:ring-yellow-400 backdrop-blur-sm"
+            className="rounded-xl border border-white/70 bg-white/50 px-4 h-[46px] text-slate-900 focus:outline-none focus:ring-2 focus:ring-yellow-400 backdrop-blur-sm"
             >
               <option value="">All Difficulties</option>
               <option value="Beginner">Beginner</option>
