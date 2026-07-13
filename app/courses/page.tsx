@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { getAllPublishedCourses, getUserEnrollments } from '@/lib/supabase/courses'
+import { getAllPublishedCourses, getUserEnrollments, searchCourses } from '@/lib/supabase/courses'
 import { CourseGrid } from '@/components/features/courses/CourseGrid'
 import { CourseWithInstructor, Enrollment } from '@/types/database'
 import { supabase } from '@/lib/supabase/client' // Fixed import
@@ -52,6 +52,24 @@ export default function CoursesPage() {
 
     fetchData()
   }, [])
+
+  // Search useEffect
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      try {
+        const results = await searchCourses(
+          searchQuery,
+          difficulty || null
+        )
+
+        setCourses(results)
+      } catch (err) {
+        console.log(err)
+      }
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [searchQuery, difficulty])
 
   // Loading state
   if (loading) {
@@ -122,11 +140,18 @@ export default function CoursesPage() {
       )}
 
       <h2 className="text-xl font-semibold mb-4 mt-10">All Courses</h2>
+      {courses.length === 0 && searchQuery.trim() !== "" ? (
+        <p className="text-gray-500">
+          No classes found matching your search.
+        </p>
+      ) : (
+
       <CourseGrid
         courses={courses}
         enrollments={enrollments}
         userId={userId}
       />
+      )}
     </div>
   )
 }
