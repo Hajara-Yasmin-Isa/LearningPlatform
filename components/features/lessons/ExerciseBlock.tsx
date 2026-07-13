@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Exercise } from '@/types/database'
 import MultipleChoiceExercise from './MultipleChoiceExercise'
 import TextExercise from './TextExercise'
+import CodeExercise from './CodeExercise';
 
 interface ExerciseBlockProps {
   exercise: Exercise
@@ -36,7 +37,7 @@ export default function ExerciseBlock({ exercise, onComplete }: ExerciseBlockPro
       )}
 
       {exercise.exercise_type === 'code' && (
-        <div className="text-gray-500 italic">Code exercises coming soon</div>
+        <CodeExercise exercise={exercise} onComplete={handleComplete} />
       )}
     </div>
   )

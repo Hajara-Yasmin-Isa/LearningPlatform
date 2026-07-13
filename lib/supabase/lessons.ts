@@ -1,6 +1,10 @@
 import { supabase as browserClient } from './client'
 import { Lesson, Section, Exercise, UserProgress } from '@/types/database'
 
+// Error handling convention for this file: throws on unexpected Supabase
+// errors; single-row lookups return null for "not found" (PGRST116);
+// list queries return [] for "no rows" rather than treating it as an error.
+
 // Extended types for nested query results — defined here since database.ts cannot be modified
 
 export interface SectionWithExercises extends Section {
@@ -13,8 +17,7 @@ export interface LessonWithSections extends Lesson {
 
 type SupabaseClient = typeof browserClient
 
-// Fetches a lesson, all its sections, and all exercises within each section
-// Used by: lesson viewer (Card A) to render the full lesson tree
+/** Returns a lesson with its sections and exercises, or null if not found; throws on unexpected error. */
 export async function getLessonWithSections(
   lessonId: string,
   client: SupabaseClient = browserClient
@@ -46,8 +49,7 @@ export async function getLessonWithSections(
   return { ...data, sections }
 }
 
-// Fetches all UserProgress rows for a given user and lesson
-// Used by: lesson viewer to mark which sections are already completed
+/** Returns all UserProgress rows for a user and lesson; throws on unexpected error. */
 export async function getUserProgress(
   userId: string,
   lessonId: string,
@@ -63,8 +65,7 @@ export async function getUserProgress(
   return data ?? []
 }
 
-// Inserts or updates a UserProgress row setting completed: true for the given section
-// Called when the user finishes all exercises in a section
+/** Upserts a UserProgress row marking a section completed; throws on unexpected error. */
 export async function markSectionComplete(
   userId: string,
   lessonId: string,
@@ -87,8 +88,7 @@ export async function markSectionComplete(
   if (error) throw new Error(error.message)
 }
 
-// Fetches all lessons for a given course, ordered by lesson_order ascending
-// Returns [] (not an error) if the course exists but has no lessons yet
+/** Returns all lessons for a course ordered by lesson_order, or [] if none; throws on unexpected error. */
 export async function getLessonsByCourse(
   courseId: string,
   client: SupabaseClient = browserClient
@@ -103,8 +103,30 @@ export async function getLessonsByCourse(
   return data ?? []
 }
 
-// Fetches the section immediately after the given one within the same lesson
-// Returns null if the current section is the last one in the lesson
+/** Returns lesson IDs the user has fully completed within a course, or [] if none; throws on unexpected error. */
+export async function getUserProgressForCourse(
+  userId: string,
+  courseId: string,
+  client: SupabaseClient = browserClient
+): Promise<string[]> {
+  const lessons = await getLessonsByCourse(courseId, client)
+  if (lessons.length === 0) return []
+
+  const lessonIds = lessons.map(l => l.id)
+
+  const { data, error } = await client
+    .from('user_progress')
+    .select('lesson_id')
+    .eq('user_id', userId)
+    .eq('completed', true)
+    .is('section_id', null)
+    .in('lesson_id', lessonIds)
+
+  if (error) throw new Error(error.message)
+  return (data ?? []).map(row => row.lesson_id)
+}
+
+/** Returns the section after the given one within a lesson, or null if it was the last; throws on unexpected error. */
 export async function getNextSection(
   lessonId: string,
   currentSectionOrder: number,
@@ -115,6 +137,81 @@ export async function getNextSection(
     .select('*')
     .eq('lesson_id', lessonId)
     .eq('section_order', currentSectionOrder + 1)
+    .single()
+
+  if (error && error.code !== 'PGRST116') throw new Error(error.message)
+  return data ?? null
+}
+
+/** Returns true if all sections for the lesson are complete and writes a lesson-level completion row; throws on unexpected error. */
+export async function checkAndMarkLessonComplete(
+  userId: string,
+  lessonId: string,
+  client: SupabaseClient = browserClient
+): Promise<boolean> {
+  const lesson = await getLessonWithSections(lessonId, client)
+  if (!lesson) return false
+  const totalSections = lesson.sections.length
+  if (totalSections === 0) return false
+
+  const { data, error } = await client
+    .from('user_progress')
+    .select('section_id')
+    .eq('user_id', userId)
+    .eq('lesson_id', lessonId)
+    .eq('completed', true)
+    .not('section_id', 'is', null)
+
+  if (error) throw new Error(error.message)
+  if ((data ?? []).length !== totalSections) return false
+
+  const { error: upsertError } = await client
+    .from('user_progress')
+    .upsert(
+      {
+        user_id: userId,
+        lesson_id: lessonId,
+        section_id: null,
+        completed: true,
+        last_accessed: new Date().toISOString(),
+      },
+      { onConflict: 'user_id,lesson_id,section_id' }
+    )
+
+  if (upsertError) throw new Error(upsertError.message)
+
+  return true
+}
+
+/** Returns completed section IDs for a user and lesson, or [] if none; throws on unexpected error. */
+export async function getCompletedSectionsForLesson(
+  userId: string,
+  lessonId: string,
+  client: SupabaseClient = browserClient
+): Promise<string[]> {
+  const { data, error } = await client
+    .from('user_progress')
+    .select('section_id')
+    .eq('user_id', userId)
+    .eq('lesson_id', lessonId)
+    .eq('completed', true)
+    .not('section_id', 'is', null)
+
+  if (error) throw new Error(error.message)
+  return (data ?? []).map(row => row.section_id as string)
+}
+
+/** Returns the next lesson in a course after the given order, or null if none; throws on unexpected error. */
+export async function getNextLesson(
+  courseId: string,
+  currentLessonOrder: number,
+  client: SupabaseClient = browserClient
+): Promise<Lesson | null> {
+  const { data, error } = await client
+    .from('lessons')
+    .select('*')
+    .eq('course_id', courseId)
+    .eq('lesson_order', currentLessonOrder + 1)
     .single()
 
   if (error && error.code !== 'PGRST116') throw new Error(error.message)

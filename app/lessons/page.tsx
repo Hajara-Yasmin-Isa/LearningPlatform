@@ -3,5 +3,5 @@ export default function LessonsPage() {
     <div>
       <h1>Lessons</h1>
     </div>
-  );
+  )
 }
