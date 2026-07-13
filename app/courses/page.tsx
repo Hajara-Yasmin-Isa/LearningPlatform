@@ -11,6 +11,8 @@ export default function CoursesPage() {
   const [courses, setCourses] = useState<CourseWithInstructor[]>([])
   const [enrollments, setEnrollments] = useState<Enrollment[]>([])
   const [userId, setUserId] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [difficulty, setDifficulty] = useState("")
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -73,10 +75,28 @@ export default function CoursesPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="flex justify-between">
-
         <h1 className="text-2xl font-bold mb-6">Courses</h1>
-        <input className="mb-6 rounded-xl border border-white/70 bg-white/50 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition backdrop-blur-sm" 
-        type="text" placeholder="Search courses..." />
+        <div className="mb-6 flex flex-col gap-4 md:flex-row">
+          <input
+            className="mb-6 rounded-xl border border-white/70 bg-white/50 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition backdrop-blur-sm"
+            type="text"
+            placeholder="Search courses..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+
+          <select
+            value={difficulty}
+            onChange={(e) => setDifficulty(e.target.value)}
+            className="rounded-xl border border-white/70 bg-white/50 px-4 py-2.5 text-slate-900 focus:outline-none focus:ring-2 focus:ring-yellow-400 backdrop-blur-sm"
+            >
+              <option value="">All Difficulties</option>
+              <option value="Beginner">Beginner</option>
+              <option value="Intermediate">Intermediate</option>
+              <option value="Advanced">Advanced</option>
+          </select>
+
+        </div>
       </div>
 
       <CourseGrid
