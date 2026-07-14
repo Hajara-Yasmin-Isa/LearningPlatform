@@ -17,19 +17,26 @@ export default function FeedbackModal({
     const [type, setType] = useState<FeedbackType>("bug")
     const [message, setMessage] = useState("")
     const [submitted, setSubmitted] = useState(false)
+    const [submitting, setSubmitting] = useState(false)
 
     const handleSubmit = async () => {
         //If message empty
         if (!message.trim()) return
 
-        await submitBetaFeedback(
-            userId,
-            message,
-            type,
-            window.location.pathname
-        )
+        try {
+            setSubmitting(true)
 
-        setSubmitted(true)
+            await submitBetaFeedback(
+                userId,
+                message,
+                type,
+                window.location.pathname
+            )
+            
+            setSubmitted(true)
+        } finally {
+            setSubmitting(false)
+        }
     }
 
     if (submitted) {
@@ -42,7 +49,10 @@ export default function FeedbackModal({
                 >
                     X
                 </button>
+                <p className="mt-4">
+
                     Thank you for your feedback.
+                </p>
                 </div>
             </div>
         )
@@ -78,7 +88,7 @@ export default function FeedbackModal({
                     onClick={handleSubmit}
                     className="bg-green-600 text-white px-4 py-2 rounded"
                     >
-                    Submit
+                    {submitting ? "Submitting..." : "Submit"}
                 </button>
                     </div>
             </div>
