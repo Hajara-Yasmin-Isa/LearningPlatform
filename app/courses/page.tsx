@@ -34,7 +34,6 @@ export default function CoursesPage() {
         setUserId(uid)
 
         // Fetch all courses
-        // TODO: Incorporate Backend Task 3
         const coursesData = await getAllPublishedCourses()
         setCourses(coursesData)
 
