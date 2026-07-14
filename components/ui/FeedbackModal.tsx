@@ -18,29 +18,43 @@ export default function FeedbackModal({
     const [message, setMessage] = useState("")
     const [submitted, setSubmitted] = useState(false)
 
-    if (submitted) {
-        submitBetaFeedback(userId, message, type, window.location.pathname)
-        setSubmitted(true)
-        return (
-            <div>
-                Thank you!
-            </div>
+    const handleSubmit = async () => {
+        submitBetaFeedback(
+            userId,
+            message,
+            type,
+            window.location.pathname
         )
+
+        setSubmitted(true)
     }
 
     return (
         <div>
-            <select
-                value={type}
-                onChange={(e) => setType(e.target.value)}
-                className="border p-2 w-full"
-            >
-                <option>Bug</option>
-                <option>Suggestion</option>
-                <option>Other</option>
-            </select>
-            <textarea rows={4}/>
-            <button>Submit</button>
+            <div>
+
+                <select
+                    value={type}
+                    onChange={(e) => setType(e.target.value as FeedbackType)}
+                    className="border p-2 w-full"
+                >
+                    <option value="bug">Bug</option>
+                    <option value="suggestion">Suggestion</option>
+                    <option value="other">Other</option>
+                </select>
+                <textarea
+                    rows={4}
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    className="border p-2 w-full"
+                />
+                <button
+                    onClick={handleSubmit}
+                    className="bg-green-600 text-white px-4 py-2 rounded"
+                >
+                    Submit
+                </button>
+            </div>
         </div>
     )
 }
