@@ -39,7 +39,7 @@ export default function FeedbackModalWrapper() {
                     <FeedbackModal
                         userId={user.id}
                         onClose={() => setOpen(false)}
-                    ></FeedbackModal>
+                    />
                 )}
         </>
     )
