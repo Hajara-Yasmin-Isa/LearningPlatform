@@ -19,8 +19,9 @@ export default function FeedbackModal({
     const [submitted, setSubmitted] = useState(false)
 
     const handleSubmit = async () => {
+        //If message empty
         if (!message.trim()) return
-        
+
         await submitBetaFeedback(
             userId,
             message,
