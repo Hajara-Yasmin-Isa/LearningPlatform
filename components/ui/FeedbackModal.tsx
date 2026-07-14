@@ -30,8 +30,8 @@ export default function FeedbackModal({
     }
 
     return (
-        <div>
-            <div>
+        <div className="fixed inset-0 flex items-center justify-center bg-black-400">
+            <div className="bg-white rounded-lg p-6 w-96 space-y-4">
 
                 <select
                     value={type}
