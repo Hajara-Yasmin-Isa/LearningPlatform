@@ -37,7 +37,7 @@ export default function FeedbackModalWrapper() {
                 </button>
                 {open && (
                     <FeedbackModal
-                        userId=""
+                        userId={user.id}
                         onClose={() => setOpen(false)}
                     ></FeedbackModal>
                 )}

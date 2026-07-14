@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from "react"
+import { submitBetaFeedback } from "@/lib/supabase/feedback"
+import { FeedbackType } from "@/lib/supabase/feedback"
 
 interface FeedbackModalProps {
     userId: string
@@ -12,11 +14,13 @@ export default function FeedbackModal({
     userId,
     onClose
 }: FeedbackModalProps) {
-    const [type, setType] = useState("Bug")
+    const [type, setType] = useState<FeedbackType>("bug")
     const [message, setMessage] = useState("")
     const [submitted, setSubmitted] = useState(false)
 
     if (submitted) {
+        submitBetaFeedback(userId, message, type, window.location.pathname)
+        setSubmitted(true)
         return (
             <div>
                 Thank you!
@@ -26,7 +30,11 @@ export default function FeedbackModal({
 
     return (
         <div>
-            <select>
+            <select
+                value={type}
+                onChange={(e) => setType(e.target.value)}
+                className="border p-2 w-full"
+            >
                 <option>Bug</option>
                 <option>Suggestion</option>
                 <option>Other</option>
