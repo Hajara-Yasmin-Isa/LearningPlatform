@@ -25,6 +25,7 @@ export default function FeedbackModalWrapper() {
         return () => subscription.unsubscribe()
     }, [])
 
+    //Only renders if logged in!
     if (!user) return null
 
     return (
