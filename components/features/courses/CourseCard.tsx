@@ -65,17 +65,16 @@ export function CourseCard({ course, isEnrolled, userId }: CourseCardProps) {
         <h2 className="text-lg font-semibold">{course.title}</h2>
       </div>
 
-      {course.lessonCount && (
-        <div className="hidden md:block text-slate-400 text-sm">
-        {course.lessonCount} lessons 
-      </div>
-      )}
-      <p className={`text-xs px-2 py-1 rounded ${
-            difficultyColors[course.difficulty as keyof typeof difficultyColors]
-          }`}
-        >
-          {course.difficulty}
+      {course.lessonCount > 0 && (
+        <p className="hidden md:block text-slate-400 text-sm">
+          {course.lessonCount} lessons
         </p>
+      )}
+      <p className={`text-xs px-2 py-1 rounded ${difficultyColors[course.difficulty as keyof typeof difficultyColors]
+        }`}
+      >
+        {course.difficulty}
+      </p>
 
       <p className="text-sm text-gray-600 line-clamp-2">
         {course.description}
