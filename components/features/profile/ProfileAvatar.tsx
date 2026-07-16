@@ -32,7 +32,7 @@ export default function ProfileAvatar({ url, name, onUpload }: Props) {
         type="button"
         onClick={() => inputRef.current?.click()}
         className="relative group"
-        aria-label="Upload profile photo"
+        aria-label="Ɗora hoto"
       >
         <div className="w-24 h-24 rounded-full overflow-hidden bg-yellow-100 flex items-center justify-center border-2 border-slate-100 shadow-sm">
           {url ? (
@@ -42,7 +42,7 @@ export default function ProfileAvatar({ url, name, onUpload }: Props) {
           )}
         </div>
         <div className="absolute inset-0 rounded-full bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-          <span className="text-white text-xs font-semibold">Change</span>
+          <span className="text-white text-xs font-semibold">Canza</span>
         </div>
       </button>
 
@@ -51,7 +51,7 @@ export default function ProfileAvatar({ url, name, onUpload }: Props) {
         onClick={() => inputRef.current?.click()}
         className="text-sm text-yellow-600 hover:text-yellow-700 font-medium transition-colors"
       >
-        Upload photo
+        Ɗora hoto
       </button>
 
       <input

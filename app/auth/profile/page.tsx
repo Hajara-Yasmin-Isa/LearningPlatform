@@ -7,7 +7,7 @@ import { User } from '@supabase/supabase-js'
 import LoadingScreen from '@/components/ui/LoadingScreen'
 import ProfileAvatar from '@/components/features/profile/ProfileAvatar'
 
-const LEVELS = ['Beginner', 'Intermediate', 'Advanced'] as const
+const LEVELS = ['Koya', 'Matsakaici', 'Gwanaye'] as const
 type Level = typeof LEVELS[number] | ''
 
 export default function ProfilePage() {
@@ -68,7 +68,7 @@ export default function ProfilePage() {
   return (
     <div className="min-h-[80vh] flex items-start justify-center py-12 px-4">
       <div className="w-full max-w-lg">
-        <h1 className="text-2xl font-bold text-slate-900 mb-8">Profile</h1>
+        <h1 className="text-2xl font-bold text-slate-900 mb-8">Shafin Bayanai ka</h1>
 
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 space-y-8">
 
@@ -82,28 +82,28 @@ export default function ProfilePage() {
           {/* Name */}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
-              Display name
+              Sunanka
             </label>
             <input
               type="text"
               value={name}
               onChange={(e) => { setName(e.target.value); setSaved(false) }}
               className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-slate-900 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
-              placeholder="Your name"
+              placeholder="Sunanka"
             />
           </div>
 
           {/* Level */}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
-              Level
+              Mataki
             </label>
             <select
               value={level}
               onChange={(e) => { setLevel(e.target.value as Level); setSaved(false) }}
               className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-slate-900 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition bg-white"
             >
-              <option value="">Select your level</option>
+              <option value="">Zaɓi matakinka</option>
               {LEVELS.map((l) => (
                 <option key={l} value={l}>{l}</option>
               ))}
@@ -113,7 +113,7 @@ export default function ProfilePage() {
           {/* Email — read only */}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
-              Email
+              Adireshin Imel
             </label>
             <input
               type="email"
@@ -122,7 +122,7 @@ export default function ProfilePage() {
               className="w-full border border-slate-100 rounded-lg px-3 py-2.5 text-slate-400 bg-slate-50 cursor-not-allowed"
             />
             <p className="text-xs text-slate-400 mt-1">
-              Email is tied to your account and cannot be changed.
+              Imel ɗinka yana haɗe da account, kuma ba za a iya canza shi ba.
             </p>
           </div>
 
@@ -134,7 +134,7 @@ export default function ProfilePage() {
               disabled={saving || !name.trim()}
               className="px-6 py-2.5 bg-yellow-500 hover:bg-yellow-600 disabled:opacity-50 text-white rounded-lg font-semibold text-sm transition-colors"
             >
-              {saving ? 'Saving...' : saved ? 'Saved ✓' : 'Save changes'}
+              {saving ? 'Ana adanawa...' : saved ? 'An adana ✓' : 'Adana canje-canje'}
             </button>
           </div>
 
