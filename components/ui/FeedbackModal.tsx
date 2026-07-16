@@ -1,96 +1,146 @@
 'use client'
 
-import { useState } from "react"
-import { submitBetaFeedback } from "@/lib/supabase/feedback"
-import { FeedbackType } from "@/lib/supabase/feedback"
+import { useState } from 'react'
+import { submitBetaFeedback, FeedbackType } from '@/lib/supabase/feedback'
 
 interface FeedbackModalProps {
-    userId: string
-    onClose: () => void
+  userId: string
+  onClose: () => void
 }
 
-//Waiting for backend task 3 to be available on dev to implement
-export default function FeedbackModal({
-    userId,
-    onClose
-}: FeedbackModalProps) {
-    const [type, setType] = useState<FeedbackType>("bug")
-    const [message, setMessage] = useState("")
-    const [submitted, setSubmitted] = useState(false)
-    const [submitting, setSubmitting] = useState(false)
-    const [submitError, setSubmitError] = useState<string | null>(null)
+const TYPES: { value: FeedbackType; label: string; description: string }[] = [
+  { value: 'bug',        label: '🐛 Bug',        description: 'Something isn\'t working' },
+  { value: 'suggestion', label: '💡 Suggestion',  description: 'An idea to improve things' },
+  { value: 'other',      label: '💬 Other',       description: 'General feedback or questions' },
+]
 
-    const handleSubmit = async () => {
-        if (!message.trim()) return
-        setSubmitError(null)
-        try {
-            setSubmitting(true)
-            await submitBetaFeedback(userId, message, type, window.location.pathname)
-            setSubmitted(true)
-        } catch {
-            setSubmitError('Failed to submit. Please try again.')
-        } finally {
-            setSubmitting(false)
-        }
+export default function FeedbackModal({ userId, onClose }: FeedbackModalProps) {
+  const [type, setType]           = useState<FeedbackType>('bug')
+  const [message, setMessage]     = useState('')
+  const [submitted, setSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+
+  const handleSubmit = async () => {
+    if (!message.trim()) return
+    setSubmitError(null)
+    try {
+      setSubmitting(true)
+      await submitBetaFeedback(userId, message, type, window.location.pathname)
+      setSubmitted(true)
+    } catch {
+      setSubmitError('Failed to submit. Please try again.')
+    } finally {
+      setSubmitting(false)
     }
+  }
 
-    if (submitted) {
-        return (
-            <div className="fixed inset-0 flex items-center justify-center bg-black/40">
-                <div className="bg-white rounded-lg p-6 relative">
-                    <button
-                    onClick={onClose}
-                    className="absolute top-3 right-3 text-gray-500 hover:text-gray-900"
-                >
-                    X
-                </button>
-                <p className="mt-4">
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50 px-4">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md relative">
 
-                    Thank you for your feedback.
-                </p>
-                </div>
+        {/* Close */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 text-lg leading-none transition-colors"
+          aria-label="Close"
+        >
+          ✕
+        </button>
+
+        {submitted ? (
+          <div className="p-8 text-center space-y-3">
+            <p className="text-3xl">🙏</p>
+            <h2 className="text-lg font-bold text-slate-900">Mun gode!</h2>
+            <p className="text-sm text-slate-500">
+              Your feedback has been received. It goes directly to our team and helps us improve Littafin Fasaha.
+            </p>
+            <button
+              onClick={onClose}
+              className="mt-2 px-5 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg text-sm font-semibold transition-colors"
+            >
+              Done
+            </button>
+          </div>
+        ) : (
+          <div className="p-6 space-y-5">
+
+            {/* Header */}
+            <div>
+              <h2 className="text-lg font-bold text-slate-900">Share feedback</h2>
+              <p className="text-sm text-slate-500 mt-0.5">
+                You&apos;re using the beta — your input helps us improve.
+              </p>
             </div>
-        )
-    }
 
-    return (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/40">
-            <div className="bg-white rounded-lg p-6 w-96 space-y-4 relative">
-                <button
-                    onClick={onClose}
-                    className="absolute top-3 right-3 text-gray-500 hover:text-gray-900"
-                >
-                    X
-                </button>
-                <div className="mt-6 space-y-4">
-
-                <select
-                    value={type}
-                    onChange={(e) => setType(e.target.value as FeedbackType)}
-                    className="border p-2 w-full"
-                    >
-                    <option value="bug">Bug</option>
-                    <option value="suggestion">Suggestion</option>
-                    <option value="other">Other</option>
-                </select>
-                <textarea
-                    rows={4}
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    className="border p-2 w-full"
-                    />
-                {submitError && (
-                    <p className="text-red-500 text-sm">{submitError}</p>
-                )}
-                <button
-                    onClick={handleSubmit}
-                    disabled={submitting}
-                    className="bg-green-600 text-white px-4 py-2 rounded disabled:opacity-60"
-                    >
-                    {submitting ? "Submitting..." : "Submit"}
-                </button>
-                    </div>
+            {/* Type selector */}
+            <div>
+              <p className="text-sm font-medium text-slate-700 mb-2">What kind of feedback?</p>
+              <div className="flex gap-2 flex-wrap">
+                {TYPES.map(({ value, label, description }) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setType(value)}
+                    title={description}
+                    className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${
+                      type === value
+                        ? 'bg-yellow-500 border-yellow-500 text-white'
+                        : 'bg-white border-slate-200 text-slate-600 hover:border-yellow-400'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-slate-400 mt-1.5">
+                {TYPES.find(t => t.value === type)?.description}
+              </p>
             </div>
-        </div>
-    )
+
+            {/* Message */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                Your message
+              </label>
+              <textarea
+                rows={4}
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder={
+                  type === 'bug'
+                    ? 'Describe what happened and what you expected instead...'
+                    : type === 'suggestion'
+                    ? 'Describe your idea or what you\'d like to see...'
+                    : 'Share anything on your mind...'
+                }
+                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 transition resize-none"
+              />
+            </div>
+
+            {submitError && (
+              <p className="text-red-500 text-sm">{submitError}</p>
+            )}
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={onClose}
+                className="px-4 py-2 text-sm text-slate-600 hover:text-slate-900 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={submitting || !message.trim()}
+                className="px-5 py-2 bg-yellow-500 hover:bg-yellow-600 disabled:opacity-50 text-white rounded-lg text-sm font-semibold transition-colors"
+              >
+                {submitting ? 'Sending...' : 'Send feedback'}
+              </button>
+            </div>
+
+          </div>
+        )}
+      </div>
+    </div>
+  )
 }
