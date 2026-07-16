@@ -1,19 +1,20 @@
 'use client'
 
 import { useState, useEffect } from "react"
-import LessonCard from "./LessonCard"
+import Link from "next/link"
 import StatsCard from "./StatsCard"
 import LoadingScreen from "@/components/ui/LoadingScreen"
 import { supabase } from "@/lib/supabase/client"
-import { getUserLessons } from "@/lib/supabase/queries"
-import { UserLesson } from "@/types/database"
+import { getEnrolledCoursesWithProgress } from "@/lib/supabase/courses"
+import { EnrolledCourseWithProgress } from "@/types/database"
 
 export default function StudentDashboard() {
-  const [lessons, setLessons] = useState<UserLesson[]>([])
+  const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourseWithProgress[]>([])
   const [loading, setLoading] = useState(true)
+  const [userName, setUserName] = useState('')
 
   useEffect(() => {
-    async function fetchLessons() {
+    async function fetchData() {
       const { data: { user } } = await supabase.auth.getUser()
 
       if (!user) {
@@ -21,25 +22,30 @@ export default function StudentDashboard() {
         return
       }
 
-      const data = await getUserLessons(user.id)
-      setLessons(data)
-      setLoading(false)
+      setUserName(user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? '')
+
+      try {
+        const data = await getEnrolledCoursesWithProgress(user.id)
+        setEnrolledCourses(data)
+      } catch (err) {
+        console.error('[StudentDashboard]', err)
+      } finally {
+        setLoading(false)
+      }
     }
 
-    fetchLessons()
+    fetchData()
   }, [])
 
   if (loading) return <LoadingScreen />
 
-  const lessonsCompleted = lessons.filter((l) => l.completed === true).length
-  const activeLessons = lessons.filter((l) => l.completed === false).length
-  const overallProgress = lessons.length > 0
-    ? Math.round((lessonsCompleted / lessons.length) * 100)
-    : 0
+  const totalSections = enrolledCourses.reduce((sum, c) => sum + c.totalSections, 0)
+  const totalCompleted = enrolledCourses.reduce((sum, c) => sum + c.sectionsCompleted, 0)
+  const overallProgress = totalSections > 0 ? Math.round((totalCompleted / totalSections) * 100) : 0
 
   const stats = [
-    { label: "Lessons Completed", value: String(lessonsCompleted) },
-    { label: "Active Lessons", value: String(activeLessons) },
+    { label: "Courses Enrolled", value: String(enrolledCourses.length) },
+    { label: "Sections Completed", value: String(totalCompleted) },
     { label: "Overall Progress", value: `${overallProgress}%` },
   ]
 
@@ -49,50 +55,58 @@ export default function StudentDashboard() {
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">
-          Student Dashboard
+          Fara koyo{userName ? `, ${userName}` : ''}!
         </h1>
-        <p className="text-sm text-gray-500 mt-0.5">
-          Welcome back!
-        </p>
       </div>
 
       {/* Stats */}
       <section>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Your Progress
-        </h2>
-
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Your Progress</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {stats.map((stat) => (
-            <StatsCard
-              key={stat.label}
-              label={stat.label}
-              value={stat.value}
-            />
+            <StatsCard key={stat.label} label={stat.label} value={stat.value} />
           ))}
         </div>
       </section>
 
-      {/* Lessons */}
+      {/* Enrolled courses */}
       <section>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          My Lessons
-        </h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">My Courses</h2>
 
-        {lessons.length === 0 ? (
-          <p className="text-sm text-gray-500">
-            No lessons yet — browse the course catalog to get started.
-          </p>
+        {enrolledCourses.length === 0 ? (
+          <div className="text-center py-10 bg-white border border-gray-100 rounded-xl">
+            <p className="text-gray-500 text-sm mb-3">You haven&apos;t enrolled in any courses yet.</p>
+            <Link
+              href="/courses"
+              className="text-sm font-semibold text-yellow-600 hover:text-yellow-700 transition-colors"
+            >
+              Browse courses →
+            </Link>
+          </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {lessons.map((lesson) => (
-              <LessonCard
-                key={lesson.id}
-                title={lesson.title}
-                completed={lesson.completed ? 1 : 0}
-                total={lesson.total}
-              />
-            ))}
+            {enrolledCourses.map(({ course, sectionsCompleted, totalSections }) => {
+              const percent = totalSections > 0 ? Math.round((sectionsCompleted / totalSections) * 100) : 0
+              return (
+                <Link key={course.id} href={`/courses/${course.id}`} className="block group">
+                  <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 hover:shadow-md hover:border-yellow-200 transition-all">
+                    <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-yellow-700 transition-colors">
+                      {course.title}
+                    </h3>
+                    <p className="text-sm text-gray-500 mb-3">
+                      {sectionsCompleted} / {totalSections} sections completed
+                    </p>
+                    <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                      <div
+                        className="bg-yellow-400 h-full rounded-full transition-all"
+                        style={{ width: `${percent}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-gray-400 mt-2 text-right">{percent}%</p>
+                  </div>
+                </Link>
+              )
+            })}
           </div>
         )}
       </section>
