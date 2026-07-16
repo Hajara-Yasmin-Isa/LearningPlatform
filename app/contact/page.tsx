@@ -23,10 +23,10 @@ export default function ContactPage() {
             Email
           </p>
           <a
-            href="mailto:hassana.e.isa@vanderbilt.edu"
+            href="mailto:contact@littafinfasaha.com"
             className="text-yellow-600 hover:text-yellow-700 text-sm font-medium transition-colors"
           >
-            hassana.e.isa@vanderbilt.edu
+            contact@littafinfasaha.com
           </a>
         </div>
       </div>
