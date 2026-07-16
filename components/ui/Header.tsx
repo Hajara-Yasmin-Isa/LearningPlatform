@@ -99,7 +99,7 @@ export function Header() {
               </button>
 
               {moreOpen && (
-                <div className="absolute right-0 top-8 w-52 bg-white rounded-xl shadow-lg border border-slate-100 py-2 z-50">
+                <div className="absolute right-0 top-8 w-72 bg-white rounded-xl shadow-lg border border-slate-100 py-2 z-50">
                   <div className="flex items-center justify-between px-4 py-2 text-slate-400 text-sm cursor-default">
                     <span>Malamin AI</span>
                     <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs">Tafe nan gaba</span>
