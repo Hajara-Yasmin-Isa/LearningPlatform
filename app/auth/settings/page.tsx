@@ -35,20 +35,20 @@ export default function SettingsPage() {
   return (
     <div className="min-h-[80vh] flex items-start justify-center py-12 px-4">
       <div className="w-full max-w-lg">
-        <h1 className="text-2xl font-bold text-slate-900 mb-8">Settings</h1>
+        <h1 className="text-2xl font-bold text-slate-900 mb-8">Saiti</h1>
 
         <div className="space-y-6">
 
           {/* Password */}
           <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-            <h2 className="text-base font-semibold text-slate-900 mb-1">Password</h2>
+            <h2 className="text-base font-semibold text-slate-900 mb-1">Faswad</h2>
             <p className="text-sm text-slate-500 mb-4">
-              We&apos;ll send a reset link to <span className="font-medium text-slate-700">{email}</span>.
+              Zamu tura hanyar sake saita sabon faswad zuwa <span className="font-medium text-slate-700">{email}</span>.
             </p>
 
             {resetSent ? (
               <p className="text-sm text-green-600 font-medium">
-                Reset link sent — check your inbox.
+                An aika hanyar sauyawa — duba imel ɗinka.
               </p>
             ) : (
               <>
@@ -58,7 +58,7 @@ export default function SettingsPage() {
                   disabled={resetLoading}
                   className="px-5 py-2 bg-slate-900 hover:bg-slate-700 disabled:opacity-50 text-white rounded-lg font-semibold text-sm transition-colors"
                 >
-                  {resetLoading ? 'Sending...' : 'Change password'}
+                  {resetLoading ? 'Ana aika...' : 'Canza faswad'}
                 </button>
               </>
             )}
@@ -68,8 +68,8 @@ export default function SettingsPage() {
           <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
             <h2 className="text-base font-semibold text-slate-900 mb-1">Account</h2>
             <p className="text-sm text-slate-500 mb-4">
-              Your account email is <span className="font-medium text-slate-700">{email}</span>.
-              To request account deletion, contact us at{' '}
+              Imel ɗin account ɗin ka shine <span className="font-medium text-slate-700">{email}</span>.
+              Don neman goge account ɗin ka, tuntuɓe mu a{' '}
               <a href="mailto:contact@littafinfasaha.com" className="text-yellow-600 hover:text-yellow-700">
                 contact@littafinfasaha.com
               </a>.
