@@ -13,7 +13,7 @@ const socials = [
   },
   {
     name: 'Instagram',
-    href: 'https://www.instagram.com/littafin_fasaha/',
+    href: 'https://www.instagram.com/littafinfasaha/',
     icon: (
       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
         <path

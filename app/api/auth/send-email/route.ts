@@ -41,7 +41,7 @@ function confirmSignupHtml(confirmUrl: string, year: number): string {
         Maraba da shigowa cikin <strong>Littafin Fasaha</strong>!
       </p>
       <p style="font-size:16px;margin-bottom:32px;">
-        Ka danna batun da ke ƙasa don tabbatar da adireshin imel ɗinka dan fara koyon ilimin kwamfuta da Hausa.
+        Ka danna batun da ke ƙasa don tabbatar da adireshin imel ɗinka don fara koyon ilimin kwamfuta da Hausa.
       </p>
       <a href="${confirmUrl}" target="_blank"
         style="display:inline-block;background-color:#eab308;color:#1e293b;font-size:15px;font-weight:700;text-decoration:none;padding:14px 36px;border-radius:8px;margin-bottom:32px;">
@@ -59,7 +59,7 @@ function confirmSignupHtml(confirmUrl: string, year: number): string {
   </div>
   <div style="text-align:center;padding:24px 0 8px 0;">
     <p style="margin-bottom:15px;font-size:13px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;">Ku biyo mu (Follow Us)</p>
-    <a href="https://www.instagram.com/littafin_fasaha/" target="_blank" style="text-decoration:none;margin:0 10px;">
+    <a href="https://www.instagram.com/littafinfasaha/" target="_blank" style="text-decoration:none;margin:0 10px;">
       <img src="https://cdn-icons-png.flaticon.com/512/174/174855.png" alt="Instagram" width="24" height="24" style="display:inline-block;opacity:0.6;">
     </a>
     <a href="https://www.linkedin.com/company/littafin-fasaha/" target="_blank" style="text-decoration:none;margin:0 10px;">

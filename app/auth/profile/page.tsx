@@ -1,107 +1,125 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import ProfileAvatar from "@/components/features/profile/ProfileAvatar";
-import ProfileForm from "@/components/features/profile/ProfileForm";
-
-
-type Role = "Student" | "Instructor";
-
-interface ProfileData {
-  name: string;
-  email: string;
-  bio: string;
-  role: Role;
-  gradeLevel?: string;
-  department?: string;
-}
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabase/client'
+import { User } from '@supabase/supabase-js'
+import ProfileAvatar from '@/components/features/profile/ProfileAvatar'
+import LoadingScreen from '@/components/ui/LoadingScreen'
 
 export default function ProfilePage() {
-  const [profile, setProfile] = useState<ProfileData>({
-    name: "John Doe",
-    email: "john@example.com",
-    bio: "Passionate learner and future engineer.",
-    role: "Student",
-    gradeLevel: "Sophomore",
-  });
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [name, setName] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const router = useRouter()
 
-  const [isEditing, setIsEditing] = useState(false);
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) { router.push('/auth/login'); return }
+      setUser(user)
+      setName(user.user_metadata?.full_name ?? '')
+      setLoading(false)
+    })
+  }, [router])
 
+  const handleSaveName = async () => {
+    if (!name.trim()) return
+    setSaving(true)
+    setError(null)
+    const { data, error } = await supabase.auth.updateUser({ data: { full_name: name.trim() } })
+    setSaving(false)
+    if (error) { setError(error.message); return }
+    setUser(data.user)
+    setSaved(true)
+  }
 
+  const handleAvatarUpload = async (file: File) => {
+    if (!user) return
+    setError(null)
+    const ext = file.name.split('.').pop()
+    const path = `${user.id}/avatar.${ext}`
 
-  const handleSave = (updatedData: ProfileData) => {
-    console.log("Saved profile:", updatedData);
-    setProfile(updatedData);
-    setIsEditing(false);
-  };
+    const { error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(path, file, { upsert: true })
 
-  const handleCancel = () => {
-    setIsEditing(false);
-  };
+    if (uploadError) { setError(uploadError.message); return }
+
+    const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path)
+
+    const { data, error: updateError } = await supabase.auth.updateUser({
+      data: { avatar_url: publicUrl },
+    })
+
+    if (updateError) { setError(updateError.message); return }
+    setUser(data.user)
+  }
+
+  if (loading) return <LoadingScreen />
+
+  const displayName = name || user?.email?.split('@')[0] || 'User'
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-3xl mx-auto bg-white shadow rounded-lg p-8 space-y-6">
+    <div className="min-h-[80vh] flex items-start justify-center py-12 px-4">
+      <div className="w-full max-w-lg">
+        <h1 className="text-2xl font-bold text-slate-900 mb-8">Settings</h1>
 
-        {/* Header */}
-        <div className="flex items-center gap-6">
-          <ProfileAvatar size={96} />
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 space-y-8">
 
-          <div className="flex items-center gap text">
-            <h1 className="text-2xl font-bold text-blue-700">{profile.name}</h1>
-            <span className="inline-block mt-1 px-3 py-1 mx-4 text-sm bg-blue-100 text-blue-700 rounded-full">
-              {profile.role}
-            </span>
+          {/* Avatar */}
+          <ProfileAvatar
+            url={user?.user_metadata?.avatar_url}
+            name={displayName}
+            onUpload={handleAvatarUpload}
+          />
+
+          {/* Name */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Display name
+            </label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => { setName(e.target.value); setSaved(false) }}
+              className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-slate-900 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
+              placeholder="Your name"
+            />
           </div>
-        </div>
-        {/* TEMPORARY Change Profile Data (to test Instructor role)*/}
-        <button
-        onClick={() =>
-            setProfile((prev) =>
-            prev.role === "Student"
-                ? {
-                    name: "Dr. Smith",
-                    email: "smith@example.com",
-                    bio: "Teaching advanced software engineering.",
-                    role: "Instructor",
-                    department: "Computer Science",
-                }
-                : {
-                    name: "John Doe",
-                    email: "john@example.com",
-                    bio: "Computer Science student.",
-                    role: "Student",
-                    gradeLevel: "Senior",
-                }
-            )
-        }
-        className="mb-4 px-4 py-2 bg-gray-500 rounded hover:bg-black"
-        >
-        Toggle Role
-        </button>
 
-        {/* Form */}
-        <ProfileForm
-          data={profile}
-          isEditing={isEditing}
-          onSave={handleSave}
-          onCancel={handleCancel}
-        />
+          {/* Email — read only */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Email
+            </label>
+            <input
+              type="email"
+              value={user?.email ?? ''}
+              disabled
+              className="w-full border border-slate-100 rounded-lg px-3 py-2.5 text-slate-400 bg-slate-50 cursor-not-allowed"
+            />
+            <p className="text-xs text-slate-400 mt-1">
+              Email is tied to your account and cannot be changed.
+            </p>
+          </div>
 
-        {/* Edit Button */}
-        {!isEditing && (
+          {error && <p className="text-sm text-red-500">{error}</p>}
+
           <div className="flex justify-end">
             <button
-              type="button"
-              onClick={() => setIsEditing(true)}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              onClick={handleSaveName}
+              disabled={saving || !name.trim()}
+              className="px-6 py-2.5 bg-yellow-500 hover:bg-yellow-600 disabled:opacity-50 text-white rounded-lg font-semibold text-sm transition-colors"
             >
-              Edit Profile
+              {saving ? 'Saving...' : saved ? 'Saved ✓' : 'Save changes'}
             </button>
           </div>
-        )}
 
+        </div>
       </div>
     </div>
-  );
+  )
 }
