@@ -6,6 +6,7 @@ import { CourseGrid } from '@/components/features/courses/CourseGrid'
 import { CourseWithInstructor, Enrollment } from '@/types/database'
 import { supabase } from '@/lib/supabase/client' // Fixed import
 import { CourseCard } from '@/components/features/courses/CourseCard'
+import LoadingScreen from '@/components/ui/LoadingScreen'
 
 export default function CoursesPage() {
   // State
@@ -51,9 +52,7 @@ export default function CoursesPage() {
   }, [])
 
   // Loading state
-  if (loading) {
-    return <p className="text-center mt-10">Loading courses...</p>
-  }
+  if (loading) return <LoadingScreen />
 
   // Error state
   if (error) {

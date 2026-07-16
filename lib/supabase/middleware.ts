@@ -35,10 +35,14 @@ export async function createClient(request: NextRequest) {
 }
 
 
-// this updatese the user's session refreshes the auth token if needed
-
+// this updates the user's session and refreshes the auth token if needed
 export async function updateSession(request: NextRequest) {
   const { supabase, response } = await createClient(request)
-  await supabase.auth.getUser()
+  try {
+    await supabase.auth.getUser()
+  } catch {
+    // Supabase unreachable (project cold-starting, network issue) —
+    // pass the request through; page-level auth checks remain in place
+  }
   return { supabase, response }
 }

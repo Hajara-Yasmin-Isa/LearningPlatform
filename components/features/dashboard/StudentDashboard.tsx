@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import LessonCard from "./LessonCard"
 import StatsCard from "./StatsCard"
+import LoadingScreen from "@/components/ui/LoadingScreen"
 import { supabase } from "@/lib/supabase/client"
 import { getUserLessons } from "@/lib/supabase/queries"
 import { UserLesson } from "@/types/database"
@@ -27,6 +28,8 @@ export default function StudentDashboard() {
 
     fetchLessons()
   }, [])
+
+  if (loading) return <LoadingScreen />
 
   const lessonsCompleted = lessons.filter((l) => l.completed === true).length
   const activeLessons = lessons.filter((l) => l.completed === false).length
@@ -76,9 +79,7 @@ export default function StudentDashboard() {
           My Lessons
         </h2>
 
-        {loading ? (
-          <p className="text-sm text-gray-500">Loading your lessons...</p>
-        ) : lessons.length === 0 ? (
+        {lessons.length === 0 ? (
           <p className="text-sm text-gray-500">
             No lessons yet — browse the course catalog to get started.
           </p>
