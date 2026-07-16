@@ -8,7 +8,8 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 export async function POST(request: NextRequest) {
   const { email } = await request.json()
 
-  if (!email || !email.includes('@')) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!email || typeof email !== 'string' || !emailRegex.test(email)) {
     return NextResponse.json({ error: 'A valid email is required.' }, { status: 400 })
   }
 

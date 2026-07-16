@@ -3,6 +3,7 @@
 
 export interface Lesson {
   id: string
+  course_id: string
   title: string
   description: string | null
   lesson_order: number
@@ -28,6 +29,8 @@ export interface Exercise {
   options: string[] | null
   exercise_order: number
   created_at: string
+  function_name: string | null
+  test_cases: Array<{ input: unknown[], expected: unknown }> | null
 }
 
 export interface UserProgress {
@@ -64,10 +67,26 @@ export interface Enrollment {
   enrolled_at: string
 }
 
+// A course a user is enrolled in, with how many sections they've completed
+export interface EnrolledCourseWithProgress {
+  course: Course
+  sectionsCompleted: number
+  totalSections: number
+}
+
 // Course joined with instructor's basic info from the users table
 export interface CourseWithInstructor extends Course {
   users: {
     name: string
     username: string
   } | null
+  lessonCount: number
+}
+
+// A lesson with the current user's completion status
+export interface UserLesson {
+  id: string
+  title: string
+  completed: boolean
+  total: number
 }
