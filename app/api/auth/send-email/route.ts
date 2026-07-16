@@ -87,19 +87,16 @@ function passwordResetHtml(resetUrl: string, year: number): string {
         <img src="https://littafinfasaha.com/logo.png" alt="Littafin Fasaha Logo" width="120"
           style="border:none;outline:none;text-decoration:none;display:block;margin:0 auto 30px auto;" />
       </a>
-      <h2 style="color:#1e293b;font-size:24px;font-weight:700;margin:0;">Sake saita kalmar sirri</h2>
+      <h2 style="color:#1e293b;font-size:24px;font-weight:700;margin:0;">Sake saita sabon faswad</h2>
     </div>
     <div style="padding:24px 50px 40px 50px;text-align:center;color:#475569;line-height:1.6;">
       <p style="font-size:16px;margin-bottom:32px;">
-        Mun karɓi buƙatar sake saita kalmar sirri ta asusun ku. Danna maɓallin da ke ƙasa don ci gaba.
+        Mun karɓi buƙatarka ta sake saita sabon faswad. Danna baton da ke ƙasa don ci gaba. Wannan baton ɗin zai yi aiki na tsawon minti 60 kawai. Idan ba kai ne ka nemi hakan ba, zaka iya yin watsi da wannan saƙon.
       </p>
       <a href="${resetUrl}" target="_blank"
         style="display:inline-block;background-color:#eab308;color:#1e293b;font-size:15px;font-weight:700;text-decoration:none;padding:14px 36px;border-radius:8px;margin-bottom:32px;">
-        Sake saita kalmar sirri →
+        Sake saita faswad →
       </a>
-      <p style="font-size:13px;color:#94a3b8;margin-bottom:0;">
-        Maɓallin yana aiki na minti 60. Idan ba ku nemi wannan ba, ku yi watsi da wannan saƙon.
-      </p>
       <div style="border-top:1px solid #f1f5f9;padding-top:20px;text-align:left;margin-top:32px;">
         <p style="margin:0;font-size:14px;color:#64748b;">Mun gode,</p>
         <p style="margin:0;font-size:15px;font-weight:700;color:#1e293b;">Ƙungiyar Littafin Fasaha</p>
@@ -143,7 +140,7 @@ export async function POST(request: NextRequest) {
       await resend.emails.send({
         from: 'Littafin Fasaha <noreply@littafinfasaha.com>',
         to: user.email,
-        subject: 'Sake saita kalmar sirri — Littafin Fasaha',
+        subject: 'Sake saita sabon faswad — Littafin Fasaha',
         html: passwordResetHtml(resetUrl, year),
       })
     }
