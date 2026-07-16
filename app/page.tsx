@@ -42,7 +42,7 @@ export default function Home() {
             Fara Koyo — Start Learning
           </Link>
           <Link
-            href="/lessons"
+            href="/courses"
             className="px-8 py-3 glass hover:bg-white/80 text-slate-800 rounded-xl font-semibold transition-colors text-lg shadow-sm"
           >
             Browse Courses
@@ -90,7 +90,7 @@ export default function Home() {
                   By <span className="font-semibold text-slate-700">Hajara-Yasmin Isa</span>
                 </p>
                 <Link
-                  href="/lessons"
+                  href="/courses"
                   className="px-5 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg font-semibold text-sm transition-colors shadow-sm"
                 >
                   Explore Course →
