@@ -78,14 +78,14 @@ export function Header() {
           <nav className="hidden md:flex items-center gap-6">
             {user && (
               <span className="text-slate-400 text-sm">
-                Hi, {user.user_metadata?.full_name ?? user.email?.split('@')[0]}!
+                Sannu, {user.user_metadata?.full_name ?? user.email?.split('@')[0]}!
               </span>
             )}
 
-            <Link href="/courses" className={navLinkClass}>Courses</Link>
+            <Link href="/courses" className={navLinkClass}>Ajujuwa</Link>
 
             {user && (
-              <Link href="/dashboard" className={navLinkClass}>Dashboard</Link>
+              <Link href="/dashboard" className={navLinkClass}>Dashboard na</Link>
             )}
 
             {/* More dropdown */}
@@ -94,27 +94,27 @@ export function Header() {
                 onClick={() => setMoreOpen((o) => !o)}
                 className={`${navLinkClass} flex items-center gap-1`}
               >
-                More
+                Ƙari
                 <span className="text-slate-400 text-xs">{moreOpen ? '▴' : '▾'}</span>
               </button>
 
               {moreOpen && (
                 <div className="absolute right-0 top-8 w-52 bg-white rounded-xl shadow-lg border border-slate-100 py-2 z-50">
                   <div className="flex items-center justify-between px-4 py-2 text-slate-400 text-sm cursor-default">
-                    <span>AI Instructor</span>
-                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs">Soon</span>
+                    <span>Malamin AI</span>
+                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs">Tafe nan gaba</span>
                   </div>
                   <div className="flex items-center justify-between px-4 py-2 text-slate-400 text-sm cursor-default">
-                    <span>Discussions</span>
-                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs">Soon</span>
+                    <span>Tattaunawa</span>
+                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs">Tafe nan gaba</span>
                   </div>
                   <div className="flex items-center justify-between px-4 py-2 text-slate-400 text-sm cursor-default">
-                    <span>Exams</span>
-                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs">Soon</span>
+                    <span>Jarabawa</span>
+                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs">Tafe nan gaba</span>
                   </div>
                   <div className="flex items-center justify-between px-4 py-2 text-slate-400 text-sm cursor-default">
-                    <span>Inbox</span>
-                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs">Soon</span>
+                    <span>Saƙonni</span>
+                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs">Tafe nan gaba</span>
                   </div>
                   <div className="mx-3 my-1.5 border-t border-slate-100" />
                   {user && (
@@ -123,7 +123,7 @@ export function Header() {
                       onClick={() => setMoreOpen(false)}
                       className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
                     >
-                      Profile
+                      Shafin Bayananka
                     </Link>
                   )}
                   {user && (
@@ -132,7 +132,7 @@ export function Header() {
                       onClick={() => setMoreOpen(false)}
                       className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
                     >
-                      Settings
+                      Saiti
                     </Link>
                   )}
                   <Link
@@ -140,14 +140,14 @@ export function Header() {
                     onClick={() => setMoreOpen(false)}
                     className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
                   >
-                    Help
+                    Taimako
                   </Link>
                   <Link
                     href="/contact"
                     onClick={() => setMoreOpen(false)}
                     className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
                   >
-                    Contact
+                    Tuntuɓe mu
                   </Link>
                 </div>
               )}
@@ -155,16 +155,16 @@ export function Header() {
 
             {user ? (
               <>
-                <button onClick={logout} className={navLinkClass}>Log out</button>
+                <button onClick={logout} className={navLinkClass}>Fita</button>
               </>
             ) : (
               <>
-                <Link href="/auth/login" className={navLinkClass}>Log in</Link>
+                <Link href="/auth/login" className={navLinkClass}>Shiga</Link>
                 <Link
                   href="/auth/signup"
                   className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg transition-colors font-semibold text-sm shadow-sm"
                 >
-                  Get Started
+                  Fara Yanzu
                 </Link>
               </>
             )}
@@ -187,55 +187,55 @@ export function Header() {
           <nav className="flex flex-col p-4 space-y-3">
             {user && (
               <p className="text-slate-400 text-sm pb-1">
-                Hi, {user.user_metadata?.full_name ?? user.email?.split('@')[0]}!
+                Sannu, {user.user_metadata?.full_name ?? user.email?.split('@')[0]}!
               </p>
             )}
 
             <Link href="/courses" onClick={() => setMobileOpen(false)} className="text-slate-700 hover:text-slate-900 text-sm font-medium">
-              Courses
+              Ajujuwa
             </Link>
 
             {user && (
               <Link href="/dashboard" onClick={() => setMobileOpen(false)} className="text-slate-700 hover:text-slate-900 text-sm font-medium">
-                My Dashboard
+                Dashboard na
               </Link>
             )}
 
             <div className="border-t border-slate-100 pt-2 mt-1 space-y-3">
               <div className="flex items-center justify-between text-slate-400 text-sm">
-                <span>AI Instructor</span>
-                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs">Coming Soon</span>
+                <span>Malamin AI</span>
+                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs">Tafe nan gaba</span>
               </div>
               <div className="flex items-center justify-between text-slate-400 text-sm">
-                <span>Discussions</span>
-                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs">Coming Soon</span>
+                <span>Tattaunawa</span>
+                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs">Tafe nan gaba</span>
               </div>
               <div className="flex items-center justify-between text-slate-400 text-sm">
-                <span>Exams</span>
-                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs">Coming Soon</span>
+                <span>Jarabawa</span>
+                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs">Tafe nan gaba</span>
               </div>
               <div className="flex items-center justify-between text-slate-400 text-sm">
-                <span>Inbox</span>
-                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs">Coming Soon</span>
+                <span>Saƙonni</span>
+                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs">Tafe nan gaba</span>
               </div>
             </div>
 
             <div className="border-t border-slate-100 pt-2 space-y-3">
               {user && (
                 <Link href="/auth/profile" onClick={() => setMobileOpen(false)} className="block text-slate-700 hover:text-slate-900 text-sm font-medium">
-                  Profile
+                  Shafin Bayananka
                 </Link>
               )}
               {user && (
                 <Link href="/auth/settings" onClick={() => setMobileOpen(false)} className="block text-slate-700 hover:text-slate-900 text-sm font-medium">
-                  Settings
+                  Saiti
                 </Link>
               )}
               <Link href="/help" onClick={() => setMobileOpen(false)} className="block text-slate-700 hover:text-slate-900 text-sm font-medium">
-                Help
+                Taimako
               </Link>
               <Link href="/contact" onClick={() => setMobileOpen(false)} className="block text-slate-700 hover:text-slate-900 text-sm font-medium">
-                Contact
+                Tuntuɓe mu
               </Link>
             </div>
 
@@ -245,7 +245,7 @@ export function Header() {
                   onClick={async () => { setMobileOpen(false); await logout() }}
                   className="text-left text-slate-700 hover:text-slate-900 text-sm font-medium"
                 >
-                  Log out
+                  Fita
                 </button>
               </div>
             )}
@@ -253,14 +253,14 @@ export function Header() {
             {!user && (
               <div className="border-t border-slate-100 pt-2 flex flex-col gap-2">
                 <Link href="/auth/login" onClick={() => setMobileOpen(false)} className="text-slate-700 hover:text-slate-900 text-sm font-medium">
-                  Log in
+                  Shiga
                 </Link>
                 <Link
                   href="/auth/signup"
                   onClick={() => setMobileOpen(false)}
                   className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg font-semibold text-sm text-center transition-colors"
                 >
-                  Get Started
+                  Fara Yanzu
                 </Link>
               </div>
             )}
