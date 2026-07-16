@@ -4,6 +4,7 @@ import ExerciseBlock from './ExerciseBlock'
 import { Exercise, Section, Lesson } from '@/types/database'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { getUserProgress, markSectionComplete, getLessonsByCourse, checkAndMarkLessonComplete } from '@/lib/supabase/lessons'
 
 
@@ -22,6 +23,7 @@ interface LessonSectionsProps {
 
 
 export default function LessonSections({ courseId, sections, userId, lessonId, lessonOrder }: LessonSectionsProps) {
+    const router = useRouter()
     const [activeSectionIndex, setActiveSectionIndex] = useState(0)
     const [completedExercises, setCompletedExercises] = useState<Set<string>>(new Set())
     const [isComplete, setIsComplete] = useState(false)
@@ -79,8 +81,12 @@ export default function LessonSections({ courseId, sections, userId, lessonId, l
                 if (userId) await checkAndMarkLessonComplete(userId, lessonId)
                 const lessons = await getLessonsByCourse(courseId)
                 const next = lessons.find((l) => l.lesson_order === lessonOrder + 1) ?? null
-                setNextLesson(next)
-                setIsComplete(true)
+                if (next) {
+                    setNextLesson(next)
+                    setIsComplete(true)
+                } else {
+                    router.push(`/courses/${courseId}/complete`)
+                }
                 return
             }
 
