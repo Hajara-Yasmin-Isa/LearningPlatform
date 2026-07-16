@@ -18,22 +18,17 @@ export default function FeedbackModal({
     const [message, setMessage] = useState("")
     const [submitted, setSubmitted] = useState(false)
     const [submitting, setSubmitting] = useState(false)
+    const [submitError, setSubmitError] = useState<string | null>(null)
 
     const handleSubmit = async () => {
-        //If message empty
         if (!message.trim()) return
-
+        setSubmitError(null)
         try {
             setSubmitting(true)
-
-            await submitBetaFeedback(
-                userId,
-                message,
-                type,
-                window.location.pathname
-            )
-            
+            await submitBetaFeedback(userId, message, type, window.location.pathname)
             setSubmitted(true)
+        } catch {
+            setSubmitError('Failed to submit. Please try again.')
         } finally {
             setSubmitting(false)
         }
@@ -84,9 +79,13 @@ export default function FeedbackModal({
                     onChange={(e) => setMessage(e.target.value)}
                     className="border p-2 w-full"
                     />
+                {submitError && (
+                    <p className="text-red-500 text-sm">{submitError}</p>
+                )}
                 <button
                     onClick={handleSubmit}
-                    className="bg-green-600 text-white px-4 py-2 rounded"
+                    disabled={submitting}
+                    className="bg-green-600 text-white px-4 py-2 rounded disabled:opacity-60"
                     >
                     {submitting ? "Submitting..." : "Submit"}
                 </button>

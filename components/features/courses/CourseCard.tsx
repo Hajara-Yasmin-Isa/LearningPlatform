@@ -67,7 +67,7 @@ export function CourseCard({ course, isEnrolled, userId }: CourseCardProps) {
 
       {course.lessonCount > 0 && (
         <p className="inline-flex w-fit rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-400 text-sm">
-          {course.lessonCount} {course.lessonCount == 1 ? "lesson" : "lessons"}
+          {course.lessonCount} {course.lessonCount === 1 ? "lesson" : "lessons"}
         </p>
       )}
       <p className={`text-xs px-2 py-1 rounded ${difficultyColors[course.difficulty as keyof typeof difficultyColors]

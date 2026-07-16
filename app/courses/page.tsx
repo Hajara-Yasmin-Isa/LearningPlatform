@@ -56,14 +56,10 @@ export default function CoursesPage() {
   useEffect(() => {
     const timer = setTimeout(async () => {
       try {
-        const results = await searchCourses(
-          searchQuery,
-          difficulty || null
-        )
-
+        const results = await searchCourses(searchQuery, difficulty || null)
         setCourses(results)
       } catch (err) {
-        console.log(err)
+        setError(err instanceof Error ? err.message : 'Search failed.')
       }
     }, 300)
 
@@ -139,17 +135,14 @@ export default function CoursesPage() {
       )}
 
       <h2 className="text-xl font-semibold mb-4 mt-10">All Courses</h2>
-      {courses.length === 0 && searchQuery.trim() !== "" ? (
-        <p className="text-gray-500">
-          No classes found matching your search.
-        </p>
+      {courses.length === 0 && (searchQuery.trim() !== "" || difficulty !== "") ? (
+        <p className="text-gray-500">No courses found matching your search.</p>
       ) : (
-
-      <CourseGrid
-        courses={courses}
-        enrollments={enrollments}
-        userId={userId}
-      />
+        <CourseGrid
+          courses={courses}
+          enrollments={enrollments}
+          userId={userId}
+        />
       )}
     </div>
   )
