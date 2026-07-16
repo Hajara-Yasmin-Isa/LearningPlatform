@@ -9,9 +9,9 @@ interface FeedbackModalProps {
 }
 
 const TYPES: { value: FeedbackType; label: string; description: string }[] = [
-  { value: 'bug',        label: '🐛 Bug',        description: 'Something isn\'t working' },
-  { value: 'suggestion', label: '💡 Suggestion',  description: 'An idea to improve things' },
-  { value: 'other',      label: '💬 Other',       description: 'General feedback or questions' },
+  { value: 'bug',        label: '🐛 Matsalar Furogiram (Bug)', description: 'Wani abu ne ba ya aiki daidai' },
+  { value: 'suggestion', label: '💡 Shawara',                  description: 'Wani ra\'ayi don inganta abubuwa' },
+  { value: 'other',      label: '💬 Wani Labari Na Dabam',     description: 'Wani ra\'ayi don inganta abubuwa' },
 ]
 
 export default function FeedbackModal({ userId, onClose }: FeedbackModalProps) {
@@ -29,7 +29,7 @@ export default function FeedbackModal({ userId, onClose }: FeedbackModalProps) {
       await submitBetaFeedback(userId, message, type, window.location.pathname)
       setSubmitted(true)
     } catch {
-      setSubmitError('Failed to submit. Please try again.')
+      setSubmitError('Kuskure ya faru. Sake gwadawa.')
     } finally {
       setSubmitting(false)
     }
@@ -53,13 +53,13 @@ export default function FeedbackModal({ userId, onClose }: FeedbackModalProps) {
             <p className="text-3xl">🙏</p>
             <h2 className="text-lg font-bold text-slate-900">Mun gode!</h2>
             <p className="text-sm text-slate-500">
-              Your feedback has been received. It goes directly to our team and helps us improve Littafin Fasaha.
+              An karɓi ra'ayinka. An tura shi ga ƙungiyarmu don taimaka mana mu inganta Littafin Fasaha.
             </p>
             <button
               onClick={onClose}
               className="mt-2 px-5 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg text-sm font-semibold transition-colors"
             >
-              Done
+              An gama
             </button>
           </div>
         ) : (
@@ -67,15 +67,15 @@ export default function FeedbackModal({ userId, onClose }: FeedbackModalProps) {
 
             {/* Header */}
             <div>
-              <h2 className="text-lg font-bold text-slate-900">Share feedback</h2>
+              <h2 className="text-lg font-bold text-slate-900">Ba da Ra'ayinka</h2>
               <p className="text-sm text-slate-500 mt-0.5">
-                You&apos;re using the beta — your input helps us improve.
+                Kana amfani da sigar beta — ra'ayinka yana taimakonmu wajen inganta komai.
               </p>
             </div>
 
             {/* Type selector */}
             <div>
-              <p className="text-sm font-medium text-slate-700 mb-2">What kind of feedback?</p>
+              <p className="text-sm font-medium text-slate-700 mb-2">Ba da ra'ayinka, me kake son gani?</p>
               <div className="flex gap-2 flex-wrap">
                 {TYPES.map(({ value, label, description }) => (
                   <button
@@ -101,7 +101,7 @@ export default function FeedbackModal({ userId, onClose }: FeedbackModalProps) {
             {/* Message */}
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                Your message
+                Saƙonka
               </label>
               <textarea
                 rows={4}
@@ -109,10 +109,10 @@ export default function FeedbackModal({ userId, onClose }: FeedbackModalProps) {
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder={
                   type === 'bug'
-                    ? 'Describe what happened and what you expected instead...'
+                    ? 'Bayyana abin da ya faru da kuma abin da kake tsammanin gani'
                     : type === 'suggestion'
-                    ? 'Describe your idea or what you\'d like to see...'
-                    : 'Share anything on your mind...'
+                    ? 'Bayyana ra\'ayoyinka, me kake son gani?'
+                    : 'Saƙonka'
                 }
                 className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400 transition resize-none"
               />
@@ -127,14 +127,14 @@ export default function FeedbackModal({ userId, onClose }: FeedbackModalProps) {
                 onClick={onClose}
                 className="px-4 py-2 text-sm text-slate-600 hover:text-slate-900 transition-colors"
               >
-                Cancel
+                Soke
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={submitting || !message.trim()}
                 className="px-5 py-2 bg-yellow-500 hover:bg-yellow-600 disabled:opacity-50 text-white rounded-lg text-sm font-semibold transition-colors"
               >
-                {submitting ? 'Sending...' : 'Send feedback'}
+                {submitting ? 'Ana aika...' : 'Tura Ra\'ayi'}
               </button>
             </div>
 
