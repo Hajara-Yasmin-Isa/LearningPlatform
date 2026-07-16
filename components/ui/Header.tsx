@@ -123,6 +123,15 @@ export function Header() {
                       onClick={() => setMoreOpen(false)}
                       className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
                     >
+                      Profile
+                    </Link>
+                  )}
+                  {user && (
+                    <Link
+                      href="/auth/settings"
+                      onClick={() => setMoreOpen(false)}
+                      className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                    >
                       Settings
                     </Link>
                   )}
@@ -214,6 +223,11 @@ export function Header() {
             <div className="border-t border-slate-100 pt-2 space-y-3">
               {user && (
                 <Link href="/auth/profile" onClick={() => setMobileOpen(false)} className="block text-slate-700 hover:text-slate-900 text-sm font-medium">
+                  Profile
+                </Link>
+              )}
+              {user && (
+                <Link href="/auth/settings" onClick={() => setMobileOpen(false)} className="block text-slate-700 hover:text-slate-900 text-sm font-medium">
                   Settings
                 </Link>
               )}
