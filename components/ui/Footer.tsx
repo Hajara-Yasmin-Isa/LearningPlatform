@@ -76,7 +76,7 @@ export function Footer() {
 
           {/* Copyright */}
           <p className="text-xs text-slate-400">
-            © {new Date().getFullYear()} Littafin Fasaha. All rights reserved.
+            © {new Date().getFullYear()} Littafin Fasaha. Dukkan haƙƙin mallaka an kiyaye su.
           </p>
 
         </div>
