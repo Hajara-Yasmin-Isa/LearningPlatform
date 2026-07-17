@@ -44,9 +44,9 @@ export default function StudentDashboard() {
   const overallProgress = totalSections > 0 ? Math.round((totalCompleted / totalSections) * 100) : 0
 
   const stats = [
-    { label: "Courses Enrolled", value: String(enrolledCourses.length) },
-    { label: "Sections Completed", value: String(totalCompleted) },
-    { label: "Overall Progress", value: `${overallProgress}%` },
+    { label: "Ajujuwa da aka yi rajista", value: String(enrolledCourses.length) },
+    { label: "Sashen da aka kammala", value: String(totalCompleted) },
+    { label: "Gabaɗayan Ci gaba", value: `${overallProgress}%` },
   ]
 
   return (
@@ -61,7 +61,7 @@ export default function StudentDashboard() {
 
       {/* Stats */}
       <section>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Your Progress</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Ci gaban Karatunka</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {stats.map((stat) => (
             <StatsCard key={stat.label} label={stat.label} value={stat.value} />
@@ -71,16 +71,16 @@ export default function StudentDashboard() {
 
       {/* Enrolled courses */}
       <section>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">My Courses</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Ajujuwana</h2>
 
         {enrolledCourses.length === 0 ? (
           <div className="text-center py-10 bg-white border border-gray-100 rounded-xl">
-            <p className="text-gray-500 text-sm mb-3">You haven&apos;t enrolled in any courses yet.</p>
+            <p className="text-gray-500 text-sm mb-3">Ba ka yi rajista a kowane aji ba tukuna.</p>
             <Link
               href="/courses"
               className="text-sm font-semibold text-yellow-600 hover:text-yellow-700 transition-colors"
             >
-              Browse courses →
+              Duba ajujuwa →
             </Link>
           </div>
         ) : (
@@ -94,7 +94,7 @@ export default function StudentDashboard() {
                       {course.title}
                     </h3>
                     <p className="text-sm text-gray-500 mb-3">
-                      {sectionsCompleted} / {totalSections} sections completed
+                      Sashen {sectionsCompleted} / {totalSections} an kammala
                     </p>
                     <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
                       <div
