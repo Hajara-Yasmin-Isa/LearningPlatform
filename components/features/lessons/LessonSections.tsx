@@ -133,7 +133,7 @@ export default function LessonSections({ courseId, sections, userId, lessonId, l
     return (
         <div className="mt-8 space-y-10">
             <div key={currentSection.id}>
-                <p className="space-y-4">Section {activeSectionIndex + 1} of {sections.length}</p>
+                <p className="space-y-4">Sashi na {activeSectionIndex + 1} cikin {sections.length}</p>
                 <h2 className="text-xl font-semibold mb-2">
                     {currentSection.title}
                     {completedSections.has(currentSection.id) && (

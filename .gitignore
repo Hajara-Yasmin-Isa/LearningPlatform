@@ -31,6 +31,9 @@ yarn-error.log*
 .env*.local
 .env
 
+# Local seed files (may contain personal user IDs — NEVER COMMIT THESE!)
+supabase/seed/*.local.sql
+
 # Vercel
 .vercel
 
