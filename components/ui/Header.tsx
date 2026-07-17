@@ -102,19 +102,19 @@ export function Header() {
                 <div className="absolute right-0 top-8 w-72 bg-white rounded-xl shadow-lg border border-slate-100 py-2 z-50">
                   <div className="flex items-center justify-between px-4 py-2 text-slate-400 text-sm cursor-default">
                     <span>Malamin AI</span>
-                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs">Tafe nan gaba</span>
+                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs">Zuwa nan tafe</span>
                   </div>
                   <div className="flex items-center justify-between px-4 py-2 text-slate-400 text-sm cursor-default">
                     <span>Tattaunawa</span>
-                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs">Tafe nan gaba</span>
+                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs">Zuwa nan tafe</span>
                   </div>
                   <div className="flex items-center justify-between px-4 py-2 text-slate-400 text-sm cursor-default">
                     <span>Jarabawa</span>
-                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs">Tafe nan gaba</span>
+                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs">Zuwa nan tafe</span>
                   </div>
                   <div className="flex items-center justify-between px-4 py-2 text-slate-400 text-sm cursor-default">
                     <span>Saƙonni</span>
-                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs">Tafe nan gaba</span>
+                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs">Zuwa nan tafe</span>
                   </div>
                   <div className="mx-3 my-1.5 border-t border-slate-100" />
                   {user && (
@@ -135,6 +135,13 @@ export function Header() {
                       Saiti
                     </Link>
                   )}
+                  <Link
+                    href="/about"
+                    onClick={() => setMoreOpen(false)}
+                    className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                  >
+                    Game da Mu
+                  </Link>
                   <Link
                     href="/help"
                     onClick={() => setMoreOpen(false)}
@@ -204,19 +211,19 @@ export function Header() {
             <div className="border-t border-slate-100 pt-2 mt-1 space-y-3">
               <div className="flex items-center justify-between text-slate-400 text-sm">
                 <span>Malamin AI</span>
-                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs">Tafe nan gaba</span>
+                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs">Zuwa nan tafe</span>
               </div>
               <div className="flex items-center justify-between text-slate-400 text-sm">
                 <span>Tattaunawa</span>
-                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs">Tafe nan gaba</span>
+                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs">Zuwa nan tafe</span>
               </div>
               <div className="flex items-center justify-between text-slate-400 text-sm">
                 <span>Jarabawa</span>
-                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs">Tafe nan gaba</span>
+                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs">Zuwa nan tafe</span>
               </div>
               <div className="flex items-center justify-between text-slate-400 text-sm">
                 <span>Saƙonni</span>
-                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs">Tafe nan gaba</span>
+                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs">Zuwa nan tafe</span>
               </div>
             </div>
 
@@ -231,6 +238,9 @@ export function Header() {
                   Saiti
                 </Link>
               )}
+              <Link href="/about" onClick={() => setMobileOpen(false)} className="block text-slate-700 hover:text-slate-900 text-sm font-medium">
+                Game da Mu
+              </Link>
               <Link href="/help" onClick={() => setMobileOpen(false)} className="block text-slate-700 hover:text-slate-900 text-sm font-medium">
                 Taimako
               </Link>

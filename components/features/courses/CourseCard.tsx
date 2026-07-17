@@ -24,6 +24,9 @@ export function CourseCard({ course, isEnrolled, userId }: CourseCardProps) {
   const [loading, setLoading] = useState(false)
   const [enrollError, setEnrollError] = useState<string | null>(null)
 
+  // A course with no lessons yet has no content to actually take
+  const comingSoon = course.lessonCount === 0
+
   // Difficulty Colors
   const difficultyColors = {
     Beginner: 'bg-green-100 text-green-700',
@@ -65,7 +68,11 @@ export function CourseCard({ course, isEnrolled, userId }: CourseCardProps) {
         <h2 className="text-lg font-semibold">{course.title}</h2>
       </div>
 
-      {course.lessonCount > 0 && (
+      {comingSoon ? (
+        <p className="inline-flex w-fit rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-400">
+          Zuwa nan tafe
+        </p>
+      ) : (
         <p className="inline-flex w-fit rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-400 text-sm">
           {course.lessonCount === 1 ? `Darasi ${course.lessonCount}` : `Darrusa ${course.lessonCount}`}
         </p>
@@ -97,7 +104,14 @@ export function CourseCard({ course, isEnrolled, userId }: CourseCardProps) {
       )}
 
       <div className="mt-auto">
-        {enrolled ? ( // use LOCAL state, not prop
+        {comingSoon ? (
+          <button
+            disabled
+            className="w-full bg-slate-100 text-slate-400 py-2 rounded-md text-sm cursor-not-allowed"
+          >
+            Zuwa nan tafe
+          </button>
+        ) : enrolled ? ( // use LOCAL state, not prop
           <div className="flex justify-between items-center">
             <span className="text-green-600 text-sm font-medium">
               An yi rajista
