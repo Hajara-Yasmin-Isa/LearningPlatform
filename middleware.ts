@@ -2,8 +2,11 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
 
 
-//just added more thna just the dashboard protected
-const PROTECTED_ROUTES = ['/dashboard', '/lessons', '/courses']
+// /courses is intentionally NOT protected — the courses table's RLS policy
+// allows anonymous reads of published courses, and both the catalog and
+// course detail pages already handle userId === null gracefully, gating
+// only the actual "enroll" action with their own redirect to /auth/login.
+const PROTECTED_ROUTES = ['/dashboard', '/lessons']
 const AUTH_ROUTES = ['/auth/login', '/auth/signup']
 
 function matchesRoute(pathname: string, routes: string[]): boolean {
@@ -49,7 +52,6 @@ export const config = {
     '/dashboard',
     '/dashboard/:path*',
     '/lessons/:path*',
-    '/courses/:path*',
     '/auth/login',
     '/auth/signup',
   ],

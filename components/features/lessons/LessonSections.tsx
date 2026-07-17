@@ -1,6 +1,7 @@
 'use client'
 
 import ExerciseBlock from './ExerciseBlock'
+import SectionContent from './SectionContent'
 import { Exercise, Section, Lesson } from '@/types/database'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
@@ -140,7 +141,7 @@ export default function LessonSections({ courseId, sections, userId, lessonId, l
                         <span className="text-green-500 ml-2 text-lg">✓</span>
                     )}
                 </h2>
-                <p className="text-gray-700 leading-relaxed mb-4">{currentSection.content}</p>
+                <SectionContent content={currentSection.content} />
 
                 <div className="space-y-4">
                     {currentSection.exercises.map((exercise) => (
