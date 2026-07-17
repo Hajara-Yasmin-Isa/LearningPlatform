@@ -105,6 +105,7 @@ export default function FeedbackModal({ userId, onClose }: FeedbackModalProps) {
               </label>
               <textarea
                 rows={4}
+                maxLength={5000}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder={

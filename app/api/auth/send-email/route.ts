@@ -1,6 +1,7 @@
 import crypto from 'crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
+import { rateLimit } from '@/lib/rateLimit'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -18,6 +19,9 @@ function verifySignature(request: NextRequest, rawBody: string): boolean {
   const msgTimestamp = request.headers.get('webhook-timestamp')
   const msgSignature = request.headers.get('webhook-signature')
   if (!msgId || !msgTimestamp || !msgSignature) return false
+
+  const ts = parseInt(msgTimestamp, 10)
+  if (isNaN(ts) || Math.abs(Date.now() / 1000 - ts) > 300) return false
 
   const signed = `${msgId}.${msgTimestamp}.${rawBody}`
   const expected = crypto.createHmac('sha256', key).update(signed).digest('base64')
@@ -113,6 +117,11 @@ function passwordResetHtml(resetUrl: string, year: number): string {
 }
 
 export async function POST(request: NextRequest) {
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
+  if (!rateLimit(`send-email:${ip}`, 10, 60_000)) {
+    return NextResponse.json({ error: 'Too many requests.' }, { status: 429 })
+  }
+
   const rawBody = await request.text()
 
   if (!verifySignature(request, rawBody)) {

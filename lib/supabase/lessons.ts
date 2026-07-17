@@ -149,9 +149,12 @@ export async function checkAndMarkLessonComplete(
   lessonId: string,
   client: SupabaseClient = browserClient
 ): Promise<boolean> {
-  const lesson = await getLessonWithSections(lessonId, client)
-  if (!lesson) return false
-  const totalSections = lesson.sections.length
+  const { count, error: countError } = await client
+    .from('sections')
+    .select('id', { count: 'exact', head: true })
+    .eq('lesson_id', lessonId)
+  if (countError) throw new Error(countError.message)
+  const totalSections = count ?? 0
   if (totalSections === 0) return false
 
   const { data, error } = await client

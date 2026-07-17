@@ -142,28 +142,26 @@ export async function getEnrolledCoursesWithProgress(
   userId: string,
   client: SupabaseClient = supabase
 ): Promise<EnrolledCourseWithProgress[]> {
-  const { data: enrollments, error: enrollmentsError } = await client
-    .from('enrollments')
-    .select('*, courses(*)')
-    .eq('user_id', userId)
+  const [enrollmentsResult, progressResult] = await Promise.all([
+    client.from('enrollments').select('*, courses(*)').eq('user_id', userId),
+    client
+      .from('user_progress')
+      .select('section_id, lessons(course_id)')
+      .eq('user_id', userId)
+      .eq('completed', true)
+      .not('section_id', 'is', null),
+  ])
 
-  if (enrollmentsError) throw new Error(enrollmentsError.message)
+  if (enrollmentsResult.error) throw new Error(enrollmentsResult.error.message)
+  if (progressResult.error) throw new Error(progressResult.error.message)
+
+  const enrollments = enrollmentsResult.data
   if (!enrollments || enrollments.length === 0) return []
 
   const typedEnrollments = enrollments as unknown as EnrollmentWithCourse[]
   const courseIds = typedEnrollments.map(e => e.course_id)
 
-  // Count completed sections per course via lesson_id -> course_id join
-  const { data: progress, error: progressError } = await client
-    .from('user_progress')
-    .select('section_id, lessons(course_id)')
-    .eq('user_id', userId)
-    .eq('completed', true)
-    .not('section_id', 'is', null)
-
-  if (progressError) throw new Error(progressError.message)
-
-  const typedProgress = (progress ?? []) as unknown as ProgressWithCourseId[]
+  const typedProgress = (progressResult.data ?? []) as unknown as ProgressWithCourseId[]
 
   const sectionsCompletedByCourseId = new Map<string, number>()
   for (const row of typedProgress) {

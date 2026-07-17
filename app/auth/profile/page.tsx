@@ -101,11 +101,11 @@ export default function ProfilePage() {
             <select
               value={level}
               onChange={(e) => { setLevel(e.target.value as Level); setSaved(false) }}
-              className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-slate-900 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition bg-white"
+              className={`w-full border border-slate-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition bg-white ${level === '' ? 'text-slate-400' : 'text-slate-900'}`}
             >
-              <option value="">Zaɓi matakinka</option>
+              <option value="" disabled hidden>Zaɓi matakinka</option>
               {LEVELS.map((l) => (
-                <option key={l} value={l}>{l}</option>
+                <option key={l} value={l} className="text-slate-900">{l}</option>
               ))}
             </select>
           </div>

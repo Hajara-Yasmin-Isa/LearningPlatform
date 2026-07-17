@@ -35,7 +35,7 @@ export async function middleware(request: NextRequest) {
   // when the authenticated user trying to access auth routes
   if (isAuthRoute && user) {
     const redirectTo = request.nextUrl.searchParams.get('redirectTo')
-    if (redirectTo) {
+    if (redirectTo && redirectTo.startsWith('/') && !redirectTo.startsWith('//')) {
       return NextResponse.redirect(new URL(redirectTo, request.url))
     }
     return NextResponse.redirect(new URL('/dashboard', request.url))
