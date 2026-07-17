@@ -46,12 +46,12 @@ export function EnrollmentButton({
                     disabled={loading}
                     className="bg-black text-white px-4 py-2 rounded"
                 >
-                    {loading ? 'Enrolling...' : 'Enroll'}
+                    {loading ? 'Ana rajista...' : 'Yi rajista'}
                 </button>
             ) : (
                 <a href={`/lessons/${firstLessonId}`}
                     className="bg-blue-600 text-white px-4 py-2 rounded inline-block">    
-                        Continue Learning
+                        Ci gaba da koyo
                 </a>
             )}
         </div>

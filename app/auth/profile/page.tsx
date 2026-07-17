@@ -7,7 +7,7 @@ import { User } from '@supabase/supabase-js'
 import LoadingScreen from '@/components/ui/LoadingScreen'
 import ProfileAvatar from '@/components/features/profile/ProfileAvatar'
 
-const LEVELS = ['Koya', 'Matsakaici', 'Gwanaye'] as const
+const LEVELS = ['An koyo', 'Matsakaici', 'Gwanaye'] as const
 type Level = typeof LEVELS[number] | ''
 
 export default function ProfilePage() {

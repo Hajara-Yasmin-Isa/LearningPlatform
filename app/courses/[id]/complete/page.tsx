@@ -24,12 +24,12 @@ export default async function CourseCompletePage({ params }: { params: Promise<{
 
         <h1 className="text-4xl font-bold text-slate-900 mb-1">Kammala!</h1>
         <p className="text-lg text-slate-500 mb-8">
-          You finished every lesson in this course.
+          Ka kammala dukkan darrusa a wannan aji.
         </p>
 
         <div className="glass rounded-2xl p-8 mb-10 text-left shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">
-            Course completed
+            Aji ya ƙare
           </p>
           <h2 className="text-xl font-bold text-slate-900 mb-2">{course.title}</h2>
           {course.description && (
@@ -42,13 +42,13 @@ export default async function CourseCompletePage({ params }: { params: Promise<{
             href="/courses"
             className="px-6 py-2.5 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg font-semibold text-sm transition-colors shadow-sm"
           >
-            Browse More Courses
+            Duba ƙarin Ajujuwa
           </Link>
           <Link
             href="/dashboard"
             className="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-semibold text-sm transition-colors"
           >
-            Back to Dashboard
+            Komawa Dashboard
           </Link>
         </div>
       </div>
