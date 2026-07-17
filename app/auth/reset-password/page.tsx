@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
+import { translateAuthError } from '@/lib/auth/translateAuthError'
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState('')
@@ -17,11 +18,11 @@ export default function ResetPasswordPage() {
     setError(null)
 
     if (password.length < 8) {
-      setError('Password must be at least 8 characters.')
+      setError('Password dole ta zama aƙalla haruffa 8.')
       return
     }
     if (password !== confirm) {
-      setError('Passwords do not match.')
+      setError('Passwords ba su daidaita ba.')
       return
     }
 
@@ -30,7 +31,7 @@ export default function ResetPasswordPage() {
     setLoading(false)
 
     if (error) {
-      setError(error.message)
+      setError(translateAuthError(error.message))
     } else {
       router.push('/dashboard')
     }
@@ -48,9 +49,9 @@ export default function ResetPasswordPage() {
             height={56}
             className="rounded-full mx-auto mb-4 shadow-md"
           />
-          <h1 className="text-2xl font-bold text-slate-900">Choose a new password</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Zaɓi Sabuwar Password</h1>
           <p className="text-slate-500 mt-1 text-sm">
-            Make it something you&apos;ll remember
+            Zaɓi wadda za ka iya tunawa da ita
           </p>
         </div>
 
@@ -60,13 +61,13 @@ export default function ResetPasswordPage() {
         >
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-1.5">
-              New password
+              Sabuwar Password
             </label>
             <input
               id="password"
               type="password"
               required
-              placeholder="At least 8 characters"
+              placeholder="Aƙalla haruffa 8"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full rounded-xl border border-white/70 bg-white/50 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition backdrop-blur-sm"
@@ -75,7 +76,7 @@ export default function ResetPasswordPage() {
 
           <div>
             <label htmlFor="confirm" className="block text-sm font-medium text-slate-700 mb-1.5">
-              Confirm new password
+              Tabbatar da Password
             </label>
             <input
               id="confirm"
@@ -95,7 +96,7 @@ export default function ResetPasswordPage() {
             disabled={loading}
             className="w-full rounded-xl bg-yellow-500 hover:bg-yellow-600 py-2.5 text-white font-semibold transition-colors shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {loading ? 'Saving...' : 'Set new password'}
+            {loading ? 'Ana ajiyewa...' : 'Saita Sabuwar Password'}
           </button>
         </form>
 
