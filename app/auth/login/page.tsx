@@ -16,24 +16,24 @@ export default function LoginPage() {
             height={56}
             className="rounded-full mx-auto mb-4 shadow-md"
           />
-          <h1 className="text-2xl font-bold text-slate-900">Welcome back</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Barka da Dawowa</h1>
           <p className="text-slate-500 mt-1 text-sm">
-            Sign in to continue your learning journey
+            Shiga domin ci gaba da karatu
           </p>
         </div>
 
-        <AuthForm submitLabel="Log in" mode="login" />
+        <AuthForm submitLabel="Shiga" mode="login" />
 
         <p className="text-center text-sm text-slate-500 mt-4">
           <Link href="/auth/forgot-password" className="text-slate-400 hover:text-slate-600 transition-colors">
-            Forgot your password?
+            Ka manta da Password ɗinka?
           </Link>
         </p>
 
         <p className="text-center text-sm text-slate-500 mt-3">
-          Don&apos;t have an account?{' '}
+          Ba ka yi rajista ba?{' '}
           <Link href="/auth/signup" className="text-yellow-600 font-semibold hover:text-yellow-700">
-            Sign up free
+            Yi rajista kyauta
           </Link>
         </p>
 

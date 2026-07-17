@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase/client'
+import { translateAuthError } from '@/lib/auth/translateAuthError'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -20,7 +21,7 @@ export default function ForgotPasswordPage() {
 
     setLoading(false)
     if (error) {
-      setError(error.message)
+      setError(translateAuthError(error.message))
     } else {
       setSent(true)
     }
@@ -38,25 +39,25 @@ export default function ForgotPasswordPage() {
             height={56}
             className="rounded-full mx-auto mb-4 shadow-md"
           />
-          <h1 className="text-2xl font-bold text-slate-900">Reset your password</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Sake Saita Password</h1>
           <p className="text-slate-500 mt-1 text-sm">
-            Enter your email and we&apos;ll send you a reset link
+            Shigar da imel ɗinka za mu aika maka hanyar sake saitawa
           </p>
         </div>
 
         {sent ? (
           <div className="glass-strong rounded-2xl shadow-md p-8 space-y-3 text-center">
-            <h2 className="text-xl font-semibold text-slate-900">Check your email</h2>
+            <h2 className="text-xl font-semibold text-slate-900">Duba Imel Ɗinka</h2>
             <p className="text-slate-600 text-sm">
-              We sent a password reset link to <strong>{email}</strong>. Click it to choose a new password.
+              Mun aika maka hanyar sake saita password zuwa <strong>{email}</strong>. Danna ta domin zaɓar sabuwar password.
             </p>
             <p className="text-slate-400 text-xs pt-2">
-              Didn&apos;t get it? Check your spam folder or{' '}
+              Ba ka samu ba? Duba akwatin spam ko a{' '}
               <button
                 onClick={() => setSent(false)}
                 className="text-yellow-600 hover:text-yellow-700 font-medium"
               >
-                try again
+                sake gwadawa
               </button>
               .
             </p>
@@ -68,13 +69,13 @@ export default function ForgotPasswordPage() {
           >
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1.5">
-                Email address
+                Adireshin Imel
               </label>
               <input
                 id="email"
                 type="email"
                 required
-                placeholder="you@example.com"
+                placeholder="sunanka@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full rounded-xl border border-white/70 bg-white/50 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition backdrop-blur-sm"
@@ -88,15 +89,15 @@ export default function ForgotPasswordPage() {
               disabled={loading}
               className="w-full rounded-xl bg-yellow-500 hover:bg-yellow-600 py-2.5 text-white font-semibold transition-colors shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {loading ? 'Sending...' : 'Send reset link'}
+              {loading ? 'Ana turawa...' : 'Aika hanyar sake saitawa'}
             </button>
           </form>
         )}
 
         <p className="text-center text-sm text-slate-500 mt-6">
-          Remembered it?{' '}
+          Ka tuna da ita?{' '}
           <Link href="/auth/login" className="text-yellow-600 font-semibold hover:text-yellow-700">
-            Back to log in
+            Koma Shiga
           </Link>
         </p>
 
