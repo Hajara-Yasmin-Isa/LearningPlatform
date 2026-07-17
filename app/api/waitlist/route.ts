@@ -2,14 +2,20 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
+import { rateLimit } from '@/lib/rateLimit'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(request: NextRequest) {
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
+  if (!rateLimit(`waitlist:${ip}`, 3, 60_000)) {
+    return NextResponse.json({ error: 'Too many requests. Please wait a moment.' }, { status: 429 })
+  }
+
   const { email } = await request.json()
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  if (!email || typeof email !== 'string' || !emailRegex.test(email)) {
+  if (!email || typeof email !== 'string' || email.length > 254 || !emailRegex.test(email)) {
     return NextResponse.json({ error: 'A valid email is required.' }, { status: 400 })
   }
 

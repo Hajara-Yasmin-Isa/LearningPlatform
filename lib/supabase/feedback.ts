@@ -6,6 +6,8 @@ import { supabase as browserClient } from './client'
 export type FeedbackType = 'bug' | 'suggestion' | 'other'
 
 /** Inserts a beta feedback row for the given user; throws on unexpected error. */
+const MAX_FEEDBACK_LENGTH = 5000
+
 export async function submitBetaFeedback(
   userId: string,
   message: string,
@@ -13,6 +15,7 @@ export async function submitBetaFeedback(
   page: string,
   client = browserClient
 ): Promise<void> {
+  if (message.length > MAX_FEEDBACK_LENGTH) throw new Error('Message is too long.')
   const { error } = await client
     .from('beta_feedback')
     .insert({ user_id: userId, message, type, page })
