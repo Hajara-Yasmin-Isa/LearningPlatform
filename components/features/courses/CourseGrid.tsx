@@ -13,7 +13,7 @@ export function CourseGrid({ courses, enrollments, userId}: CourseGridProps) {
   if (courses.length === 0) {
     return (
       <p className="text-center text-gray-500 mt-10">
-        No courses available yet — check back soon!
+        Babu ajujuwa a yanzu — dawo nan ba da jimawa ba!
       </p>
     )
   }

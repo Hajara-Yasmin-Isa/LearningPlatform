@@ -79,7 +79,7 @@ export default function CoursesPage() {
           onClick={() => window.location.reload()}
           className="mt-4 px-4 py-2 bg-black text-white rounded"
         >
-          Retry
+          Sake gwadawa
         </button>
       </div>
     )
@@ -93,12 +93,12 @@ export default function CoursesPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="flex justify-between">
-        <h1 className="text-2xl font-bold mb-6">Courses</h1>
+        <h1 className="text-2xl font-bold mb-6">Ajujuwa</h1>
         <div className="mb-6 flex flex-col gap-4 md:flex-row">
           <input
             className="mb-6 rounded-xl border border-white/70 bg-white/50 px-4 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent transition backdrop-blur-sm"
             type="text"
-            placeholder="Search courses..."
+            placeholder="Nemi aji..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -108,10 +108,10 @@ export default function CoursesPage() {
             onChange={(e) => setDifficulty(e.target.value)}
             className="rounded-xl border border-white/70 bg-white/50 px-4 h-[46px] text-slate-900 focus:outline-none focus:ring-2 focus:ring-yellow-400 backdrop-blur-sm"
             >
-              <option value="">All Difficulties</option>
-              <option value="Beginner">Beginner</option>
-              <option value="Intermediate">Intermediate</option>
-              <option value="Advanced">Advanced</option>
+              <option value="">Dukkan matakai</option>
+              <option value="Beginner">An koyo</option>
+              <option value="Intermediate">Matsakaici</option>
+              <option value="Advanced">Gwanaye</option>
           </select>
 
         </div>
@@ -119,7 +119,7 @@ export default function CoursesPage() {
 
       {userId !== null && enrollments.length > 0 && (
         <>
-          <h2 className="text-xl font-semibold mb-4">My Courses</h2>
+          <h2 className="text-xl font-semibold mb-4">Ajujuwana</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {myCourses.map(course => (
               <CourseCard
@@ -133,9 +133,9 @@ export default function CoursesPage() {
         </>
       )}
 
-      <h2 className="text-xl font-semibold mb-4 mt-10">All Courses</h2>
+      <h2 className="text-xl font-semibold mb-4 mt-10">Dukkan Ajujuwa</h2>
       {courses.length === 0 && (searchQuery.trim() !== "" || difficulty !== "") ? (
-        <p className="text-gray-500">No courses found matching your search.</p>
+        <p className="text-gray-500">Ba a sami aji da yayi daidai da bincikanka ba.</p>
       ) : (
         <CourseGrid
           courses={courses}

@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
         <div style="text-align: center; padding-bottom: 30px;">
           <p style="margin-bottom: 15px; font-size: 13px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Ku biyo mu (Follow Us)</p>
   
-            <a href="https://www.instagram.com/littafin_fasaha/" target="_blank" style="text-decoration: none; margin: 0 10px;">
+            <a href="https://www.instagram.com/littafinfasaha/" target="_blank" style="text-decoration: none; margin: 0 10px;">
               <img src="https://cdn-icons-png.flaticon.com/512/174/174855.png" alt="Instagram" width="24" height="24" style="display: inline-block; opacity: 0.6;">
             </a>
 
