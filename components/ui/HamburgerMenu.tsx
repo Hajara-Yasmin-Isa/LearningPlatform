@@ -36,6 +36,8 @@ export default function HamburgerMenu({
 
             {/* Mobile Menu */}
             {mobileOpen && (
+                <div className="fixed top-16 left-0 right-0 bg-white shadow-lg md:hidden z-40">
+
                 <div className="md:hidden border-t border-white/50 bg-white shadow-sm">
                     <nav className="flex flex-col p-4 space-y-3">
                         {user && (
@@ -100,7 +102,7 @@ export default function HamburgerMenu({
                                 <button
                                     onClick={async () => { setMobileOpen(false); await logout() }}
                                     className="text-left text-slate-700 hover:text-slate-900 text-sm font-medium"
-                                >
+                                    >
                                     Fita
                                 </button>
                             </div>
@@ -115,13 +117,14 @@ export default function HamburgerMenu({
                                     href="/auth/signup"
                                     onClick={() => setMobileOpen(false)}
                                     className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg font-semibold text-sm text-center transition-colors"
-                                >
+                                    >
                                     Fara Yanzu
                                 </Link>
                             </div>
                         )}
                     </nav>
                 </div>
+            </div>
             )}
         </>
     )
