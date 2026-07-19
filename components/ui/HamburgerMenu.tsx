@@ -25,6 +25,7 @@ export default function HamburgerMenu({
     return (
 
         <>
+        {/* Mobile Menu Button */}
             <button
                 onClick={() => setMobileOpen((o) => !o)}
                 className="md:hidden text-slate-700 text-xl px-1"
