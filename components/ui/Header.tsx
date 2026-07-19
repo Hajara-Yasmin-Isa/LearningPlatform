@@ -77,9 +77,11 @@ export function Header() {
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-6">
             {user && (
-              <span className="text-slate-400 text-sm">
-                Sannu, {user.user_metadata?.full_name ?? user.email?.split('@')[0]}!
-              </span>
+              <Link href="/dashboard">
+                <span className="text-slate-400 text-sm">
+                  Sannu, {user.user_metadata?.full_name ?? user.email?.split('@')[0]}!
+                </span>
+              </Link>
             )}
 
             <Link href="/courses" className={navLinkClass}>Ajujuwa</Link>
