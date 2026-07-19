@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 import { User } from '@supabase/supabase-js'
 import BetaBadge from './BetaBadge'
+import HamburgerMenu from './HamburgerMenu'
 
 export function Header() {
   const [user, setUser] = useState<User | null>(null)
@@ -180,13 +181,7 @@ export function Header() {
           </nav>
 
           {/* Mobile Hamburger */}
-          <button
-            onClick={() => setMobileOpen((o) => !o)}
-            className="md:hidden text-slate-700 text-xl px-1"
-            aria-label="Open menu"
-          >
-            {mobileOpen ? '✕' : '☰'}
-          </button>
+          <HamburgerMenu user={user} />
         </div>
       </div>
     </header>
