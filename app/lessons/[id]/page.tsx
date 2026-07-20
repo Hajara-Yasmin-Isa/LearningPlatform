@@ -46,6 +46,9 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
             <LessonSections
                 sections={lesson.sections}
                 courseId={lesson.course_id}
+                userId={user?.id ?? null}
+                lessonId={lesson.id}
+                lessonOrder={lesson.lesson_order}
             />
         </div>
     )

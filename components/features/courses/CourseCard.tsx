@@ -24,6 +24,9 @@ export function CourseCard({ course, isEnrolled, userId }: CourseCardProps) {
   const [loading, setLoading] = useState(false)
   const [enrollError, setEnrollError] = useState<string | null>(null)
 
+  // A course with no lessons yet has no content to actually take
+  const comingSoon = course.lessonCount === 0
+
   // Difficulty Colors
   const difficultyColors = {
     Beginner: 'bg-green-100 text-green-700',
@@ -45,8 +48,8 @@ export function CourseCard({ course, isEnrolled, userId }: CourseCardProps) {
       await enrollInCourse(userId, course.id)
       setEnrolled(true)
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Something went wrong.'
-      setEnrollError(message.includes('Already enrolled') ? 'You are already enrolled.' : 'Something went wrong. Please try again.')
+      const message = err instanceof Error ? err.message : 'Wani kuskure ya faru.'
+      setEnrollError(message.includes('Already enrolled') ? 'An riga an yi rajista.' : 'Wani kuskure ya faru. Sake gwadawa.')
     } finally {
       setLoading(false)
     }
@@ -65,25 +68,33 @@ export function CourseCard({ course, isEnrolled, userId }: CourseCardProps) {
         <h2 className="text-lg font-semibold">{course.title}</h2>
       </div>
 
-      <p className={`text-xs px-2 py-1 rounded ${
-            difficultyColors[course.difficulty as keyof typeof difficultyColors]
-          }`}
-        >
-          {course.difficulty}
+      {comingSoon ? (
+        <p className="inline-flex w-fit rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-400">
+          Zuwa nan tafe
         </p>
+      ) : (
+        <p className="inline-flex w-fit rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-400 text-sm">
+          {course.lessonCount === 1 ? `Darasi ${course.lessonCount}` : `Darrusa ${course.lessonCount}`}
+        </p>
+      )}
+      <p className={`text-xs px-2 py-1 rounded ${difficultyColors[course.difficulty as keyof typeof difficultyColors]
+        }`}
+      >
+        {course.difficulty}
+      </p>
 
       <p className="text-sm text-gray-600 line-clamp-2">
         {course.description}
       </p>
 
       <p className="text-sm">
-        Instructor: {course.users?.name}
+        Maalami: {course.users?.name}
       </p>
 
       {/* If course.duration_minutes exists then render*/}
       {course.duration_minutes && (
         <p className="text-xs text-gray-500">
-          Duration: {course.duration_minutes} minutes
+          Tsawon lokaci: mintuna {course.duration_minutes}
         </p>
       )}
 
@@ -93,13 +104,20 @@ export function CourseCard({ course, isEnrolled, userId }: CourseCardProps) {
       )}
 
       <div className="mt-auto">
-        {enrolled ? ( // use LOCAL state, not prop
+        {comingSoon ? (
+          <button
+            disabled
+            className="w-full bg-slate-100 text-slate-400 py-2 rounded-md text-sm cursor-not-allowed"
+          >
+            Zuwa nan tafe
+          </button>
+        ) : enrolled ? ( // use LOCAL state, not prop
           <div className="flex justify-between items-center">
             <span className="text-green-600 text-sm font-medium">
-              Enrolled
+              An yi rajista
             </span>
             <Link href={`/courses/${course.id}`} className="text-sm text-blue-600">
-              View Course
+              Duba aji
             </Link>
           </div>
         ) : (
@@ -108,7 +126,7 @@ export function CourseCard({ course, isEnrolled, userId }: CourseCardProps) {
             disabled={loading}
             className="w-full bg-black text-white py-2 rounded-md text-sm disabled:opacity-50"
           >
-            {loading ? 'Enrolling...' : 'Enroll'}
+            {loading ? 'Ana rajista...' : 'Yi rajista'}
           </button>
         )}
       </div>

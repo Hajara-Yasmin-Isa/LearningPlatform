@@ -5,8 +5,10 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
   const token_hash = searchParams.get('token_hash')
-  const type = searchParams.get('type') as 'email' | null
-  const next = searchParams.get('next') ?? '/dashboard'
+  const type = searchParams.get('type') as 'email' | 'recovery' | null
+  const rawNext = searchParams.get('next') ?? '/dashboard'
+  const safeNext = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '/dashboard'
+  const next = type === 'recovery' ? '/auth/reset-password' : safeNext
 
   if (token_hash && type) {
     const cookieStore = await cookies()

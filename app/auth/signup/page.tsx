@@ -16,18 +16,18 @@ export default function SignupPage() {
             height={56}
             className="rounded-full mx-auto mb-4 shadow-md"
           />
-          <h1 className="text-2xl font-bold text-slate-900">Create your account</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Yi rajista</h1>
           <p className="text-slate-500 mt-1 text-sm">
-            Start learning computing in Hausa today — it&apos;s free
+            Fara koyon kwamfuta a Harshen Hausa yau — kyauta ne
           </p>
         </div>
 
-        <AuthForm submitLabel="Create account" mode="signup" />
+        <AuthForm submitLabel="Yi rajista" mode="signup" />
 
         <p className="text-center text-sm text-slate-500 mt-6">
-          Already have an account?{' '}
+          Ka riga ka yi rajista?{' '}
           <Link href="/auth/login" className="text-yellow-600 font-semibold hover:text-yellow-700">
-            Log in
+            Shiga
           </Link>
         </p>
 

@@ -2,14 +2,20 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
+import { rateLimit } from '@/lib/rateLimit'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(request: NextRequest) {
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
+  if (!rateLimit(`waitlist:${ip}`, 3, 60_000)) {
+    return NextResponse.json({ error: 'Too many requests. Please wait a moment.' }, { status: 429 })
+  }
+
   const { email } = await request.json()
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  if (!email || typeof email !== 'string' || !emailRegex.test(email)) {
+  if (!email || typeof email !== 'string' || email.length > 254 || !emailRegex.test(email)) {
     return NextResponse.json({ error: 'A valid email is required.' }, { status: 400 })
   }
 
@@ -89,7 +95,7 @@ export async function POST(request: NextRequest) {
         <div style="text-align: center; padding-bottom: 30px;">
           <p style="margin-bottom: 15px; font-size: 13px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Ku biyo mu (Follow Us)</p>
   
-            <a href="https://www.instagram.com/littafin_fasaha/" target="_blank" style="text-decoration: none; margin: 0 10px;">
+            <a href="https://www.instagram.com/littafinfasaha/" target="_blank" style="text-decoration: none; margin: 0 10px;">
               <img src="https://cdn-icons-png.flaticon.com/512/174/174855.png" alt="Instagram" width="24" height="24" style="display: inline-block; opacity: 0.6;">
             </a>
 

@@ -1,58 +1,38 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import ProfileAvatar from "@/components/features/profile/ProfileAvatar";
 import ProfileForm from "@/components/features/profile/ProfileForm";
-import { supabase } from "@/lib/supabase/client";
+
+
+type Role = "Student" | "Instructor";
 
 interface ProfileData {
   name: string;
   email: string;
   bio: string;
+  role: Role;
+  gradeLevel?: string;
+  department?: string;
 }
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<ProfileData>({
-    name: "",
-    email: "",
-    bio: "",
+    name: "John Doe",
+    email: "john@example.com",
+    bio: "Passionate learner and future engineer.",
+    role: "Student",
+    gradeLevel: "Sophomore",
   });
 
   const [isEditing, setIsEditing] = useState(false);
-  const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    async function loadProfile() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
 
-      if (!user) return;
 
-      setProfile({
-        name:
-          user.user_metadata?.full_name ??
-          user.email?.split("@")[0] ??
-          "",
-        email: user.email ?? "",
-        bio: "",
-      });
-    }
-
-    loadProfile();
-  }, []);
-
-  const handleSave = async (updatedData: ProfileData) => {
-    setSaving(true);
-
-    try {
-      // TODO: Replace with updateUserProfile(name, bio)
-      // when Backend Task 3 is merged.
-      setProfile(updatedData);
-      setIsEditing(false);
-    } finally {
-      setSaving(false);
-    }
+  const handleSave = (updatedData: ProfileData) => {
+    console.log("Saved profile:", updatedData);
+    setProfile(updatedData);
+    setIsEditing(false);
   };
 
   const handleCancel = () => {
@@ -62,22 +42,48 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-3xl mx-auto bg-white shadow rounded-lg p-8 space-y-6">
+
         {/* Header */}
         <div className="flex items-center gap-6">
           <ProfileAvatar size={96} />
 
-          <div>
-            <h1 className="text-2xl font-bold text-blue-700">
-              {profile.name}
-            </h1>
+          <div className="flex items-center gap text">
+            <h1 className="text-2xl font-bold text-blue-700">{profile.name}</h1>
+            <span className="inline-block mt-1 px-3 py-1 mx-4 text-sm bg-blue-100 text-blue-700 rounded-full">
+              {profile.role}
+            </span>
           </div>
         </div>
+        {/* TEMPORARY Change Profile Data (to test Instructor role)*/}
+        <button
+        onClick={() =>
+            setProfile((prev) =>
+            prev.role === "Student"
+                ? {
+                    name: "Dr. Smith",
+                    email: "smith@example.com",
+                    bio: "Teaching advanced software engineering.",
+                    role: "Instructor",
+                    department: "Computer Science",
+                }
+                : {
+                    name: "John Doe",
+                    email: "john@example.com",
+                    bio: "Computer Science student.",
+                    role: "Student",
+                    gradeLevel: "Senior",
+                }
+            )
+        }
+        className="mb-4 px-4 py-2 bg-gray-500 rounded hover:bg-black"
+        >
+        Toggle Role
+        </button>
 
         {/* Form */}
         <ProfileForm
           data={profile}
           isEditing={isEditing}
-          saving={saving}
           onSave={handleSave}
           onCancel={handleCancel}
         />
@@ -86,15 +92,16 @@ export default function ProfilePage() {
         {!isEditing && (
           <div className="flex justify-end">
             <button
-              type="button"
-              onClick={() => setIsEditing(true)}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              onClick={handleSave}
+              disabled={saving || !name.trim()}
+              className="px-6 py-2.5 bg-yellow-500 hover:bg-yellow-600 disabled:opacity-50 text-white rounded-lg font-semibold text-sm transition-colors"
             >
-              Edit Profile
+              {saving ? 'Ana adanawa...' : saved ? 'An adana ✓' : 'Adana canje-canje'}
             </button>
           </div>
         )}
+
       </div>
     </div>
-  );
+  )
 }

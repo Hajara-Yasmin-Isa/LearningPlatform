@@ -43,14 +43,14 @@ export default async function CourseDetailPage({ params, searchParams }: { param
         <div className="max-w-4xl mx-auto px-6 py-10">
             {message === "enroll-first" && (
                 <p className="bg-yellow-50 border border-yellow-300 text-yellow-800 px-4 py-2 rounded mb-4">
-                    Please enroll in this course to access lessons.
+                    Don samun darasi, da fatan ka yi rajista a wannan aji.
                 </p>
             )}
             <h1 className="text-3xl font-bold">{course.title}</h1>
             <p className="text-gray-600 mt-2 text-base leading-relaxed">{course.description}</p>
             <div className="flex items-center gap-4 mt-4 flex-wrap">
                 <span className="text-sm">
-                    Instructor: {course.users?.name ?? 'Unknown'}
+                    Maalami: {course.users?.name ?? 'Ba a sani ba'}
                 </span>
                 <span
                     className={`text-xs px-2 py-1 rounded ${course.difficulty === 'Beginner'
@@ -63,38 +63,41 @@ export default async function CourseDetailPage({ params, searchParams }: { param
                     {course.difficulty}
                 </span>
                 <span className="text-sm">
-                    Duration: {course.duration_minutes} minutes
+                    Tsawon lokaci: mintuna {course.duration_minutes}
                 </span>
             </div>
-            <h2 className="text-xl font-semibold mt-8 mb-3">
-            Course Lessons
-            </h2>
+            {!isEnrolled && (
+                <p className="mt-4 text-sm text-gray-500">Enroll to access lessons</p>
+            )}
+
             <ul className="space-y-2 mt-4">
                 {lessons?.length === 0 && (
-                    <li className="font-bold">No lessons available yet.</li>
+                    <li className="font-bold">Babu darrusa a yanzu.</li>
                 )}
-                {lessons?.map((lesson, index) =>
-    isEnrolled ? (
-        <li key={lesson.id}>
-            <Link
-                href={`/lessons/${lesson.id}`}
-                className="block border rounded-lg p-3 hover:bg-indigo-50 transition-colors"
-            >
-                Lesson {index + 1}: {lesson.title}
-            </Link>
-        </li>
-    ) : (
-        <li
-            key={lesson.id}
-            className="border rounded-lg p-3 flex items-center gap-2 text-gray-400"
-        >
-            <span>🔒</span>
-            <span>
-                Lesson {index + 1}: {lesson.title}
-            </span>
-        </li>
-    )
-)}
+                {lessons?.map((lesson, index) => (
+
+                    <li
+                        key={lesson.id}
+                        className="border rounded-lg p-3 flex items-center gap-3"
+                    >
+
+                        { isEnrolled ? (
+                            <Link href={`/lessons/${lesson.id}`} className="flex items-center gap-2">
+                                {completedLessonIds.has(lesson.id) && (
+                                    <span className="text-green-600 font-bold">✓</span>
+                                )}
+                                Lesson {index + 1}: {lesson.title}
+                            </Link>
+                        ) : (
+                            <span className="flex items-center gap-2">
+                                {completedLessonIds.has(lesson.id) && (
+                                    <span className="text-green-600 font-bold">✓</span>
+                                )}
+                                Lesson {index + 1}: {lesson.title}
+                            </span>
+                        )}
+                    </li>
+                ))}
             </ul>
 
             {isEnrolled && lessons?.length > 0 && (
