@@ -224,3 +224,32 @@ export async function isCourseComplete(
   if (error) throw new Error(error.message)
   return (data ?? []).length === lessons.length
 }
+
+/** Returns all courses (published and unpublished) owned by an instructor, or [] if none; throws on unexpected error. */
+export async function getInstructorCourses(
+  userId: string,
+  client: SupabaseClient = supabase
+): Promise<CourseWithInstructor[]> {
+  const { data, error } = await client
+    .from('courses')
+    .select(`*, users(name, username), lessons(count)`)
+    .eq('instructor_id', userId)
+    .order('created_at', { ascending: false })
+
+  if (error) throw new Error(error.message)
+  return ((data ?? []) as unknown as CourseWithLessonCountRaw[]).map(toCourseWithInstructor)
+}
+
+/** Returns the number of students enrolled in a course, or 0 if none; throws on unexpected error. */
+export async function getEnrollmentCount(
+  courseId: string,
+  client: SupabaseClient = supabase
+): Promise<number> {
+  const { count, error } = await client
+    .from('enrollments')
+    .select('*', { count: 'exact', head: true })
+    .eq('course_id', courseId)
+
+  if (error) throw new Error(error.message)
+  return count ?? 0
+}
