@@ -45,7 +45,11 @@ export default function ProfilePage() {
 
         {/* Header */}
         <div className="flex items-center gap-6">
-          <ProfileAvatar size={96} />
+          <ProfileAvatar
+              url={profile.avatar_url}
+              name={profile.name}
+              onUpload={handleAvatarUpload}
+            />
 
           <div className="flex items-center gap text">
             <h1 className="text-2xl font-bold text-blue-700">{profile.name}</h1>
