@@ -1,133 +1,99 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase/client'
-import { User } from '@supabase/supabase-js'
-import LoadingScreen from '@/components/ui/LoadingScreen'
-import ProfileAvatar from '@/components/features/profile/ProfileAvatar'
+import { useState } from "react";
+import ProfileAvatar from "@/components/features/profile/ProfileAvatar";
+import ProfileForm from "@/components/features/profile/ProfileForm";
 
-const LEVELS = ['An koyo', 'Matsakaici', 'Gwanaye'] as const
-type Level = typeof LEVELS[number] | ''
+
+type Role = "Student" | "Instructor";
+
+interface ProfileData {
+  name: string;
+  email: string;
+  bio: string;
+  role: Role;
+  gradeLevel?: string;
+  department?: string;
+}
 
 export default function ProfilePage() {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [name, setName] = useState('')
-  const [level, setLevel] = useState<Level>('')
-  const [saving, setSaving] = useState(false)
-  const [saved, setSaved] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const router = useRouter()
+  const [profile, setProfile] = useState<ProfileData>({
+    name: "John Doe",
+    email: "john@example.com",
+    bio: "Passionate learner and future engineer.",
+    role: "Student",
+    gradeLevel: "Sophomore",
+  });
 
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) { router.push('/auth/login'); return }
-      setUser(user)
-      setName(user.user_metadata?.full_name ?? '')
-      setLevel(user.user_metadata?.level ?? '')
-      setLoading(false)
-    })
-  }, [router])
+  const [isEditing, setIsEditing] = useState(false);
 
-  const handleAvatarUpload = async (file: File) => {
-    if (!user) return
-    setError(null)
-    const ext = file.name.split('.').pop()
-    const path = `${user.id}/avatar.${ext}`
 
-    const { error: uploadError } = await supabase.storage
-      .from('avatars')
-      .upload(path, file, { upsert: true })
 
-    if (uploadError) { setError(uploadError.message); return }
+  const handleSave = (updatedData: ProfileData) => {
+    console.log("Saved profile:", updatedData);
+    setProfile(updatedData);
+    setIsEditing(false);
+  };
 
-    const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path)
-    const { data, error: updateError } = await supabase.auth.updateUser({
-      data: { avatar_url: publicUrl },
-    })
-    if (updateError) { setError(updateError.message); return }
-    setUser(data.user)
-  }
-
-  const handleSave = async () => {
-    if (!name.trim()) return
-    setSaving(true)
-    setError(null)
-    const { data, error } = await supabase.auth.updateUser({
-      data: { full_name: name.trim(), level: level || null },
-    })
-    setSaving(false)
-    if (error) { setError(error.message); return }
-    setUser(data.user)
-    setSaved(true)
-  }
-
-  if (loading) return <LoadingScreen />
+  const handleCancel = () => {
+    setIsEditing(false);
+  };
 
   return (
-    <div className="min-h-[80vh] flex items-start justify-center py-12 px-4">
-      <div className="w-full max-w-lg">
-        <h1 className="text-2xl font-bold text-slate-900 mb-8">Shafin Bayanai ka</h1>
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-3xl mx-auto bg-white shadow rounded-lg p-8 space-y-6">
 
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 space-y-8">
-
-          {/* Avatar */}
+        {/* Header */}
+        <div className="flex items-center gap-6">
           <ProfileAvatar
-            url={user?.user_metadata?.avatar_url}
-            name={user?.user_metadata?.full_name || user?.email?.split('@')[0] || ''}
-            onUpload={handleAvatarUpload}
-          />
-
-          {/* Name */}
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Sunanka
-            </label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => { setName(e.target.value); setSaved(false) }}
-              className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-slate-900 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition"
-              placeholder="Sunanka"
+              url={profile.avatar_url}
+              name={profile.name}
+              onUpload={handleAvatarUpload}
             />
+
+          <div className="flex items-center gap text">
+            <h1 className="text-2xl font-bold text-blue-700">{profile.name}</h1>
+            <span className="inline-block mt-1 px-3 py-1 mx-4 text-sm bg-blue-100 text-blue-700 rounded-full">
+              {profile.role}
+            </span>
           </div>
+        </div>
+        {/* TEMPORARY Change Profile Data (to test Instructor role)*/}
+        <button
+        onClick={() =>
+            setProfile((prev) =>
+            prev.role === "Student"
+                ? {
+                    name: "Dr. Smith",
+                    email: "smith@example.com",
+                    bio: "Teaching advanced software engineering.",
+                    role: "Instructor",
+                    department: "Computer Science",
+                }
+                : {
+                    name: "John Doe",
+                    email: "john@example.com",
+                    bio: "Computer Science student.",
+                    role: "Student",
+                    gradeLevel: "Senior",
+                }
+            )
+        }
+        className="mb-4 px-4 py-2 bg-gray-500 rounded hover:bg-black"
+        >
+        Toggle Role
+        </button>
 
-          {/* Level */}
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Mataki
-            </label>
-            <select
-              value={level}
-              onChange={(e) => { setLevel(e.target.value as Level); setSaved(false) }}
-              className={`w-full border border-slate-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition bg-white ${level === '' ? 'text-slate-400' : 'text-slate-900'}`}
-            >
-              <option value="" disabled hidden>Zaɓi matakinka</option>
-              {LEVELS.map((l) => (
-                <option key={l} value={l} className="text-slate-900">{l}</option>
-              ))}
-            </select>
-          </div>
+        {/* Form */}
+        <ProfileForm
+          data={profile}
+          isEditing={isEditing}
+          onSave={handleSave}
+          onCancel={handleCancel}
+        />
 
-          {/* Email — read only */}
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Adireshin Imel
-            </label>
-            <input
-              type="email"
-              value={user?.email ?? ''}
-              disabled
-              className="w-full border border-slate-100 rounded-lg px-3 py-2.5 text-slate-400 bg-slate-50 cursor-not-allowed"
-            />
-            <p className="text-xs text-slate-400 mt-1">
-              Imel ɗinka yana haɗe da account, kuma ba za a iya canza shi ba.
-            </p>
-          </div>
-
-          {error && <p className="text-sm text-red-500">{error}</p>}
-
+        {/* Edit Button */}
+        {!isEditing && (
           <div className="flex justify-end">
             <button
               onClick={handleSave}
@@ -137,8 +103,8 @@ export default function ProfilePage() {
               {saving ? 'Ana adanawa...' : saved ? 'An adana ✓' : 'Adana canje-canje'}
             </button>
           </div>
+        )}
 
-        </div>
       </div>
     </div>
   )

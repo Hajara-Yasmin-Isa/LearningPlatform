@@ -38,11 +38,8 @@ export default async function CourseDetailPage({ params, searchParams }: { param
     }
 
     const lessons = await getLessonsByCourse(id, supabase)
-
-    const completedLessonIds = new Set(
-        userId ? await getUserProgressForCourse(userId, id, supabase) : []
-    )
-
+    const completedLessonIds = new Set(userId ? (await getUserProgressForCourse(userId, id, supabase)) : [])
+    const userProgress = userId ? await getUserProgressForCourse(userId, id, supabase) : null
     return (
         <div className="max-w-4xl mx-auto px-6 py-10">
             {message === "enroll-first" && (
@@ -71,9 +68,11 @@ export default async function CourseDetailPage({ params, searchParams }: { param
                 </span>
             </div>
             {!isEnrolled && (
-                <p className="mt-4 text-sm text-gray-500">Yi rajista don samun darrusa</p>
+                <p className="mt-4 text-sm text-gray-500">Enroll to access lessons</p>
             )}
 
+
+            <h2 className="text-xl font-semibold mt-8 mb-3">Course Lessons</h2>
             <ul className="space-y-2 mt-4">
                 {lessons?.length === 0 && (
                     <li className="font-bold">Babu darrusa a yanzu.</li>
@@ -86,23 +85,29 @@ export default async function CourseDetailPage({ params, searchParams }: { param
                     >
 
                         { isEnrolled ? (
-                            <Link href={`/lessons/${lesson.id}`} className="flex items-center gap-2">
+                            <Link
+                                href={`/lessons/${lesson.id}`}
+                                className="flex items-center gap-2 hover:bg-indigo-50 transition-colors rounded-lg p-2"
+                                >
                                 {completedLessonIds.has(lesson.id) && (
                                     <span className="text-green-600 font-bold">✓</span>
                                 )}
-                                Darasi na {index + 1}: {lesson.title}
+                                Lesson {index + 1}: {lesson.title}
                             </Link>
                         ) : (
-                            <span className="flex items-center gap-2">
-                                {completedLessonIds.has(lesson.id) && (
-                                    <span className="text-green-600 font-bold">✓</span>
-                                )}
-                                Darasi na {index + 1}: {lesson.title}
-                            </span>
-                        )}
+                            <span className="flex items-center gap-2 text-gray-400">
+                    🔒 Lesson {index + 1}: {lesson.title}
+                </span>
+                                        )}
                     </li>
                 ))}
             </ul>
+
+            {isEnrolled && lessons?.length > 0 && (
+                <Link href={`/lessons/${lessons[0].id}`} className="inline-block mt-6 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors">
+                    Continue Learning →
+                </Link>
+            )}
 
             <div className="mt-8">
                 <EnrollmentButton
