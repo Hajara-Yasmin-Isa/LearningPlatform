@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react'
 import { getAllPublishedCourses, getUserEnrollments, searchCourses, getEnrolledCoursesWithProgress } from '@/lib/supabase/courses'
 import { CourseGrid } from '@/components/features/courses/CourseGrid'
-import { CourseWithInstructor, Enrollment } from '@/types/database'
-import { supabase } from '@/lib/supabase/client' // Fixed import
+import { Course, CourseWithInstructor, Enrollment } from '@/types/database'
+import { supabase } from '@/lib/supabase/client'
 import { CourseCard } from '@/components/features/courses/CourseCard'
 import LoadingScreen from '@/components/ui/LoadingScreen'
 
@@ -15,7 +15,12 @@ export default function CoursesPage() {
   const [userId, setUserId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [difficulty, setDifficulty] = useState("")
-
+  const [progress, setProgress] = useState<{
+    course: Course
+    sectionsCompleted: number
+    totalSections: number
+  }[]
+>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -38,10 +43,13 @@ export default function CoursesPage() {
         const coursesData = await getAllPublishedCourses()
         setCourses(coursesData)
 
-        // Fetch enrollments if logged in
+        // Fetch enrollments and course progress if logged in
         if (uid) {
           const enrollmentsData = await getUserEnrollments(uid)
           setEnrollments(enrollmentsData)
+
+          const progressData = await getEnrolledCoursesWithProgress(uid)
+          setProgress(progressData)
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Something went wrong.')
