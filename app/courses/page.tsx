@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { getAllPublishedCourses, getUserEnrollments, searchCourses } from '@/lib/supabase/courses'
+import { getAllPublishedCourses, getUserEnrollments, searchCourses, getEnrolledCoursesWithProgress } from '@/lib/supabase/courses'
 import { CourseGrid } from '@/components/features/courses/CourseGrid'
 import { CourseWithInstructor, Enrollment } from '@/types/database'
 import { supabase } from '@/lib/supabase/client' // Fixed import
