@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase/server';
-import { runCode, getExercise } from '@/learning-engine/code-runner/runCode';
+import { runCode } from '@/learning-engine/code-runner/runCode';
 import { rateLimit } from '@/lib/rateLimit';
 
 const MAX_CODE_LENGTH = 10_000;
@@ -19,11 +19,11 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { code } = body;
+        const { code, language, functionName, testCases } = body;
 
-        if (typeof code !== 'string') {
+        if (typeof code !== 'string' || typeof language !== 'string') {
             return NextResponse.json(
-                { error: "Couldn't read code. Re-type your solution in the editor." }, { status: 400 }
+                { error: 'code and language are required' }, { status: 400 }
             );
         }
 
@@ -33,7 +33,8 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const result = runCode(code, getExercise());
+        // ?? undefined so the database's nulls become the optional params runCode expects
+        const result = await runCode(code, language, functionName ?? undefined, testCases ?? undefined);
         return NextResponse.json(result);
 
     } catch (e) {

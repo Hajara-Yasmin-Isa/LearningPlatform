@@ -1,6 +1,8 @@
 'use client'
 
 import ExerciseBlock from './ExerciseBlock'
+import CodeExercise from './CodeExercise'
+import MatchingExercise from './MatchingExercise'
 import SectionContent from './SectionContent'
 import { Exercise, Section, Lesson } from '@/types/database'
 import { useState, useEffect } from 'react'
@@ -144,13 +146,37 @@ export default function LessonSections({ courseId, sections, userId, lessonId, l
                 <SectionContent content={currentSection.content} />
 
                 <div className="space-y-4">
-                    {currentSection.exercises.map((exercise) => (
-                        <ExerciseBlock
-                            key={exercise.id}
-                            exercise={exercise}
-                            onComplete={() => handleExerciseComplete(exercise.id)}
-                        />
-                    ))}
+                    {currentSection.exercises.map((exercise) => {
+                        // all three get the same onComplete so completedExercises fills
+                        // regardless of type, and the Next button still enables
+                        if (exercise.exercise_type === 'code') {
+                            return (
+                                <CodeExercise
+                                    key={exercise.id}
+                                    exercise={exercise}
+                                    onComplete={() => handleExerciseComplete(exercise.id)}
+                                />
+                            )
+                        }
+                        // cast because 'matching' isn't in the exercise_type union yet
+                        if ((exercise.exercise_type as string) === 'matching') {
+                            return (
+                                <MatchingExercise
+                                    key={exercise.id}
+                                    exercise={exercise}
+                                    onComplete={() => handleExerciseComplete(exercise.id)}
+                                />
+                            )
+                        }
+
+                        return (
+                            <ExerciseBlock
+                                key={exercise.id}
+                                exercise={exercise}
+                                onComplete={() => handleExerciseComplete(exercise.id)}
+                            />
+                        )
+                    })}
                 </div>
                 {saveError && (
                     <p className="text-red-500 text-sm mt-2">{saveError}</p>

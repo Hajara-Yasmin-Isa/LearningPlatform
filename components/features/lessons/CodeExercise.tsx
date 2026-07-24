@@ -20,7 +20,12 @@ export default function CodeExercise({ exercise, onComplete }: CodeExerciseProps
       const res = await fetch('/api/run-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code }),
+        body: JSON.stringify({ 
+          code,
+          language: 'javascript',
+          functionName: exercise.function_name,
+          testCases: exercise.test_cases, 
+        }),
       })
       const data: RunCodeResult = await res.json()
       setResult(data)
@@ -53,7 +58,29 @@ export default function CodeExercise({ exercise, onComplete }: CodeExerciseProps
 
       {result && (
         <div className="mt-3">
-          {result.output && <pre className="text-sm bg-gray-50 p-3 rounded">{result.output}</pre>}
+          {/* with test cases we show a row per test; without them just the raw output */}
+          {result.details ? (
+            <div className="space-y-2">
+              {result.details.map((test, i) => (
+                <div
+                  key={i}
+                  className={`text-sm border rounded p-3 ${test.passed ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}
+                >
+                  <p className="font-medium">
+                    {test.passed ? '✓' : '✗'} Test {i + 1}
+                  </p>
+                  <p className="font-mono text-xs mt-1">
+                    Input: {test.input.map((arg) => JSON.stringify(arg)).join(', ')}
+                  </p>
+                  <p className="font-mono text-xs">Expected: {JSON.stringify(test.expected)}</p>
+                  <p className="font-mono text-xs">Actual: {JSON.stringify(test.actual)}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            result.output && <pre className="text-sm bg-gray-50 p-3 rounded">{result.output}</pre>
+          )}
+
           {result.passed ? (
             <p className="text-green-600 mt-2">All tests passed!</p>
           ) : (
