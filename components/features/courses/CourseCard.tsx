@@ -5,6 +5,7 @@ import { enrollInCourse } from "@/lib/supabase/courses"
 import { CourseWithInstructor } from '@/types/database'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { getEnrolledCoursesWithProgress } from '@/lib/supabase/courses'
 
 //Course Card props: CourseWithInstructor extends a Course class which has all the information whose members can be accessed
 //by the . operator
@@ -12,6 +13,11 @@ interface CourseCardProps {
   course: CourseWithInstructor
   isEnrolled: boolean
   userId: string | null
+  
+  progress?: {
+    completed: number
+    total: number
+  }
 }
 
 export function CourseCard({ course, isEnrolled, userId }: CourseCardProps) {
