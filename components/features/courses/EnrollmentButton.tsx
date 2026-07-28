@@ -2,11 +2,13 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabase/client'
 import { enrollInCourse } from '@/lib/supabase/courses'
 
 interface EnrollButtonProps {
     userId: string | null
     courseId: string
+    courseTitle: string
     isEnrolled: boolean
     firstLessonId?: string
 }
@@ -14,11 +16,31 @@ interface EnrollButtonProps {
 export function EnrollmentButton({
     userId,
     courseId,
+    courseTitle,
     isEnrolled,
     firstLessonId,
 }: EnrollButtonProps) {
     const router = useRouter()
     const [loading, setLoading] = useState(false)
+
+    // Fire-and-forget: enrollment already succeeded, so email failures are
+    // deliberately swallowed and never surfaced to the user
+    const sendEnrollmentEmail = () => {
+        supabase.auth.getUser()
+            .then(({ data: { user } }) => {
+                if (!user?.email) return
+                return fetch('/api/email/enrollment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        studentEmail: user.email,
+                        studentName: user.user_metadata?.full_name ?? '',
+                        courseTitle,
+                    }),
+                })
+            })
+            .catch(() => {})
+    }
 
     const handleEnroll = async () => {
         if (!userId) {
@@ -29,6 +51,7 @@ export function EnrollmentButton({
         try {
             setLoading(true)
             await enrollInCourse(userId, courseId)
+            sendEnrollmentEmail()
             router.refresh()
         } catch (err) {
             alert(err instanceof Error ? err.message : 'An error occurred')
@@ -50,7 +73,7 @@ export function EnrollmentButton({
                 </button>
             ) : (
                 <a href={`/lessons/${firstLessonId}`}
-                    className="bg-blue-600 text-white px-4 py-2 rounded inline-block">    
+                    className="bg-blue-600 text-white px-4 py-2 rounded inline-block">
                         Ci gaba da koyo
                 </a>
             )}
