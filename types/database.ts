@@ -24,7 +24,7 @@ export interface Exercise {
   id: string
   section_id: string
   question: string
-  exercise_type: 'multiple_choice' | 'code' | 'text'
+  exercise_type: 'multiple_choice' | 'code' | 'text' | 'matching'
   correct_answer: string
   options: string[] | null
   exercise_order: number

@@ -158,8 +158,8 @@ export default function LessonSections({ courseId, sections, userId, lessonId, l
                                 />
                             )
                         }
-                        // cast because 'matching' isn't in the exercise_type union yet
-                        if ((exercise.exercise_type as string) === 'matching') {
+                        
+                        if (exercise.exercise_type === 'matching') {
                             return (
                                 <MatchingExercise
                                     key={exercise.id}
