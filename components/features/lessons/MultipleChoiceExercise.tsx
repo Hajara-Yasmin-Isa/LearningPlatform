@@ -62,14 +62,14 @@ export default function MultipleChoiceExercise({ exercise, onComplete }: Multipl
           disabled={!selected}
           className="mt-2 px-5 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-40 hover:bg-blue-700 transition-colors"
         >
-          Submit
+          Aika amsa
         </button>
       ) : isCorrect ? null : (
         <button
           onClick={handleRetry}
           className="mt-2 px-5 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
         >
-          Try again
+          Sake gwadawa
         </button>
       )}
     </div>
