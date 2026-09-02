@@ -24,7 +24,7 @@ export default function ExerciseBlock({ exercise, onComplete }: ExerciseBlockPro
       {completed && (
         <div className="flex items-center gap-2 mb-4 text-green-600 font-medium">
           <span className="text-lg">✓</span>
-          <span>Correct!</span>
+          <span>Daidai ne!</span>
         </div>
       )}
 
