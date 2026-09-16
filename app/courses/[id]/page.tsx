@@ -108,6 +108,7 @@ export default async function CourseDetailPage({ params, searchParams }: { param
                 <EnrollmentButton
                     userId={userId}
                     courseId={course.id}
+                    courseTitle={course.title}
                     isEnrolled={isEnrolled}
                     firstLessonId={lessons?.[0]?.id}
                 />
