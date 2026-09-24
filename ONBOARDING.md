@@ -14,7 +14,6 @@ Previous cohorts built the infrastructure. It's live:
 
 - **littafinfasaha.com is in public beta with real users** — students in Nigeria learning in Hausa, sending us feedback (one user's bug report already led to a shipped fix).
 - **One complete course is live:** Ƙa'idoji da Dabarun Koding a Kwamfuta — 6 lessons, 36 sections, 77 interactive exercises, entirely in Hausa, with mastery gating and progress tracking.
-- **The platform is a real company's product:** Littafin Fasaha Labs Limited, registered in Nigeria.
 - The auth flow, course catalog, lesson viewer, exercise engine, progress tracking, and student dashboard all exist and work. **We are not rebuilding these.**
 
 What this means for you: **the bar changed.** Mistakes in early cohorts broke a demo. Mistakes now can affect real learners. The workflow rules below exist for that reason.
