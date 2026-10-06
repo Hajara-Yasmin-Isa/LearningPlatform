@@ -50,7 +50,23 @@ export async function updateUserProfile(
 }
 
 export async function getUserRole(
+  userId: string,
+  client = browserClient
+): Promise< { role: string } | null > {
+  const { data : { user }, error: authError} = await client.auth.getUser()
+  if (authError) throw new Error(authError.message)
+  if (!user) throw new Error('Not authenticated')
 
-): Promise<void> {
-  
+  const { data, error } = await client
+    .from('users')
+    .select('role')
+    .eq('id', userId)
+    .single()
+
+    if (error && error.code !== 'PGRST116') throw new Error(error.message)
+    if (!data) return null 
+
+  return {
+    role: data.role
+  }
 }
