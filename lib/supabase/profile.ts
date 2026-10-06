@@ -1,4 +1,5 @@
 import { supabase as browserClient } from './client'
+import { SupabaseClient } from '@supabase/supabase-js';
 
 // Error handling convention for this file: throws on unexpected Supabase
 // errors; returns null when there is no authenticated user or no profile row.
@@ -51,12 +52,8 @@ export async function updateUserProfile(
 
 export async function getUserRole(
   userId: string,
-  client = browserClient
+  client: SupabaseClient
 ): Promise< { role: string } | null > {
-  const { data : { user }, error: authError} = await client.auth.getUser()
-  if (authError) throw new Error(authError.message)
-  if (!user) throw new Error('Not authenticated')
-
   const { data, error } = await client
     .from('users')
     .select('role')
