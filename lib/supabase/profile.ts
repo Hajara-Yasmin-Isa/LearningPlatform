@@ -48,3 +48,9 @@ export async function updateUserProfile(
     .eq('id', user.id)
   if (updateUsersError) throw new Error(updateUsersError.message)
 }
+
+export async function getUserRole(
+
+): Promise<void> {
+  
+}
