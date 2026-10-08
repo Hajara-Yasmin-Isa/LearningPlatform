@@ -7,15 +7,21 @@ import { redirect } from 'next/navigation'
 export default async function DashboardPage() {
   const supabase = await createServerClient()
 
-  const { data: { user }, error } = await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
     redirect('/auth/login')
   }
 
-  const role = await getUserRole(user?.id, supabase);
-
-  const isInstructor = role?.role === "instructor" || role?.role === "admin"
+  // A failed role lookup must not take the dashboard down with it: fall back
+  // to the student view, which is what almost every user needs anyway.
+  let isInstructor = false
+  try {
+    const role = await getUserRole(user.id, supabase)
+    isInstructor = role === 'instructor' || role === 'admin'
+  } catch {
+    isInstructor = false
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
