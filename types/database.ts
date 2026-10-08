@@ -90,3 +90,6 @@ export interface UserLesson {
   completed: boolean
   total: number
 }
+
+// Roles a user can hold, matching the CHECK constraint on users.role
+export type UserRole = 'student' | 'instructor' | 'admin'

@@ -1,12 +1,14 @@
 # Language-First Computing Education Platform
 
-**Status:** Alpha / v0  
+**Status:** Public beta — live at [littafinfasaha.com](https://littafinfasaha.com)  
 **Purpose:** Collaborative learning platform built by students, for students
+
+> **New to the team?** Start with [ONBOARDING.md](ONBOARDING.md) (current cohort), then [CONTRIBUTING.md](CONTRIBUTING.md). Research proposals live in [docs/proposals/](docs/proposals/) — copy [000-template.md](docs/proposals/000-template.md).
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18+ installed
+- Node.js 20+ installed
 - Git configured
 - Access to project Trello board
 - Supabase credentials (provided by project lead)
@@ -15,8 +17,8 @@
 
 1. **Clone the repository**
 ```bash
-git clone <repository-url>
-cd learning-platform
+git clone https://github.com/Hajara-Yasmin-Isa/LearningPlatform.git
+cd LearningPlatform
 ```
 
 2. **Install dependencies**
