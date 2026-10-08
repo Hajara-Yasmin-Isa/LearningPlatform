@@ -29,6 +29,12 @@ function toCourseWithInstructor(raw: CourseWithLessonCountRaw): CourseWithInstru
   return { ...course, lessonCount: lessons?.[0]?.count ?? 0 }
 }
 
+// Courses a learner can start today come before "coming soon" shells, which
+// have no lessons yet. Within each group the query's created_at order holds.
+function liveCoursesFirst(courses: CourseWithInstructor[]): CourseWithInstructor[] {
+  return [...courses].sort((a, b) => Number(b.lessonCount > 0) - Number(a.lessonCount > 0))
+}
+
 /** Returns published courses joined with instructor info and lesson count; throws on unexpected error. */
 export async function getAllPublishedCourses(client: SupabaseClient = supabase): Promise<CourseWithInstructor[]> {
   const { data, error } = await client
@@ -38,7 +44,7 @@ export async function getAllPublishedCourses(client: SupabaseClient = supabase):
     .order('created_at', { ascending: false })
 
   if (error) throw new Error(error.message)
-  return ((data ?? []) as unknown as CourseWithLessonCountRaw[]).map(toCourseWithInstructor)
+  return liveCoursesFirst(((data ?? []) as unknown as CourseWithLessonCountRaw[]).map(toCourseWithInstructor))
 }
 
 /**
@@ -69,7 +75,7 @@ export async function searchCourses(
   const { data, error } = await request.order('created_at', { ascending: false })
   if (error) throw new Error(error.message)
 
-  return ((data ?? []) as unknown as CourseWithLessonCountRaw[]).map(toCourseWithInstructor)
+  return liveCoursesFirst(((data ?? []) as unknown as CourseWithLessonCountRaw[]).map(toCourseWithInstructor))
 }
 
 /** Returns a course by id joined with instructor info and lesson count, or null if not found; throws on unexpected error. */
