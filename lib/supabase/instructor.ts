@@ -1,5 +1,7 @@
 import { supabase as browserClient } from './client'
 
+type SupabaseClient = typeof browserClient
+
 export async function getEnrolledStudents(instructorId: string, client: SupabaseClient = browserClient) {
     const { data, error } = await client
     .from('courses')
