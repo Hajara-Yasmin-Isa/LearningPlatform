@@ -80,25 +80,54 @@ The evidence supports this: **prompt v2 fixed none of the factual errors.** The 
 
 ## Current thinking
 
-**Leaning towards phi3.5, provided the answer-revealing problem can be solved.**
+**None of the four models is an obvious choice, which makes this a hard call.** Each one fails somewhere that matters for a tutor, and they fail in different ways. No model is good at all three essentials: being accurate, not giving the answer away, and actually helping.
 
-- phi3.5 gives the best explanations. It has the highest helpfulness score (1.33 vs ≤1.07), and its chat answers (C02, C03) were the most in-depth.
-- It also gives away the answer the most (7 of 11 cases where revealing applies), which is the main reason its total is lowest. Take away the leaks and it explains better than the other three.
-- **A more robust system prompt should help.** v1's "never reveal" rule wasn't strong enough for phi3.5.
-- **A code check should back up the prompt.** For example, a step that inspects each reply and blocks it if it gives the answer away. `ONBOARDING.md` already says guide-don't-reveal should be "enforced in code".
+### Each model's trade-off
 
-Concerns about phi3.5 to address in the proposal:
+| Model | Strengths | Weaknesses | Speed / memory (laptop) |
+|---|---|---|---|
+| **gemma2:2b** | Highest score (89/112). Only model with **no factual errors**. Fastest and smallest. | Least helpful (0.93). Hints often just repeat the question ("What does `range(5)` do?"). Gave the answer in E03 (named "float") and C04. Chatted about football in C05. | 69.7 tok/s · 1.0s per reply · 1.7GB |
+| **qwen2.5:3b** | Close second (88/112). Short, clear and well-pitched when it works (E02, E03, E09). Second most helpful (1.07). | Bluntly gave the answer in E04, E07 and C04 ("range(5) produces Numbers 0 to 4"). One factual error (E01). **Ignored the stricter v2 prompt entirely.** | 45.9 tok/s · 1.0s · 2.0GB |
+| **llama3.2:3b** | Held firm when pushed for the answer (C04). Best off-topic redirect (C05). Warm tone. Its 2 reveals were indirect (showing the quoted string in E01, reciting padding's definition in E06). | Two factual errors (E07, C03), repeated in kind in v2. Low helpfulness (0.93). With v2 it became overcautious and refused a normal "explain loops" question. | 48.0 tok/s · 1.4s · 2.2GB |
+| **phi3.5** | **Best explanations** by a clear margin (helpful 1.33). Richest chat answers (C02, C03). Improved the most with a stricter prompt (reveals roughly halved). | Lowest score (70/112). Most fails (7) and most answer reveals (7 of 11). **Most factual errors (3).** Garbled words in 5 replies. Slowest and largest. Didn't redirect off-topic. | 58.1 tok/s · 1.8s · 2.9GB |
+
+### Why it's hard to choose
+
+- **The safest model is the least helpful.** gemma2 is accurate and rarely leaks, but often doesn't teach anything. A tutor that only repeats the question isn't much better than no tutor.
+- **The most helpful model is the least safe.** phi3.5 explains best, but it leaks the most and gets the most facts wrong.
+- **Leaks and factual errors aren't equally fixable.** Leaks can be reduced with a stronger prompt (v2 roughly halved phi3.5's) and possibly a code check. Factual errors can't be fixed by prompting; v2 fixed none of them. So a model's factual errors count against it more than its leaks.
+- **The middle options don't clearly win either.** qwen2.5 ignores prompt changes, so its leaks can't be fixed. llama3.2 has factual errors and becomes unhelpful when the prompt gets stricter.
+- **The scores are close at the top.** gemma2 (89) and qwen2.5 (88) are effectively tied, and llama3.2 (84) isn't far behind. With 15 cases and one scorer, a few judgement calls could change the order.
+- **The total score and what we value most point in different directions.** By total, gemma2 wins. By helpfulness, phi3.5 wins. By accuracy, gemma2 wins. Which one matters most is a judgement the team should make together at the sync.
+
+### Tentative lean
+
+**phi3.5, but with serious reservations.** It's the only model that consistently teaches. The thinking: a robust system prompt plus a code check that blocks answer leaks could fix its biggest problem, and `ONBOARDING.md` already says guide-don't-reveal should be "enforced in code".
+
+- **A more robust system prompt should help.** v1's "never reveal" rule wasn't strong enough for phi3.5, and v2 showed it responds to stricter instructions better than the others.
+- **A code check should back up the prompt.** The first attempt (see Experiments) didn't work yet, so this is still unproven.
+
+What still counts against phi3.5:
+- **Three factual errors in v1** (E02, E07, E10), the most of any model, and more in v2. A prompt can't fix these. This is the biggest weakness in the case for it.
 - **Garbled words** in 5 replies ("Python'thy", "doesn'thy", "on thethy", "one bydictating"), plus a stray `-----`.
 - **Slowest and largest:** 1.79s median reply and 2.9GB on the laptop, vs 1.0s and 1.7GB for gemma2. This matters more on the VM, which has no GPU.
-- **Three factual errors in v1** (E02, E07, E10), the most of any model. Unlike leaks, a prompt can't fix these (see "Incorrect information").
-- **Doesn't redirect off-topic questions** (C05, football).
+- **Doesn't redirect off-topic questions** (C05, football) with the v1 prompt. Fixed in v2.
+
+**The fallback is gemma2:2b,** if accuracy and speed are judged more important than explanation quality. A better prompt might make its hints more useful, which would be easier than making phi3.5 accurate.
+
+### What would make the call easier
+
+- **VM numbers.** If phi3.5 is too slow on a CPU-only server, the choice makes itself.
+- **Scoring prompt v2 formally**, to see whether phi3.5's leaks really fall and whether gemma2's hints improve.
+- **A working leak check.** If leaks can be reliably caught in code, phi3.5's main weakness shrinks. If not, the case for it is much weaker.
+- **A second scorer**, to check that the close scores at the top aren't down to one person's judgement calls.
 
 ## Experiments tried (not adopted yet)
 
 ### Prompt v2 (`prompt-v2.md`, results in `results/laptop/v2/`)
 A stricter prompt: spells out every way of revealing, handles "just tell me", sets a 4-sentence limit, firmer off-topic rule, and one good/bad example. First-pass reveal counts (not formally scored):
 
-| Model | Reveals v1 → v2 |
+| Model | Reveals v1 → v2 (first-pass counts, before the strict rescoring) |
 |---|---|
 | phi3.5 | 6 → 3 |
 | qwen2.5:3b | 4 → 4 |
