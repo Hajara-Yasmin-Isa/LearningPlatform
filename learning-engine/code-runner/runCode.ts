@@ -1,6 +1,6 @@
-import vm from "vm";    
-// this brings in Node.js's vm module which is the tool that lets us run jacascript code in an isolated space
-// it's sort of like creating a blank room to put the student's code inside and then running it there 
+import { Worker } from 'worker_threads';
+// worker_threads lets us run the student's code on a separate thread,
+// so if it never finishes we can terminate it without freezing the server
 
 /**
  * Result returned by the runCode function
@@ -16,7 +16,7 @@ export interface RunCodeResult {
 /**
  * Result for an individual test case
  */
-interface TestCaseResult {
+export interface TestCaseResult {
   input: unknown[];   // the input values for the test case
   expected: unknown;   // the expected output value (what we want back)
   actual: unknown;   // what the student's code actually returned
@@ -26,142 +26,229 @@ interface TestCaseResult {
 /**
  * Definition of a test case
  */
-interface TestCase {
+export interface TestCase {
   input: unknown[];   // the input values for the test case
   expected: unknown;   // the expected output value (what we want back)
 }
 
-/**
- * Definition of an exercise
- */
-interface Exercise {
-  id: string;      // a unique identifier for the exercise
-  title: string;   // the title of the exercise
-  description: string;   // a description of the exercise
-  functionName: string;   // the name of the function to test
-  testCases: TestCase[];   // an array of test cases to run against the student's code
-}
+/** How long the student's code gets before we kill the worker. */
+const TIMEOUT_MS = 5000;
 
 /**
- * Sample exercise: Sum of Two Numbers
- *
- * Students must implement a function called `add` that takes two numbers
- * and returns their sum.
+ * Runs inside the worker thread. It's a string so we can spawn the worker with
+ * `eval: true` instead of pointing at a separate file. The worker only executes;
+ * the main thread does the comparing and formatting.
  */
-const sampleExercise: Exercise = {
-  id: "add-two-numbers",
-  title: "Sum of Two Numbers",
-  description:
-    "Write a function called `add` that takes two numbers as arguments and returns their sum.",
-  functionName: "add",
-  testCases: [
-    { input: [1, 2], expected: 3 },
-    { input: [0, 0], expected: 0 },
-    { input: [-1, 1], expected: 0 },
-    { input: [100, 200], expected: 300 },
-    { input: [-5, -10], expected: -15 },
-  ],
+const WORKER_SOURCE = `
+const { parentPort, workerData } = require('worker_threads');
+const { code, functionName, testCases } = workerData;
+
+try {
+  // newline before the return in case the student's code ends in a // comment
+  const factory = new Function(
+    code + '\\n; return typeof ' + functionName + " === 'function' ? " + functionName + ' : undefined;'
+  );
+  const studentFunction = factory();
+
+  if (typeof studentFunction !== 'function') {
+    parentPort.postMessage({ kind: 'not-defined' });
+  } else {
+    const actuals = testCases.map(function (testCase) {
+      try {
+        return { threw: false, value: studentFunction.apply(null, testCase.input) };
+      } catch (err) {
+        return { threw: true, message: err instanceof Error ? err.message : String(err) };
+      }
+    });
+    parentPort.postMessage({ kind: 'ran', actuals: actuals });
+  }
+} catch (err) {
+  parentPort.postMessage({
+    kind: 'compile-error',
+    message: err instanceof Error ? err.message : String(err),
+  });
+}
+`;
+
+/**
+ * Worker source for script mode. Same idea as WORKER_SOURCE, but instead of
+ * grading a function it just runs the code and collects whatever it logged.
+ */
+const SCRIPT_WORKER_SOURCE = `
+const { parentPort, workerData } = require('worker_threads');
+const { code } = workerData;
+
+const logs = [];
+
+function stringify(value) {
+  return typeof value === 'string' ? value : JSON.stringify(value);
+}
+
+// the student's code gets our console instead of the real one, so their
+// output ends up in this array rather than the server's terminal
+const captured = {
+  log: function () { logs.push(Array.prototype.map.call(arguments, stringify).join(' ')); },
+  error: function () { logs.push(Array.prototype.map.call(arguments, stringify).join(' ')); },
+  warn: function () { logs.push(Array.prototype.map.call(arguments, stringify).join(' ')); },
 };
+
+try {
+  new Function('console', code)(captured);
+  parentPort.postMessage({ kind: 'ok', logs: logs });
+} catch (err) {
+  parentPort.postMessage({
+    kind: 'threw',
+    logs: logs,
+    message: err instanceof Error ? err.message : String(err),
+  });
+}
+`;
+
 
 /**
  * Executes student-submitted JavaScript code against predefined test cases
  * and reports correctness.
  *
  * @param code - The student's JavaScript code as a string
- * @param exercise - The exercise to test against (defaults to sampleExercise)
+ * @param language - Which language to run the code as; only 'javascript' for now
+ * @param [functionName] - The name of the function to call and test (when there are test cases)
+ * @param [testCases] - The inputs and expected outputs to check the function against
  * @returns RunCodeResult with pass/fail status, output, and error information
  */
-export function runCode(
+export async function runCode(
   code: string,     // the student's JavaScript code as a string
-  exercise: Exercise = sampleExercise   // the exercise to test against (defaults to sampleExercise if no exercise is provided)
-): RunCodeResult {
-  const results: TestCaseResult[] = [];
+  language: string,
+  functionName?: string,
+  testCases?: TestCase[]
 
-  try {
-    // Create a VM context for code execution 
-    const context = vm.createContext({});
+): Promise<RunCodeResult> {
+  if (language !== 'javascript') { // in future will likely allow for other languages 
+    return {passed: false, output: null, error:  `Unsupported language: ${language}`}
 
-    // Execute the student's code to define their function
-    // this runs the student's code in the isolated context
-    vm.runInContext(code, context, {
-      timeout: 5000, // 5 second timeout to prevent infinite loops (prevents code from running forever)
+  }
+  if (testCases && testCases.length > 0) {
+    return runWithTestCases(code, functionName, testCases);
+  }
+  return runAsScript(code);
+}
+
+/**
+ * Shared worker plumbing: spawns a worker, enforces the timeout, and returns
+ * whichever of message / error / timeout lands first.
+ *
+ * @param source - the worker script to run (a string, spawned with eval: true)
+ * @param workerData - the values handed to that script
+ * @param onMessage - turns the worker's message into a RunCodeResult
+ */
+function runInWorker(
+  source: string,
+  workerData: Record<string, unknown>,
+  onMessage: (msg: any) => RunCodeResult
+): Promise<RunCodeResult> {
+  return new Promise((resolve) => {
+    const worker = new Worker(source, { eval: true, workerData });
+
+    function finish(result: RunCodeResult) {
+      clearTimeout(timer);
+      worker.terminate();
+      resolve(result);
+    }
+
+    // the real guard: terminate() kills the thread even mid-loop,
+    // which new Function() on the main thread could never do
+    const timer = setTimeout(() => {
+      finish({
+        passed: false,
+        output: null,
+        error: 'Your code took too long to run. Check for an infinite loop.',
+      });
+    }, TIMEOUT_MS);
+
+    worker.on('message', (msg) => finish(onMessage(msg)));
+
+    // worker crashed outright
+    worker.on('error', (err) => {
+      finish({ passed: false, output: null, error: `Code execution error: ${err.message}` });
     });
-    // if student wrote broken code, it will fail here and jump to the catch block that returns passed: fail, etc.
+  });
+}
 
-    // Check if the required function exists
-    // this makes sure that the student named the function the right thing
-    const studentFunction = context[exercise.functionName];
-    if (typeof studentFunction !== "function") {
+/**
+ * Grades the student's function against each test case, inside a worker thread
+ * so that an infinite loop can actually be killed.
+ */
+function runWithTestCases(
+  code: string,
+  functionName: string | undefined,
+  testCases: TestCase[]
+): Promise<RunCodeResult> {
+  if (!functionName) {
+    return Promise.resolve({
+      passed: false,
+      output: null,
+      error: 'No function name given for this exercise.',
+    });
+  }
+
+  return runInWorker(WORKER_SOURCE, { code, functionName, testCases }, (msg) => {
+    if (msg.kind === 'compile-error') {
+      return { passed: false, output: null, error: `Code execution error: ${msg.message}` };
+    }
+
+    if (msg.kind === 'not-defined') {
       return {
         passed: false,
         output: null,
-        error: `Function '${exercise.functionName}' is not defined. Make sure you define a function named '${exercise.functionName}'.`,
+        error: `Function '${functionName}' is not defined. Make sure you define a function named '${functionName}'.`,
       };
     }
 
-    // Loops through test cases and runs each test case
-    for (const testCase of exercise.testCases) {
-      try {
-        // Call the student's function with test inputs
-        const callCode = `${exercise.functionName}(${testCase.input.map((arg) => JSON.stringify(arg)).join(", ")})`;   // builds the call as a string
-        const actual = vm.runInContext(callCode, context, {     // runs the call in the isolated context
-          timeout: 1000, // 1 second per test case
-        });
+    // compare what came back against what we expected
+    const results: TestCaseResult[] = testCases.map((testCase, i) => {
+      const actual = msg.actuals[i];
 
-        const passed = deepEqual(actual, testCase.expected);
-
-        results.push({
-          input: testCase.input,
-          expected: testCase.expected,
-          actual,
-          passed,
-        });
-
-        // Stop on first failure
-        if (!passed) {
-          return {
-            passed: false,
-            output: formatResults(results, exercise),
-            error: null,
-            details: results,
-          };
-        }
-      } catch (err) {
-        // Runtime error during test execution
-        const errorMessage =
-          err instanceof Error ? err.message : String(err);
-        results.push({
-          input: testCase.input,
-          expected: testCase.expected,
-          actual: `Error: ${errorMessage}`,
-          passed: false,
-        });
-
+      if (actual.threw) {
         return {
+          input: testCase.input,
+          expected: testCase.expected,
+          actual: `Error: ${actual.message}`,
           passed: false,
-          output: formatResults(results, exercise),
-          error: `Runtime error during test: ${errorMessage}`,
-          details: results,
         };
       }
-    }
 
-    // All tests passed
+      return {
+        input: testCase.input,
+        expected: testCase.expected,
+        actual: actual.value,
+        passed: deepEqual(actual.value, testCase.expected),
+      };
+    });
+
     return {
-      passed: true,
-      output: formatResults(results, exercise),
+      passed: results.every((r) => r.passed),
+      output: formatResults(results, functionName),
       error: null,
       details: results,
     };
-  } catch (err) {
-    // Syntax error or error in student code definition
-    const errorMessage = err instanceof Error ? err.message : String(err);
-    return {
-      passed: false,
-      output: null,
-      error: `Code execution error: ${errorMessage}`,
-    };
-  }
+  });
+}
+
+/**
+ * Runs the code as a plain script with no grading, and returns whatever it logged.
+ * Also in a worker, so a runaway loop can be terminated.
+ */
+function runAsScript(code: string): Promise<RunCodeResult> {
+  return runInWorker(SCRIPT_WORKER_SOURCE, { code }, (msg) => {
+    if (msg.kind === 'threw') {
+      return {
+        passed: false,
+        output: msg.logs.length > 0 ? msg.logs.join('\n') : null,
+        error: msg.message,
+      };
+    }
+
+    return { passed: true, output: msg.logs.join('\n'), error: null };
+  });
 }
 
 /**
@@ -196,17 +283,16 @@ function deepEqual(a: unknown, b: unknown): boolean {
 /**
  * Formats test results into a human-readable string
  */
-function formatResults(results: TestCaseResult[], exercise: Exercise): string {
+function formatResults(results: TestCaseResult[], functionName: string): string {
   const lines: string[] = [];
-  lines.push(`Exercise: ${exercise.title}`);
-  lines.push(`Function: ${exercise.functionName}`);
+  lines.push(`Function: ${functionName}`);
   lines.push("---");
 
   results.forEach((result, index) => {
     const status = result.passed ? "PASS" : "FAIL";
     const inputStr = result.input.map((arg) => JSON.stringify(arg)).join(", ");
     lines.push(`Test ${index + 1}: ${status}`);
-    lines.push(`  Input: ${exercise.functionName}(${inputStr})`);
+    lines.push(`  Input: ${functionName}(${inputStr})`);
     lines.push(`  Expected: ${JSON.stringify(result.expected)}`);
     lines.push(`  Actual: ${JSON.stringify(result.actual)}`);
   });
@@ -218,49 +304,3 @@ function formatResults(results: TestCaseResult[], exercise: Exercise): string {
   return lines.join("\n");
 }
 
-/**
- * Get the current sample exercise details
- */
-export function getExercise(): Exercise {
-  return sampleExercise;
-}
-
-// CLI entry point for testing
-if (require.main === module) {
-  console.log("Code Runner Module");
-  console.log("==================\n");
-
-  console.log("Sample Exercise:");
-  console.log(`  Title: ${sampleExercise.title}`);
-  console.log(`  Description: ${sampleExercise.description}`);
-  console.log(`  Function to implement: ${sampleExercise.functionName}`);
-  console.log(`  Number of test cases: ${sampleExercise.testCases.length}\n`);
-
-  // Test with correct solution
-  console.log("Testing with CORRECT solution:");
-  console.log("  Code: function add(a, b) { return a + b; }\n");
-  const correctResult = runCode("function add(a, b) { return a + b; }");
-  console.log(`  Passed: ${correctResult.passed}`);
-  console.log(`  Output:\n${correctResult.output?.split("\n").map((l) => "    " + l).join("\n")}\n`);
-
-  // Test with incorrect solution
-  console.log("Testing with INCORRECT solution:");
-  console.log("  Code: function add(a, b) { return a - b; }\n");
-  const incorrectResult = runCode("function add(a, b) { return a - b; }");
-  console.log(`  Passed: ${incorrectResult.passed}`);
-  console.log(`  Output:\n${incorrectResult.output?.split("\n").map((l) => "    " + l).join("\n")}\n`);
-
-  // Test with syntax error
-  console.log("Testing with SYNTAX ERROR:");
-  console.log("  Code: function add(a, b { return a + b; }\n");
-  const syntaxErrorResult = runCode("function add(a, b { return a + b; }");
-  console.log(`  Passed: ${syntaxErrorResult.passed}`);
-  console.log(`  Error: ${syntaxErrorResult.error}\n`);
-
-  // Test with missing function
-  console.log("Testing with MISSING FUNCTION:");
-  console.log("  Code: function subtract(a, b) { return a - b; }\n");
-  const missingFnResult = runCode("function subtract(a, b) { return a - b; }");
-  console.log(`  Passed: ${missingFnResult.passed}`);
-  console.log(`  Error: ${missingFnResult.error}`);
-}
