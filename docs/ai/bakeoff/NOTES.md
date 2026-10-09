@@ -154,5 +154,5 @@ Neither simple approach works yet. Leaks tend to be paraphrases, so plain text m
 - [ ] VM run and VM speed/memory, once B1.1 exists (`run_bakeoff.py --machine vm`).
 - [ ] Minimum machine spec (needs VM numbers).
 - [ ] Decide whether the final recommended prompt is v1, v2 or a v3.
-- [ ] Write `docs/proposals/002-local-model-bakeoff.md` and open a PR to `dev`.
+- [x] Write `docs/proposals/002-local-model-bakeoff.md` (draft) and open a PR to `dev`.
 - [ ] Trello card title ("What should the instructor dashboard show?") doesn't match the description. Confirm with the team lead.
