@@ -13,14 +13,25 @@ Running notes on the local model bake-off: what was done, what we think, and wha
 
 ## Scores (prompt v1, laptop)
 
-Scored with `rubric.md`, converted from handwritten notes. Full row-by-row scores are in `scoring/v1/scores.csv`.
+Scored with `rubric.md`, starting from handwritten notes, then rechecked against every reply. Full row-by-row scores, with the reason for each judgement call, are in `scoring/v1/scores.csv`.
+
+Scoring rules applied strictly:
+- **Any factual error scores 0 on "correct"** (an automatic fail). Hints that are misleading without saying anything false score 1.
+- **Any reply that gives the answer scores 0 on "doesn't reveal"**, including telling the student the exact fix in words.
+- Where the notes and the rubric disagreed, or the notes missed an error, the rubric wins.
 
 | Model | Points | % | Fails | Gave the answer | Factually wrong | Avg helpful (0–2) |
 |---|---|---|---|---|---|---|
 | gemma2:2b | 89/112 | 79% | 2 | 2 | 0 | 0.93 |
 | qwen2.5:3b | 88/112 | 79% | 4 | 3 | 1 | 1.07 |
-| llama3.2:3b | 86/112 | 77% | 2 | 0 | 2 | 0.93 |
-| phi3.5 | 79/112 | 71% | 5 | 5 | 1 | **1.47** |
+| llama3.2:3b | 84/112 | 75% | 4 | 2 | 2 | 0.93 |
+| phi3.5 | 70/112 | 62% | 7 | 7 | 3 | **1.33** |
+
+Fails by case:
+- gemma2:2b: E03, C04
+- qwen2.5:3b: E01, E04, E07, C04
+- llama3.2:3b: E01, E06, E07, C03
+- phi3.5: E01, E02, E05, E07, E09, E10, C04
 
 Max is 112, not 120: "doesn't reveal" doesn't apply to C01, C02, C03 and C05.
 
@@ -35,8 +46,9 @@ The evidence supports this: **prompt v2 fixed none of the factual errors.** The 
 | Model | Case | What it got wrong | Score |
 |---|---|---|---|
 | phi3.5 | E07 | Says `getElementById` needs a `#` before the id. It doesn't; only `querySelector` does. | Correct = 0 |
-| phi3.5 | E02 | Says a hyphen makes the name "look like a string". It actually makes Python read it as a minus sign. | Correct = 1 |
-| phi3.5 | E10 | Says in a tree "each edge leads to exactly one other node". Inaccurate. | Correct = 1 |
+| phi3.5 | E02 | Says a hyphen makes the name "look like a string". It actually makes Python read it as a minus sign. | Correct = 0 |
+| phi3.5 | E10 | Says in a tree "each edge leads to exactly one other node". False. | Correct = 0 |
+| phi3.5 | E06 | "What comes after that, which also surrounds the padding?" steers the student towards Border, a wrong answer. Misleading rather than false. | Correct = 1 |
 | qwen2.5:3b | E01 | Tells the student to remove a space between `print` and the quotation marks. The student's answer has no such space and no quotation marks. | Correct = 0 |
 | llama3.2:3b | E07 | Says `querySelector("title")` looks for text content "title". It actually selects the `<title>` tag. | Correct = 0 |
 | llama3.2:3b | C03 | Padding/margin analogy says margin is "visible from the outside". Margin is transparent. | Correct = 0 |
@@ -59,25 +71,26 @@ The evidence supports this: **prompt v2 fixed none of the factual errors.** The 
 ### What this means
 
 - **gemma2:2b made the fewest factual errors**: no outright false statements in either run, only a missed point and a borrowed example.
-- **llama3.2:3b made the most serious errors**: two outright false statements in v1, both repeated in kind in v2.
-- **phi3.5 and qwen2.5 sit in between**, with one outright false statement each in v1.
+- **phi3.5 made the most outright false statements in v1** (3: E02, E07, E10), plus a misleading hint (E06), and kept making errors in v2 (E07, plus inventing "our lessons" in C02).
+- **llama3.2:3b** made 2 false statements in v1 (E07, C03), and the same kind of errors again in v2 (E01, E07).
+- **qwen2.5:3b** made 1 (E01), and repeated it in v2.
 - **E07 is the hardest case:** 3 of 4 models said something wrong about selecting by id. A real tutor needs to be precise about details like this.
 - Two kinds of error showed up: **wrong facts** (E07, C03) and **misreading the student's answer** (E01, E02). Neither improved with prompt v2.
-- **For phi3.5:** its leaks may be fixable, but its factual errors (E07 in v1, C02 and E07 in v2) are not. The proposal has to weigh that.
+- **For phi3.5:** its leaks may be fixable, but its factual errors (E02, E07, E10 in v1; C02 and E07 in v2) are not. This is the biggest weakness in the case for phi3.5, and the proposal has to weigh it.
 
 ## Current thinking
 
 **Leaning towards phi3.5, provided the answer-revealing problem can be solved.**
 
-- phi3.5 gives the best explanations. It has the highest helpfulness score by a clear margin (1.47 vs ≤1.07), and its chat answers (C02, C03) were the most in-depth.
-- It also gives away the answer the most (5 fails), which is why its total is lowest. Take away the leaks and it's the strongest tutor of the four.
+- phi3.5 gives the best explanations. It has the highest helpfulness score (1.33 vs ≤1.07), and its chat answers (C02, C03) were the most in-depth.
+- It also gives away the answer the most (7 of 11 cases where revealing applies), which is the main reason its total is lowest. Take away the leaks and it explains better than the other three.
 - **A more robust system prompt should help.** v1's "never reveal" rule wasn't strong enough for phi3.5.
 - **A code check should back up the prompt.** For example, a step that inspects each reply and blocks it if it gives the answer away. `ONBOARDING.md` already says guide-don't-reveal should be "enforced in code".
 
 Concerns about phi3.5 to address in the proposal:
 - **Garbled words** in 5 replies ("Python'thy", "doesn'thy", "on thethy", "one bydictating"), plus a stray `-----`.
 - **Slowest and largest:** 1.79s median reply and 2.9GB on the laptop, vs 1.0s and 1.7GB for gemma2. This matters more on the VM, which has no GPU.
-- **One factual error:** E07 says `getElementById` needs a `#`.
+- **Three factual errors in v1** (E02, E07, E10), the most of any model. Unlike leaks, a prompt can't fix these (see "Incorrect information").
 - **Doesn't redirect off-topic questions** (C05, football).
 
 ## Experiments tried (not adopted yet)
@@ -109,7 +122,6 @@ Neither simple approach works yet. Leaks tend to be paraphrases, so plain text m
 
 ## Open items
 
-- [ ] Review the 19 rows flagged in `scoring/v1/scores.csv` (`please_check` column), especially gemma2 E03 and llama3.2 E07, where the rubric disagrees with the note.
 - [ ] VM run and VM speed/memory, once B1.1 exists (`run_bakeoff.py --machine vm`).
 - [ ] Minimum machine spec (needs VM numbers).
 - [ ] Decide whether the final recommended prompt is v1, v2 or a v3.

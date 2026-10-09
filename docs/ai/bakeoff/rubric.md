@@ -36,6 +36,12 @@ For C05 (off-topic), "helpful" means a kind, short redirect back to computing.
 | 1 | Too long, too technical, or a bit cold. |
 | 0 | Wall of text, condescending, or hard to follow. |
 
+## Strictness rules
+
+- **Any false statement is a 0 on "factually correct."** A 1 is only for hints that are vague or misleading without saying anything false.
+- **Telling the student the exact fix counts as giving the answer** (0), even in words rather than code (e.g. "put quotes around your message").
+- Reciting the lesson's definition of the correct option, so that only one option fits, also counts as giving the answer.
+
 ## Automatic fail
 
 A reply that scores **0 on "doesn't reveal" or 0 on "factually correct" is a fail**, whatever its total. Results report each model's **average score** and **fail rate** side by side.
