@@ -1,0 +1,61 @@
+case_id,model,label,no_reveal,correct,helpful,length_tone,total,max,fail,your_note,please_check
+E01,phi3.5,A,1,2,2,2,7,8,,almost giving answer away,
+E02,phi3.5,C,0,1,2,1,4,8,FAIL,this is overly revealing the answer,"Correct=1: says a hyphen makes it 'look like a string', which isn't true."
+E03,phi3.5,C,2,2,2,2,8,8,,i like this,
+E04,phi3.5,B,2,2,1,2,7,8,,maybe this,"Length/tone docked? No; but note garbled word ""Python'thy"". Kept tone 2 because you didn't flag it."
+E05,phi3.5,A,0,2,2,1,5,8,FAIL,giving the exact answer,
+E06,phi3.5,A,2,2,2,2,8,8,,i like this,
+E07,phi3.5,D,0,0,0,1,1,8,FAIL,"just giving the correct answer, no","Correct=0: says getElementById needs a '#', which is false."
+E08,phi3.5,D,2,2,1,2,7,8,,okay ish,
+E09,phi3.5,C,0,2,2,1,5,8,FAIL,i think saying the word logarithmic is very telling but this is helpful i guesss,Borderline: scored 0 (reveals) because 'logarithmic' points to the only O(log n) option. Change to 1 if you see it as a near-reveal.
+E10,phi3.5,D,1,1,2,1,5,8,,this damn near gives the complete answer but is still a very helpful explanation,"Correct=1: 'each edge leads to exactly one other node' is inaccurate, plus garbled ""doesn'thy""."
+C01,phi3.5,D,N/A,2,1,0,3,6,,"some parts were helpful, some were not","Tone=0: very long, and garbled 'one bydictating'."
+C02,phi3.5,D,N/A,2,2,1,5,6,,this is my favorite i think it's in depth,Tone=1: longer than the 2-4 sentence target; ends with a stray '-----'.
+C03,phi3.5,D,N/A,2,2,1,5,6,,this is good,Tone=1: garbled 'on thethy'.
+C04,phi3.5,B,0,2,1,2,5,8,FAIL,almost perfect but not really,"Reveal=0: it lists 0, 1, 2, 3, 4."
+C05,phi3.5,B,N/A,2,0,2,4,6,,eh,Helpful=0: suggests checking standings instead of redirecting to computing.
+E01,qwen2.5:3b,B,2,0,0,2,4,8,FAIL,this is incorrect?,Correct=0: there's no space or quote mark in the student's answer.
+E02,qwen2.5:3b,B,2,2,2,2,8,8,,i think i like this,
+E03,qwen2.5:3b,D,2,2,2,2,8,8,,i like this,
+E04,qwen2.5:3b,A,0,2,1,2,5,8,FAIL,this just gave the correct answer so no,
+E05,qwen2.5:3b,B,2,2,1,2,7,8,,i'm okay with this i think,
+E06,qwen2.5:3b,D,2,2,1,2,7,8,,maybe this?,
+E07,qwen2.5:3b,A,0,2,1,2,5,8,FAIL,just giving the answer,
+E08,qwen2.5:3b,B,1,2,2,2,7,8,,kind of insinuating a correct answer but not too bad,
+E09,qwen2.5:3b,D,2,2,2,2,8,8,,i like this,
+E10,qwen2.5:3b,A,2,2,0,2,6,8,,this is not helpful,
+C01,qwen2.5:3b,A,N/A,2,1,2,5,6,,super weird analogy but okay,
+C02,qwen2.5:3b,A,N/A,2,1,2,5,6,,maybe no,
+C03,qwen2.5:3b,B,N/A,2,2,2,6,6,,i like this more but the last sentence wasn't super helpful,
+C04,qwen2.5:3b,A,0,2,0,1,3,8,FAIL,no it should not give the correct answer,
+C05,qwen2.5:3b,A,N/A,2,0,2,4,6,,eh,Helpful=0: invites a football discussion.
+E01,llama3.2:3b,C,1,2,1,2,6,8,,a little vague,"Reveal=1: writes ""Hello, World!"" in quotes."
+E02,llama3.2:3b,D,1,2,0,2,5,8,,i think this is leading a student in the wrong direction,
+E03,llama3.2:3b,B,2,2,1,2,7,8,,this could work,
+E04,llama3.2:3b,D,2,2,1,2,7,8,,kind of unhelpful. just reiterating the question,
+E05,llama3.2:3b,C,2,1,0,2,5,8,,no absolutely not,"Correct=1: brings up step values, which isn't the mistake."
+E06,llama3.2:3b,B,1,2,2,2,7,8,,i like this,Reveal=1: describes padding's definition word for word. Change to 2 if you disagree.
+E07,llama3.2:3b,B,2,0,1,2,5,8,FAIL,maybe this,"Correct=0: says querySelector matches text content. It actually selects the <title> tag. Your note was positive, so please check."
+E08,llama3.2:3b,C,1,2,2,2,7,8,,kind of insinuating a correct answer but could be worse,
+E09,llama3.2:3b,A,2,2,1,2,7,8,,umm idk,
+E10,llama3.2:3b,B,2,2,0,2,6,8,,i think not,
+C01,llama3.2:3b,C,N/A,2,1,2,5,6,,somewhat helpful maybe,
+C02,llama3.2:3b,B,N/A,2,1,2,5,6,,maybe no,
+C03,llama3.2:3b,C,N/A,0,0,1,1,6,FAIL,this is super confusing,"Correct=0: says margin is 'visible from the outside', but margin is transparent."
+C04,llama3.2:3b,C,2,2,1,2,7,8,,this is not very helpful but it's good that it didn't give the exact answer,
+C05,llama3.2:3b,C,N/A,2,2,2,6,6,,this is the best response,
+E01,gemma2:2b,D,2,1,0,2,5,8,,not really helpful. the message already is in the parantheses. it's just not in quotes,
+E02,gemma2:2b,A,2,2,1,2,7,8,,i think the first sentence is helpful but the second sentence is leading them in the wrong direction,
+E03,gemma2:2b,A,0,2,2,2,6,8,FAIL,i like this,"Reveal=0: names 'float', the correct option. Your note was positive, so please check."
+E04,gemma2:2b,C,2,2,0,2,6,8,,this is kind of dumb this is exactly what the question is asking and it's not providing any new information,
+E05,gemma2:2b,D,2,2,1,2,7,8,,not a very helpful hint,
+E06,gemma2:2b,C,2,2,1,2,7,8,,maybe this,
+E07,gemma2:2b,C,2,2,1,2,7,8,,maybe this,
+E08,gemma2:2b,A,2,2,1,2,7,8,,this is okay,
+E09,gemma2:2b,B,2,2,2,2,8,8,,i don't mind this,
+E10,gemma2:2b,C,2,2,1,2,7,8,,maybe?,
+C01,gemma2:2b,B,N/A,2,1,2,5,6,,kind of not super helpful,
+C02,gemma2:2b,C,N/A,2,2,2,6,6,,i like this too,
+C03,gemma2:2b,A,N/A,2,1,2,5,6,,sort of good,
+C04,gemma2:2b,D,0,2,0,1,3,8,FAIL,no,
+C05,gemma2:2b,D,N/A,2,0,1,3,6,,eh,Helpful=0: asks about a favourite team instead of redirecting.
