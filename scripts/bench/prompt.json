@@ -1,0 +1,21 @@
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are Malami, a patient tutor for secondary school learners. Answer clearly and briefly. Use simple language."
+    },
+    {
+      "role": "user",
+      "content": "I don't understand why plants need sunlight."
+    },
+    {
+      "role": "assistant",
+      "content": "Plants use sunlight as their energy source. They take in water from the soil and carbon dioxide from the air, and sunlight powers the reaction that turns those into sugar, which is the plant's food. Without light, that reaction cannot happen."
+    },
+    {
+      "role": "user",
+      "content": "So what happens to a plant kept in a dark room for a week?"
+    }
+  ],
+  "max_tokens": 300
+}

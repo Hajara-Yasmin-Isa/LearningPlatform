@@ -1,0 +1,15 @@
+za ka iya gayamun me ake nifi da programing
+ka bani misalin "loop"
+Za ka iya nuna min yadda ake kirkirar bariyabel
+menene integer
+menene bambancin integer da boolean
+menene string
+menene boolean
+ka bani misalin lokacin ya kamata na yi amfani da integer maimakon double
+menene Sharhi
+Yaushe zan yi amfani da Sharhi (comment)
+Menene bambancen bariyabel da data
+Wanne nau'in data ke riƙe gaskiya ko ƙarya?
+Me ake nufi da kalmar "ƙimantawa" a cikin bariyabel
+Har tsawon wane lokaci shirin zai iya kasancewa
+Harsuna nawa zan iya yin code a ciki

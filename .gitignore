@@ -46,4 +46,9 @@ next-env.d.ts
 .idea/
 *.swp
 *.swo
-*~
+*~.env
+scripts/bench/results/
+.env
+scripts/bench/results/
+scripts/bench/results/
+.env
