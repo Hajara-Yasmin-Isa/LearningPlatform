@@ -13,6 +13,7 @@ interface AuthFormProps {
 export default function AuthForm({ submitLabel, mode }: AuthFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState<"student" | "instructor">("student");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [signupSuccess, setSignupSuccess] = useState(false);
@@ -25,21 +26,35 @@ export default function AuthForm({ submitLabel, mode }: AuthFormProps) {
 
     try {
       if (mode === "login") {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) {
           setError(translateAuthError(error.message));
         } else {
-          router.push("/dashboard");
+          const role = data.user?.user_metadata?.role;
+          router.push(role === "instructor" ? "/instructor" : "/courses");
         }
       } else {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
             email,
             password,
-            options: { emailRedirectTo: `${window.location.origin}/auth/confirm` },
+            options: {
+              emailRedirectTo: `${window.location.origin}/auth/confirm`,
+              data: { role },
+            },
           });
         if (error) {
           setError(translateAuthError(error.message));
         } else {
+          // Best-effort: signup itself succeeded, so an upsert failure only
+          // gets logged and never blocks the success panel
+          if (data.user?.id) {
+            const { error: upsertError } = await supabase
+              .from("users")
+              .upsert({ id: data.user.id, role }, { onConflict: "id" });
+            if (upsertError) {
+              console.error("[AuthForm] role upsert failed:", upsertError.message);
+            }
+          }
           setSignupSuccess(true);
         }
       }
@@ -91,6 +106,50 @@ export default function AuthForm({ submitLabel, mode }: AuthFormProps) {
           onChange={(e) => setPassword(e.target.value)}
         />
       </div>
+
+      {mode === "signup" && (
+        <div>
+          <span className="block text-sm font-medium text-slate-700 mb-1.5">
+            Wanene kai?
+          </span>
+          <div className="grid grid-cols-2 gap-3">
+            <label
+              className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm cursor-pointer transition backdrop-blur-sm ${
+                role === "student"
+                  ? "border-yellow-400 bg-yellow-50/60 text-slate-900 ring-2 ring-yellow-400"
+                  : "border-white/70 bg-white/50 text-slate-700"
+              }`}
+            >
+              <input
+                type="radio"
+                name="role"
+                value="student"
+                checked={role === "student"}
+                onChange={() => setRole("student")}
+                className="accent-yellow-500"
+              />
+              I&apos;m a student
+            </label>
+            <label
+              className={`flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm cursor-pointer transition backdrop-blur-sm ${
+                role === "instructor"
+                  ? "border-yellow-400 bg-yellow-50/60 text-slate-900 ring-2 ring-yellow-400"
+                  : "border-white/70 bg-white/50 text-slate-700"
+              }`}
+            >
+              <input
+                type="radio"
+                name="role"
+                value="instructor"
+                checked={role === "instructor"}
+                onChange={() => setRole("instructor")}
+                className="accent-yellow-500"
+              />
+              I&apos;m an instructor
+            </label>
+          </div>
+        </div>
+      )}
 
       {error && (
         <p className="text-sm text-red-600">{error}</p>

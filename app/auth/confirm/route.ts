@@ -6,9 +6,9 @@ export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
   const token_hash = searchParams.get('token_hash')
   const type = searchParams.get('type') as 'email' | 'recovery' | null
-  const rawNext = searchParams.get('next') ?? '/dashboard'
-  const safeNext = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '/dashboard'
-  const next = type === 'recovery' ? '/auth/reset-password' : safeNext
+  const rawNext = searchParams.get('next')
+  const safeNext =
+    rawNext && rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : null
 
   if (token_hash && type) {
     const cookieStore = await cookies()
@@ -27,9 +27,18 @@ export async function GET(request: NextRequest) {
       }
     )
 
-    const { error } = await supabase.auth.verifyOtp({ token_hash, type })
+    const { data, error } = await supabase.auth.verifyOtp({ token_hash, type })
     if (!error) {
-      return NextResponse.redirect(`${origin}${next}`)
+      if (type === 'recovery') {
+        return NextResponse.redirect(`${origin}/auth/reset-password`)
+      }
+      if (safeNext) {
+        return NextResponse.redirect(`${origin}${safeNext}`)
+      }
+      const role = data.user?.user_metadata?.role
+      return NextResponse.redirect(
+        `${origin}${role === 'instructor' ? '/instructor' : '/courses'}`
+      )
     }
   }
 
