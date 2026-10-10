@@ -1,10 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { getAllPublishedCourses, getUserEnrollments, searchCourses } from '@/lib/supabase/courses'
+import { getAllPublishedCourses, getUserEnrollments, searchCourses, getEnrolledCoursesWithProgress } from '@/lib/supabase/courses'
 import { CourseGrid } from '@/components/features/courses/CourseGrid'
-import { CourseWithInstructor, Enrollment } from '@/types/database'
-import { supabase } from '@/lib/supabase/client' // Fixed import
+import { Course, CourseWithInstructor, Enrollment } from '@/types/database'
+import { supabase } from '@/lib/supabase/client'
 import { CourseCard } from '@/components/features/courses/CourseCard'
 import LoadingScreen from '@/components/ui/LoadingScreen'
 
@@ -15,7 +15,12 @@ export default function CoursesPage() {
   const [userId, setUserId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [difficulty, setDifficulty] = useState("")
-
+  const [progress, setProgress] = useState<{
+    course: Course
+    sectionsCompleted: number
+    totalSections: number
+  }[]
+  >([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -38,10 +43,13 @@ export default function CoursesPage() {
         const coursesData = await getAllPublishedCourses()
         setCourses(coursesData)
 
-        // Fetch enrollments if logged in
+        // Fetch enrollments and course progress if logged in
         if (uid) {
           const enrollmentsData = await getUserEnrollments(uid)
           setEnrollments(enrollmentsData)
+
+          const progressData = await getEnrolledCoursesWithProgress(uid)
+          setProgress(progressData)
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Something went wrong.')
@@ -107,11 +115,11 @@ export default function CoursesPage() {
             value={difficulty}
             onChange={(e) => setDifficulty(e.target.value)}
             className="rounded-xl border border-white/70 bg-white/50 px-4 h-[46px] text-slate-900 focus:outline-none focus:ring-2 focus:ring-yellow-400 backdrop-blur-sm"
-            >
-              <option value="">Dukkan matakai</option>
-              <option value="Beginner">An koyo</option>
-              <option value="Intermediate">Matsakaici</option>
-              <option value="Advanced">Gwanaye</option>
+          >
+            <option value="">Dukkan matakai</option>
+            <option value="Beginner">An koyo</option>
+            <option value="Intermediate">Matsakaici</option>
+            <option value="Advanced">Gwanaye</option>
           </select>
 
         </div>
@@ -121,14 +129,25 @@ export default function CoursesPage() {
         <>
           <h2 className="text-xl font-semibold mb-4">Ajujuwana</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {myCourses.map(course => (
-              <CourseCard
-                key={course.id}
-                course={course}
-                isEnrolled={true}
-                userId={userId}
-              />
-            ))}
+            {myCourses.map(course => {
+              const courseProgress = progress.find(
+                p => p.course.id === course.id
+              )
+              return (
+                <CourseCard
+                  key={course.id}
+                  course={course}
+                  isEnrolled={true}
+                  userId={userId}
+                  progress={
+                    courseProgress && {
+                      completed: courseProgress.sectionsCompleted,
+                      total: courseProgress.totalSections
+                    }
+                  }
+                />
+              )
+            })}
           </div>
         </>
       )}

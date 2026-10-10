@@ -7,6 +7,7 @@ import LoadingScreen from "@/components/ui/LoadingScreen"
 import { supabase } from "@/lib/supabase/client"
 import { getEnrolledCoursesWithProgress } from "@/lib/supabase/courses"
 import { EnrolledCourseWithProgress } from "@/types/database"
+import ProgressBar from "@/components/ui/ProgressBar"
 
 export default function StudentDashboard() {
   const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourseWithProgress[]>([])
@@ -96,13 +97,10 @@ export default function StudentDashboard() {
                     <p className="text-sm text-gray-500 mb-3">
                       Sashen {sectionsCompleted} / {totalSections} an kammala
                     </p>
-                    <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
-                      <div
-                        className="bg-yellow-400 h-full rounded-full transition-all"
-                        style={{ width: `${percent}%` }}
+                      <ProgressBar
+                        completed={sectionsCompleted}
+                        total={totalSections}
                       />
-                    </div>
-                    <p className="text-xs text-gray-400 mt-2 text-right">{percent}%</p>
                   </div>
                 </Link>
               )

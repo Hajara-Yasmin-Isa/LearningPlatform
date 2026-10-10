@@ -5,6 +5,7 @@ import { enrollInCourse } from "@/lib/supabase/courses"
 import { CourseWithInstructor } from '@/types/database'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import ProgressBar from '@/components/ui/ProgressBar'
 
 //Course Card props: CourseWithInstructor extends a Course class which has all the information whose members can be accessed
 //by the . operator
@@ -12,9 +13,14 @@ interface CourseCardProps {
   course: CourseWithInstructor
   isEnrolled: boolean
   userId: string | null
+  
+  progress?: {
+    completed: number
+    total: number
+  }
 }
 
-export function CourseCard({ course, isEnrolled, userId }: CourseCardProps) {
+export function CourseCard({ course, isEnrolled, userId, progress }: CourseCardProps) {
 
   // Router (for redirect if not logged in)
   const router = useRouter()
@@ -96,6 +102,14 @@ export function CourseCard({ course, isEnrolled, userId }: CourseCardProps) {
         <p className="text-xs text-gray-500">
           Tsawon lokaci: mintuna {course.duration_minutes}
         </p>
+      )}
+
+      {/* Display Progress */}
+      {progress && (
+        <ProgressBar
+          completed = {progress.completed}
+          total = {progress.total}
+        />
       )}
 
       {/* Buttons */}
