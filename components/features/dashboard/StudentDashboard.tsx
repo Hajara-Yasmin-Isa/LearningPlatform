@@ -3,50 +3,42 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import StatsCard from "./StatsCard"
-import LoadingScreen from "@/components/ui/LoadingScreen"
 import { supabase } from "@/lib/supabase/client"
 import { getEnrolledCoursesWithProgress } from "@/lib/supabase/courses"
 import { EnrolledCourseWithProgress } from "@/types/database"
 
 export default function StudentDashboard() {
-  const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourseWithProgress[]>([])
+  const [courses, setCourses] = useState<EnrolledCourseWithProgress[]>([])
   const [loading, setLoading] = useState(true)
-  const [userName, setUserName] = useState('')
-
+  const [displayName, setDisplayName] = useState('')
+  
   useEffect(() => {
-    async function fetchData() {
+    async function fetchCourses() {
       const { data: { user } } = await supabase.auth.getUser()
 
       if (!user) {
         setLoading(false)
         return
       }
+      const name = user.user_metadata?.full_name ?? user.email?.split("@")[0] ?? "Student"
+      setDisplayName(name)
 
-      setUserName(user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? '')
-
-      try {
-        const data = await getEnrolledCoursesWithProgress(user.id)
-        setEnrolledCourses(data)
-      } catch (err) {
-        console.error('[StudentDashboard]', err)
-      } finally {
-        setLoading(false)
-      }
+      const data = await getEnrolledCoursesWithProgress(user.id)
+      setCourses(data)
+      setLoading(false)
     }
 
-    fetchData()
+    fetchCourses()
   }, [])
 
-  if (loading) return <LoadingScreen />
-
-  const totalSections = enrolledCourses.reduce((sum, c) => sum + c.totalSections, 0)
-  const totalCompleted = enrolledCourses.reduce((sum, c) => sum + c.sectionsCompleted, 0)
-  const overallProgress = totalSections > 0 ? Math.round((totalCompleted / totalSections) * 100) : 0
+  const enrolledCourses = courses.length
+  const sectionsCompleted = courses.reduce((sum, course) => sum + course.sectionsCompleted, 0) 
+  const coursesFinished = courses.filter(course => course.sectionsCompleted >= course.totalSections).length
 
   const stats = [
-    { label: "Ajujuwa da aka yi rajista", value: String(enrolledCourses.length) },
-    { label: "Sashen da aka kammala", value: String(totalCompleted) },
-    { label: "Gabaɗayan Ci gaba", value: `${overallProgress}%` },
+    { label: "Enrolled Courses", value: String(enrolledCourses) },
+    { label: "Sections Completed", value: String(sectionsCompleted) },
+    { label: "Courses Finished", value: String(coursesFinished) },
   ]
 
   return (
@@ -54,14 +46,17 @@ export default function StudentDashboard() {
 
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">
-          Fara koyo{userName ? `, ${userName}` : ''}!
+        <h1 className="text-2xl font-bold">
+          Hi, {displayName}! 👋
         </h1>
+        <p className="text-sm text-gray-500 mt-0.5">
+          Here's where you left off.
+        </p>
       </div>
 
       {/* Stats */}
       <section>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Ci gaban Karatunka</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Your Progress</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {stats.map((stat) => (
             <StatsCard key={stat.label} label={stat.label} value={stat.value} />
@@ -69,44 +64,65 @@ export default function StudentDashboard() {
         </div>
       </section>
 
-      {/* Enrolled courses */}
+      {/* Lessons */}
       <section>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Ajujuwana</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          My Courses
+        </h2>
 
-        {enrolledCourses.length === 0 ? (
-          <div className="text-center py-10 bg-white border border-gray-100 rounded-xl">
-            <p className="text-gray-500 text-sm mb-3">Ba ka yi rajista a kowane aji ba tukuna.</p>
-            <Link
-              href="/courses"
-              className="text-sm font-semibold text-yellow-600 hover:text-yellow-700 transition-colors"
-            >
-              Duba ajujuwa →
-            </Link>
-          </div>
+        {loading ? (
+          <p className="text-sm text-gray-500">Loading your courses...</p>
+        ) : courses.length === 0 ? (
+          <div className="space-y-2">
+  <p className="text-sm text-gray-500">
+    You haven't enrolled in any courses yet.
+  </p>
+
+  {/* TODO: Use lastAccessedLessonId when Backend Task 2 exposes it */}
+  <Link
+    href="/courses"
+    className="text-indigo-600 hover:underline"
+  >
+    Browse courses →
+  </Link>
+</div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {enrolledCourses.map(({ course, sectionsCompleted, totalSections }) => {
-              const percent = totalSections > 0 ? Math.round((sectionsCompleted / totalSections) * 100) : 0
-              return (
-                <Link key={course.id} href={`/courses/${course.id}`} className="block group">
-                  <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 hover:shadow-md hover:border-yellow-200 transition-all">
-                    <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-yellow-700 transition-colors">
-                      {course.title}
-                    </h3>
-                    <p className="text-sm text-gray-500 mb-3">
-                      Sashen {sectionsCompleted} / {totalSections} an kammala
-                    </p>
-                    <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
-                      <div
-                        className="bg-yellow-400 h-full rounded-full transition-all"
-                        style={{ width: `${percent}%` }}
-                      />
-                    </div>
-                    <p className="text-xs text-gray-400 mt-2 text-right">{percent}%</p>
-                  </div>
-                </Link>
-              )
-            })}
+            {courses.map((course) => {
+  const progress =
+    course.totalSections > 0
+      ? (course.sectionsCompleted / course.totalSections) * 100
+      : 0
+
+  return (
+    <div
+      key={course.course.id}
+      className="bg-white border rounded-xl shadow-sm p-4"
+    >
+      <h3 className="font-semibold text-lg">
+        {course.course.title}
+      </h3>
+
+      <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
+        <div
+          className="bg-indigo-600 h-2 rounded-full"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+
+      <p className="text-sm text-gray-500 mt-2">
+        {course.sectionsCompleted}/{course.totalSections} sections
+      </p>
+
+      <Link
+        href={`/courses/${course.course.id}`}
+        className="inline-block mt-3 text-indigo-600 hover:underline"
+      >
+        Continue →
+      </Link>
+    </div>
+        )
+      })}
           </div>
         )}
       </section>
