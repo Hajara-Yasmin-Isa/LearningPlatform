@@ -1,4 +1,5 @@
 import { supabase as browserClient } from './client'
+import { getEnrolledCoursesWithProgress } from './courses'
 
 type SupabaseClient = typeof browserClient
 
@@ -18,9 +19,17 @@ export async function getEnrolledStudents(instructorId: string, client: Supabase
     .in('course_id', instructorCourseIds)
     if (enrollmentsError) throw new Error(enrollmentsError.message)
     
-    // get unique student IDs from the enrollments
+    // Get unique student IDs from the enrollments
     const enrolledStudents = enrollments.map((enrollment) => enrollment.user_id)  
     const uniqueEnrolledStudents = [...new Set(enrolledStudents)]
+
+    // Get progress for each student in the enrolled courses
+    const studentProgress = []
+
+    for (const studentId of uniqueEnrolledStudents) { 
+        const courses = await getEnrolledCoursesWithProgress(studentId, client)
+        studentProgress.push({ studentId, courses })
+    }
 
 
 
