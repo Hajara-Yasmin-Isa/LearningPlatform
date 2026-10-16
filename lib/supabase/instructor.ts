@@ -23,6 +23,7 @@ export async function getEnrolledStudents(instructorId: string, client: Supabase
     const enrolledStudents = enrollments.map((enrollment) => enrollment.user_id)  
     const uniqueEnrolledStudents = [...new Set(enrolledStudents)]
 
+    // Get user details for the unique student IDs
     const { data: users, error: usersError } = await client
       .from('users')
       .select('id, name')
@@ -33,12 +34,11 @@ export async function getEnrolledStudents(instructorId: string, client: Supabase
     const studentProgress = []
     
     for (const studentId of uniqueEnrolledStudents) { 
+        const student = users.find((user) => user.id === studentId)
         const courses = await getEnrolledCoursesWithProgress(studentId, client)
         const instructorCourses = courses.filter((item) => instructorCourseIds.includes(item.course.id))
-        studentProgress.push({ studentId, instructorCourses })
+        studentProgress.push({ studentId, name: student?.name, instructorCourses })
     }
 
-
-
-    return instructorCourseIds
+    return studentProgress
     }
