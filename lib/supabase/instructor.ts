@@ -23,7 +23,13 @@ export async function getEnrolledStudents(instructorId: string, client: Supabase
     const enrolledStudents = enrollments.map((enrollment) => enrollment.user_id)  
     const uniqueEnrolledStudents = [...new Set(enrolledStudents)]
 
-    // Get progress for each student in the enrolled courses
+    const { data: users, error: usersError } = await client
+      .from('users')
+      .select('id, name')
+      .in('id', uniqueEnrolledStudents)
+    if (usersError) throw new Error(usersError.message)
+
+    // Get progress for each student in the instructor's courses
     const studentProgress = []
     
     for (const studentId of uniqueEnrolledStudents) { 
