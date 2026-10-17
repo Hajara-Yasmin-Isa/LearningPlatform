@@ -1,9 +1,15 @@
 import { supabase as browserClient } from './client'
 import { getEnrolledCoursesWithProgress } from './courses'
+import { EnrolledCourseWithProgress } from '@/types/database'
 
 type SupabaseClient = typeof browserClient
+export interface EnrolledStudent {
+  studentId: string
+  name: string | undefined
+  instructorCourses: EnrolledCourseWithProgress[]
+}
 
-export async function getEnrolledStudents(instructorId: string, client: SupabaseClient = browserClient) {
+export async function getEnrolledStudents(instructorId: string, client: SupabaseClient = browserClient): Promise<EnrolledStudent[]> {
     // Get all courses taught by the instructor
     const { data, error } = await client
     .from('courses')
@@ -31,7 +37,7 @@ export async function getEnrolledStudents(instructorId: string, client: Supabase
     if (usersError) throw new Error(usersError.message)
 
     // Get progress for each student in the instructor's courses
-    const studentProgress = []
+    const studentProgress: EnrolledStudent[] = []
     
     // Loop through each unique student and get their enrolled courses with progress
     for (const studentId of uniqueEnrolledStudents) { 
