@@ -33,6 +33,7 @@ export async function getEnrolledStudents(instructorId: string, client: Supabase
     // Get progress for each student in the instructor's courses
     const studentProgress = []
     
+    // Loop through each unique student and get their enrolled courses with progress
     for (const studentId of uniqueEnrolledStudents) { 
         const student = users.find((user) => user.id === studentId)
         const courses = await getEnrolledCoursesWithProgress(studentId, client)

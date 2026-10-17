@@ -1,3 +1,8 @@
+'use client'
+import { useState, useEffect } from 'react'
+import { supabase } from '@/lib/supabase/client'
+import { getEnrolledStudents } from '@/lib/supabase/instructor'
+
 const STUDENTS = [
   { name: 'Alice Nguyen', class: 'Python Fundamentals', progress: 88, status: 'On track' },
   { name: 'Ben Carter', class: 'Web Dev 101', progress: 62, status: 'Needs attention' },
@@ -14,6 +19,40 @@ const STATUS_STYLES: Record<string, string> = {
 }
 
 export function ManageStudentsTab() {
+  const [students, setStudents] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchData() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        setLoading(false)
+        return
+      }
+
+      try {
+        const data = await getEnrolledStudents(user.id)
+        setStudents(data)
+      } catch (err) {
+        console.error('[ManageStudentsTab]', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
+
+  if (loading) return <p className="text-sm text-gray-500">TODO: copy</p>
+
+  const rows = students.flatMap((student) =>
+    student.instructorCourses.map((item: any) => ({
+      name: student.name ?? 'TODO: copy',
+      course: item.course.title,
+      completed: item.sectionsCompleted,
+      total: item.totalSections,
+    }))
+  )
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
