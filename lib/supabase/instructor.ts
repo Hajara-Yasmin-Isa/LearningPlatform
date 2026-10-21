@@ -31,12 +31,13 @@ export async function getInstructorCourseStats(
         .select('id')
         .eq('instructor_id', instructorId)
     if (!courses) console.log("null")
-        else if (courses.length == 0) console.log("your courses:", courses.length)
+    else if (courses.length == 0) console.log("your courses:", courses.length)
     if (error) throw new Error(error.message)
     if (!courses || courses.length === 0) return []
 
     console.log("Finished grabbing enrollments.")
 
+    //Instructor's Course IDs
     const instructorCourseIds = courses.map((course) => course.id)
 
     //Get instructor's courses
@@ -57,10 +58,48 @@ export async function getInstructorCourseStats(
             (enrollmentCounts.get(courseId) ?? 0) + 1
         )
     }
+
+    //Fetch lessons
+    const { data: lessons, error: lessonsError } = await client
+        .from('lessons')
+        .select('id, course_id')
+        .in('course_id', instructorCourseIds)
+
+    if (lessonsError) throw new Error(lessonsError.message)
+
+    const lessonIds = (lessons ?? []).map((lesson) => lesson.id)
+
+    //Grab totalSections
+    const { data: sections, error: sectionsError } = await client
+        .from('sections')
+        .select('id, lesson_id')
+        .in('lesson_id', lessonIds)
+
+    if (sectionsError) throw new Error(sectionsError.message)
+
+    const lessonToCourse = new Map<string, string>()
+
+    for (const lesson of lessons ?? []) {
+        lessonToCourse.set(lesson.id, lesson.course_id)
+    }
+
+    const sectionCounts = new Map<string, number>()
+
+    for (const section of sections ?? []) {
+        const courseId = lessonToCourse.get(section.lesson_id)
+
+        if (courseId) {
+            sectionCounts.set(
+                courseId,
+                (sectionCounts.get(courseId) ?? 0) + 1
+            )
+        }
+    }
+
     return courses.map((course) => ({
         courseId: course.id,
         enrollments: enrollmentCounts.get(course.id) ?? 0,
-        totalSections: 0,
+        totalSections: sectionCounts.get(course.id) ?? 0,
         averageCompletion: 0,
     }))
 }
