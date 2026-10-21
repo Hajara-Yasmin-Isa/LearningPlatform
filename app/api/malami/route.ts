@@ -2,15 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { rateLimit } from '@/lib/rateLimit'
 import { ollamaChatStream, OllamaUnavailableError, type ChatMessage } from '@/lib/ai/ollamaClient'
+import { guardedStream, type Frame } from '@/lib/ai/streamGuard'
 import {
     buildSystemPrompt,
-    capReply,
     isOffTopic,
-    leaksAnswer,
-    HINT_FALLBACK,
     MAX_HISTORY,
     MAX_MESSAGE_CHARS,
-    MAX_REPLY_CHARS,
     MAX_REPLY_TOKENS,
     OFF_TOPIC_REDIRECT,
     type Grounding,
@@ -110,30 +107,9 @@ export async function POST(request: NextRequest) {
 // open the status is already 200, so a failure after that has to travel in-band as an
 // error frame.
 //
-// Wire format is NDJSON, one frame per line:
-//   { "type": "token",   "value": "..." }    append to the message being shown
-//   { "type": "replace", "value": "..." }    discard what was shown, show this instead
-//   { "type": "error",   "message": "..." }  stream failed mid-flight
-//   { "type": "done" }                       clean end
-type Frame =
-    | { type: 'token'; value: string }
-    | { type: 'replace'; value: string }
-    | { type: 'error'; message: string }
-    | { type: 'done' }
-
-// How much generated text is withheld from the client while the leak check runs.
-//
-// leaksAnswer() matches on normalised text (lowercased, whitespace collapsed), so a raw
-// reply can render an answer longer than the answer itself — a model may spread code
-// across lines. Doubling the answer length plus a fixed margin covers realistic
-// reformatting, which means the closing characters of an answer are still withheld at the
-// moment the match is detected, and the complete answer never reaches the client.
-//
-// Tradeoff: a reply padded with extreme whitespace could in principle outrun the window.
-// The airtight alternative is buffering the entire reply before flushing any of it, which
-// reinstates exactly the wait this card exists to remove.
-const holdbackFor = (answer: string) => answer.length * 2 + 16
-
+// Wire format is NDJSON, one frame per line — see lib/ai/streamGuard.ts for the frames and
+// for the guide-don't-reveal enforcement. This function owns transport only: HTTP headers,
+// client disconnects, and turning a thrown error into an in-band frame.
 function streamReply(messages: ChatMessage[], correctAnswer?: string): Response {
     const encoder = new TextEncoder()
     const abort = new AbortController()
@@ -143,43 +119,16 @@ function streamReply(messages: ChatMessage[], correctAnswer?: string): Response 
             const send = (frame: Frame) =>
                 controller.enqueue(encoder.encode(JSON.stringify(frame) + '\n'))
 
-            const holdback = correctAnswer ? holdbackFor(correctAnswer) : 0
-            let accumulated = ''
-            let flushed = 0
+            const source = ollamaChatStream(messages, {
+                num_predict: MAX_REPLY_TOKENS,
+                temperature: 0.4,
+                signal: abort.signal,
+            })
 
             try {
-                for await (const fragment of ollamaChatStream(messages, {
-                    num_predict: MAX_REPLY_TOKENS,
-                    temperature: 0.4,
-                    signal: abort.signal,
-                })) {
-                    accumulated += fragment
-
-                    // Checked against everything generated so far, never against a single
-                    // fragment: a model emits "mai" and "maita" as separate tokens and
-                    // neither contains the answer on its own.
-                    if (correctAnswer && leaksAnswer(accumulated, correctAnswer)) {
-                        send({ type: 'replace', value: HINT_FALLBACK })
-                        send({ type: 'done' })
-                        return
-                    }
-
-                    const safeUpTo = Math.min(accumulated.length - holdback, MAX_REPLY_CHARS)
-                    if (safeUpTo > flushed) {
-                        send({ type: 'token', value: accumulated.slice(flushed, safeUpTo) })
-                        flushed = safeUpTo
-                    }
-                    if (flushed >= MAX_REPLY_CHARS) break
+                for await (const frame of guardedStream(source, correctAnswer)) {
+                    send(frame)
                 }
-
-                // generation finished and the last leak check passed, so the withheld tail
-                // can go out
-                const final = capReply(accumulated)
-                if (final.length > flushed) {
-                    send({ type: 'token', value: final.slice(flushed) })
-                }
-                send({ type: 'done' })
-
             } catch (e) {
                 send({
                     type: 'error',

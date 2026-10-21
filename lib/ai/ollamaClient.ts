@@ -99,7 +99,17 @@ export async function* ollamaChatStream(
 
     try {
         while (true) {
-            const { done, value } = await reader.read()
+            // A server that dies mid-stream fails here rather than at the fetch above, so
+            // it needs mapping too — otherwise a dropped connection surfaces as a generic
+            // failure and the learner is told the wrong thing.
+            let chunk: ReadableStreamReadResult<Uint8Array>
+            try {
+                chunk = await reader.read()
+            } catch (e) {
+                throw new OllamaUnavailableError(`Stream from ${BASE_URL} ended early: ${(e as Error).message}`)
+            }
+
+            const { done, value } = chunk
             if (done) break
 
             buffer += decoder.decode(value, { stream: true })
