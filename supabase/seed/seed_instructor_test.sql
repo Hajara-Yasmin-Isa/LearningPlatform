@@ -3,20 +3,17 @@
 -- Purpose: Test data for the INSTRUCTOR DASHBOARD (Team A cards A1.3, A1.4,
 --          A2.1, A2.2, A3.3). Gives one instructor two courses, four enrolled
 --          students at different stages, and a second instructor who should
---          see NONE of it. Run it against your local/dev database, never
---          production.
+--          see NONE of it. It touches ONLY the @test.local accounts and the
+--          three English demo courses from seed_lessons.sql — never a real
+--          learner or the Hausa course — so it is safe to run on the shared
+--          Supabase project.
 --
 -- Requires: seed_lessons.sql already loaded (uses its courses/lessons/sections).
 --
 -- HOW TO USE
---   1. Create 6 test accounts in Supabase Auth (Authentication → Users →
---      "Add user", tick "Auto Confirm"). Suggested emails:
---        instructor1@test.local   instructor2@test.local
---        student1@test.local      student2@test.local
---        student3@test.local      student4@test.local
---      The signup trigger (migration 002) creates their public.users rows.
---   2. Paste each account's UUID into the six \set lines below.
---   3. Run the whole file in the Supabase SQL editor.
+--   The six test accounts already exist in Supabase Auth (see the ID table
+--   below); the signup trigger (migration 002) created their public.users
+--   rows. Paste this whole file into the Supabase SQL editor and run it.
 --   Safe to re-run: every insert is ON CONFLICT DO NOTHING or an UPDATE.
 --
 -- WHAT YOU GET (so you can check the dashboard against known numbers)
@@ -41,39 +38,36 @@
 --     visibility into instructor1's students (cross-instructor isolation).
 -- =============================================================================
 
--- ---- 1. Paste the six auth.users UUIDs here -------------------------------
-\set instructor1 '00000000-0000-0000-0000-000000000000'
-\set instructor2 '00000000-0000-0000-0000-000000000000'
-\set student1    '00000000-0000-0000-0000-000000000000'
-\set student2    '00000000-0000-0000-0000-000000000000'
-\set student3    '00000000-0000-0000-0000-000000000000'
-\set student4    '00000000-0000-0000-0000-000000000000'
-
--- Supabase's SQL editor does not support \set. If you are running there,
--- delete the six lines above and find-and-replace each :'name' token with
--- the quoted UUID, e.g. :'instructor1'  →  'c0ffee00-…'.
+-- ---- 1. Test accounts (created in Supabase Auth, Oct 2026) ------------------
+--   instructor1  e2eab5f4-8fa3-4c8a-ab1c-125c5c96c9b4   instructor1@test.local
+--   instructor2  38b0f56b-5dcd-4f00-a793-4db7dd210123   instructor2@test.local
+--   student1     39947a06-20ca-4922-a230-bf7177f433b9   student1@test.local
+--   student2     aa4dcecd-10f1-4a23-85ae-4883f1f806f1   student2@test.local
+--   student3     421b51ac-fc3a-459a-aaa9-7d6ce51f1e21   student3@test.local
+--   student4     df344742-d680-42cd-a87e-468a28187b0d   student4@test.local
+-- To re-point this seed at different accounts, replace the UUIDs throughout.
 
 -- ---- 2. Roles and readable names ------------------------------------------
-UPDATE users SET role = 'instructor', name = 'Test Instructor One' WHERE id = :'instructor1';
-UPDATE users SET role = 'instructor', name = 'Test Instructor Two' WHERE id = :'instructor2';
-UPDATE users SET role = 'student',    name = 'Amina (test)'        WHERE id = :'student1';
-UPDATE users SET role = 'student',    name = 'Bello (test)'        WHERE id = :'student2';
-UPDATE users SET role = 'student',    name = 'Chidi (test)'        WHERE id = :'student3';
-UPDATE users SET role = 'student',    name = 'Dada (test)'         WHERE id = :'student4';
+UPDATE users SET role = 'instructor', name = 'Test Instructor One' WHERE id = 'e2eab5f4-8fa3-4c8a-ab1c-125c5c96c9b4';
+UPDATE users SET role = 'instructor', name = 'Test Instructor Two' WHERE id = '38b0f56b-5dcd-4f00-a793-4db7dd210123';
+UPDATE users SET role = 'student',    name = 'Amina (test)'        WHERE id = '39947a06-20ca-4922-a230-bf7177f433b9';
+UPDATE users SET role = 'student',    name = 'Bello (test)'        WHERE id = 'aa4dcecd-10f1-4a23-85ae-4883f1f806f1';
+UPDATE users SET role = 'student',    name = 'Chidi (test)'        WHERE id = '421b51ac-fc3a-459a-aaa9-7d6ce51f1e21';
+UPDATE users SET role = 'student',    name = 'Dada (test)'         WHERE id = 'df344742-d680-42cd-a87e-468a28187b0d';
 
 -- ---- 3. Course ownership (replaces the ffffffff placeholder) --------------
-UPDATE courses SET instructor_id = :'instructor1'
+UPDATE courses SET instructor_id = 'e2eab5f4-8fa3-4c8a-ab1c-125c5c96c9b4'
 WHERE id IN ('10000000-0000-0000-0000-000000000001',   -- Introduction to Python
              '10000000-0000-0000-0000-000000000002');  -- Web Basics
-UPDATE courses SET instructor_id = :'instructor2'
+UPDATE courses SET instructor_id = '38b0f56b-5dcd-4f00-a793-4db7dd210123'
 WHERE id = '10000000-0000-0000-0000-000000000003';     -- Logic & Data Structures
 
 -- ---- 4. Enrollments ---------------------------------------------------------
 INSERT INTO enrollments (user_id, course_id, enrolled_at) VALUES
-  (:'student1', '10000000-0000-0000-0000-000000000001', NOW() - INTERVAL '30 days'),
-  (:'student2', '10000000-0000-0000-0000-000000000001', NOW() - INTERVAL '14 days'),
-  (:'student3', '10000000-0000-0000-0000-000000000001', NOW() - INTERVAL '21 days'),
-  (:'student4', '10000000-0000-0000-0000-000000000002', NOW() - INTERVAL '7 days')
+  ('39947a06-20ca-4922-a230-bf7177f433b9', '10000000-0000-0000-0000-000000000001', NOW() - INTERVAL '30 days'),
+  ('aa4dcecd-10f1-4a23-85ae-4883f1f806f1', '10000000-0000-0000-0000-000000000001', NOW() - INTERVAL '14 days'),
+  ('421b51ac-fc3a-459a-aaa9-7d6ce51f1e21', '10000000-0000-0000-0000-000000000001', NOW() - INTERVAL '21 days'),
+  ('df344742-d680-42cd-a87e-468a28187b0d', '10000000-0000-0000-0000-000000000002', NOW() - INTERVAL '7 days')
 ON CONFLICT (user_id, course_id) DO NOTHING;
 
 -- ---- 5. Progress -------------------------------------------------------------
@@ -83,26 +77,26 @@ ON CONFLICT (user_id, course_id) DO NOTHING;
 
 -- student1: finished Python (6/6)
 INSERT INTO user_progress (user_id, lesson_id, section_id, completed, last_accessed) VALUES
-  (:'student1', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000001', true, NOW() - INTERVAL '28 days'),
-  (:'student1', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000002', true, NOW() - INTERVAL '27 days'),
-  (:'student1', '20000000-0000-0000-0000-000000000002', '30000000-0000-0000-0000-000000000003', true, NOW() - INTERVAL '20 days'),
-  (:'student1', '20000000-0000-0000-0000-000000000002', '30000000-0000-0000-0000-000000000004', true, NOW() - INTERVAL '19 days'),
-  (:'student1', '20000000-0000-0000-0000-000000000003', '30000000-0000-0000-0000-000000000005', true, NOW() - INTERVAL '10 days'),
-  (:'student1', '20000000-0000-0000-0000-000000000003', '30000000-0000-0000-0000-000000000006', true, NOW() - INTERVAL '9 days')
+  ('39947a06-20ca-4922-a230-bf7177f433b9', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000001', true, NOW() - INTERVAL '28 days'),
+  ('39947a06-20ca-4922-a230-bf7177f433b9', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000002', true, NOW() - INTERVAL '27 days'),
+  ('39947a06-20ca-4922-a230-bf7177f433b9', '20000000-0000-0000-0000-000000000002', '30000000-0000-0000-0000-000000000003', true, NOW() - INTERVAL '20 days'),
+  ('39947a06-20ca-4922-a230-bf7177f433b9', '20000000-0000-0000-0000-000000000002', '30000000-0000-0000-0000-000000000004', true, NOW() - INTERVAL '19 days'),
+  ('39947a06-20ca-4922-a230-bf7177f433b9', '20000000-0000-0000-0000-000000000003', '30000000-0000-0000-0000-000000000005', true, NOW() - INTERVAL '10 days'),
+  ('39947a06-20ca-4922-a230-bf7177f433b9', '20000000-0000-0000-0000-000000000003', '30000000-0000-0000-0000-000000000006', true, NOW() - INTERVAL '9 days')
 ON CONFLICT (user_id, lesson_id, section_id) DO NOTHING;
 
 -- student2: halfway through Python (3/6), active this week
 INSERT INTO user_progress (user_id, lesson_id, section_id, completed, last_accessed) VALUES
-  (:'student2', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000001', true, NOW() - INTERVAL '12 days'),
-  (:'student2', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000002', true, NOW() - INTERVAL '8 days'),
-  (:'student2', '20000000-0000-0000-0000-000000000002', '30000000-0000-0000-0000-000000000003', true, NOW() - INTERVAL '2 days')
+  ('aa4dcecd-10f1-4a23-85ae-4883f1f806f1', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000001', true, NOW() - INTERVAL '12 days'),
+  ('aa4dcecd-10f1-4a23-85ae-4883f1f806f1', '20000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000002', true, NOW() - INTERVAL '8 days'),
+  ('aa4dcecd-10f1-4a23-85ae-4883f1f806f1', '20000000-0000-0000-0000-000000000002', '30000000-0000-0000-0000-000000000003', true, NOW() - INTERVAL '2 days')
 ON CONFLICT (user_id, lesson_id, section_id) DO NOTHING;
 
 -- student3: enrolled in Python, never started (no progress rows on purpose)
 
 -- student4: just started Web Basics (1/6)
 INSERT INTO user_progress (user_id, lesson_id, section_id, completed, last_accessed) VALUES
-  (:'student4', '20000000-0000-0000-0000-000000000004', '30000000-0000-0000-0000-000000000007', true, NOW() - INTERVAL '3 days')
+  ('df344742-d680-42cd-a87e-468a28187b0d', '20000000-0000-0000-0000-000000000004', '30000000-0000-0000-0000-000000000007', true, NOW() - INTERVAL '3 days')
 ON CONFLICT (user_id, lesson_id, section_id) DO NOTHING;
 
 -- ---- 6. Sanity check: run this SELECT as the service role to see the world
