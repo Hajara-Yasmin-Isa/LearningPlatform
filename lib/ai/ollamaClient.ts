@@ -54,3 +54,82 @@ export async function ollamaChat(messages: ChatMessage[], options: ChatOptions =
     const data = await res.json()
     return data.message?.content ?? ''
 }
+
+// Streamed generation. Capped more generously than the one-shot call: 400 tokens on a
+// CPU-only VM can run well past a minute, and killing a stream that is actively producing
+// tokens is worse than letting it finish.
+const STREAM_TIMEOUT_MS = 180_000
+
+// Yields content fragments as the model produces them. Ollama replies with NDJSON — one
+// JSON object per line — but network chunks do not align with line breaks, so a partial
+// trailing line is carried over to the next read.
+//
+// Passing `signal` replaces the default timeout, so the caller owns cancellation when it
+// provides one. Abandoning the generator cancels the upstream request, which stops Ollama
+// generating rather than leaving it to finish into a dropped connection.
+export async function* ollamaChatStream(
+    messages: ChatMessage[],
+    options: ChatOptions & { signal?: AbortSignal } = {},
+): AsyncGenerator<string> {
+    const { model = process.env.OLLAMA_MODEL ?? DEFAULT_MODEL, signal, ...modelOptions } = options
+    const BASE_URL = baseUrl()
+
+    let res: Response
+    try {
+        res = await fetch(`${BASE_URL}/api/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ model, messages, stream: true, options: modelOptions }),
+            signal: signal ?? AbortSignal.timeout(STREAM_TIMEOUT_MS),
+        })
+    } catch (e) {
+        throw new OllamaUnavailableError(`Could not reach Ollama at ${BASE_URL}: ${(e as Error).message}`)
+    }
+
+    if (!res.ok) {
+        throw new OllamaUnavailableError(`Ollama responded ${res.status}`)
+    }
+    if (!res.body) {
+        throw new OllamaUnavailableError('Ollama returned no response body')
+    }
+
+    const reader = res.body.getReader()
+    const decoder = new TextDecoder()
+    let buffer = ''
+
+    try {
+        while (true) {
+            const { done, value } = await reader.read()
+            if (done) break
+
+            buffer += decoder.decode(value, { stream: true })
+
+            const lines = buffer.split('\n')
+            buffer = lines.pop() ?? ''
+
+            for (const line of lines) {
+                const trimmed = line.trim()
+                if (!trimmed) continue
+
+                let parsed: { message?: { content?: string }; done?: boolean; error?: string }
+                try {
+                    parsed = JSON.parse(trimmed)
+                } catch {
+                    // a malformed line should not kill a stream that is otherwise fine
+                    continue
+                }
+
+                if (parsed.error) {
+                    throw new OllamaUnavailableError(`Ollama error: ${parsed.error}`)
+                }
+
+                if (parsed.message?.content) {
+                    yield parsed.message.content
+                }
+                if (parsed.done) return
+            }
+        }
+    } finally {
+        await reader.cancel().catch(() => {})
+    }
+}
