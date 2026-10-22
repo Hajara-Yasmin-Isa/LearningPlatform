@@ -9,8 +9,10 @@ export function CreateLessonTab() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-1">
           <label className="block text-sm font-medium text-gray-700">Lesson Title</label>
-          <input className="w-full h-10 bg-white rounded-lg border border-gray-200 px-3 
-          focus:outline-none focus:ring-2 focus:ring-blue-600" placeholder="Enter lesson title" type="text" />
+          <input className="w-full h-10 bg-white rounded-lg border border-gray-200 px-3 focus:outline-none focus:ring-2 focus:ring-blue-600" 
+          placeholder="Enter lesson title" 
+          type="text" 
+          />
         </div>
         <div className="space-y-1">
           <label className="block text-sm font-medium text-gray-700">Assign to Class</label>
@@ -20,7 +22,10 @@ export function CreateLessonTab() {
 
       <div className="space-y-1">
         <label className="block text-sm font-medium text-gray-700">Lesson Description</label>
-        <div className="w-full h-24 bg-gray-100 rounded-lg border border-gray-200" />
+        <textarea className="w-full bg-white rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600 resize-none" 
+        rows={4}
+        placeholder="Enter lesson title"
+        />
       </div>
 
       <div className="space-y-1">
