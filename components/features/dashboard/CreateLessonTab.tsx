@@ -103,9 +103,15 @@ export function CreateLessonTab() {
         </div>
       </div>
 
-      <div className="border-t border-gray-100 pt-4 flex gap-3">
-        <div className="h-10 w-28 bg-blue-600 rounded-lg opacity-80" />
-        <div className="h-10 w-24 bg-gray-100 rounded-lg border border-gray-200" />
+      <div className="border-t border-gray-100 pt-4 flex items-center gap-3">
+        <button
+          type="button"
+          disabled
+          className="px-4 py-2 rounded-lg bg-blue-600 text-white disabled:opacity-50"
+        >
+          Save lesson
+        </button>
+        <p className="text-sm text-gray-500">Saving arrives next sprint</p>
       </div>
     </div>
   )
