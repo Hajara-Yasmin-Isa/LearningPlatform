@@ -39,7 +39,7 @@ export async function getInstructorCourseStats(
 
     //Instructor's Course IDs
     const instructorCourseIds = courses.map((course) => course.id)
-    console.log('instructorCourseIds', {instructorCourseIds})
+    console.log('instructorCourseIds', { instructorCourseIds })
 
     //Get instructor's courses from enrollments table
     const { data: enrollments, error: enrollmentsError } = await client
@@ -108,12 +108,50 @@ export async function getInstructorCourseStats(
 
     if (progressError) throw new Error(progressError.message)
 
-    console.log(progress)
+    //Average Completion Calculation
+    return courses.map((course) => {
+        //Filter to course
+        const courseEnrollments = (enrollments ?? []).filter(
+            (enrollment) => enrollment.course_id === course.id
+        )
 
-    return courses.map((course) => ({
-        courseId: course.id,
-        enrollments: enrollmentCounts.get(course.id) ?? 0,
-        totalSections: sectionCounts.get(course.id) ?? 0,
-        averageCompletion: 0,
-    }))
+        //Count total sections on this course
+        const totalSections = sectionCounts.get(course.id) ?? 0
+
+        let totalCompletion = 0
+
+        //Find progress per student
+        for (const enrollment of courseEnrollments) {
+            const studentProgress = (progress ?? []).filter(
+                (p) => p.user_id === enrollment.user_id &&
+                    p.completed === true
+            )
+
+            //Find how many sections the student has completed belonging to the course
+            const completedSections = studentProgress.filter((p) =>
+                (sections ?? []).some(
+                    (section) =>
+                        section.id === p.section_id &&
+                        lessonToCourse.get(section.lesson_id) === course.id
+                )
+            ).length
+
+            const studentCompletion = totalSections > 0
+                ? (completedSections / totalSections) * 100
+                : 0
+
+            totalCompletion += studentCompletion
+        }
+
+        const averageCompletion = courseEnrollments.length > 0
+            ? totalCompletion / courseEnrollments.length
+            : 0
+
+        return {
+            courseId: course.id,
+            enrollments: enrollmentCounts.get(course.id) ?? 0,
+            totalSections,
+            averageCompletion: Math.round(averageCompletion),
+        }
+    })
 }
