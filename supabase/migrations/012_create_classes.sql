@@ -3,8 +3,10 @@
 
 -- STEP 1a. Create classes table with foreign key to courses table
 
--- NOTE: Admins can also own classes, so does instructor_id implicitly also allow admins?
---       Do we want ON DELETE CASCADE to still persist even if it's an admin's class?
+--==================================================================================================
+-- IMPORTANT: Admins can also own classes, so does instructor_id implicitly also allow admins?
+--            Do we want ON DELETE CASCADE to still persist even if it's an admin's class?
+--==================================================================================================
 CREATE TABLE classes (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     course_id UUID NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
@@ -37,7 +39,9 @@ where is_general = true;
 
 -- Create function to create general class
 
--- NOTE: How do we generate join_code? Should we have a naming convention?
+--====================================================================================
+-- IMPORTANT: How do we generate join_code? Should we have a naming convention?
+--====================================================================================
 CREATE OR REPLACE FUNCTION create_general_class()
 RETURNS TRIGGER
 AS $$
