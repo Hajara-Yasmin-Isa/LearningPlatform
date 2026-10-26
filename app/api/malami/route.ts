@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
         const latest = messages[messages.length - 1].content
         const onTopicAlready = messages.length > 1 || !!context.exerciseId || !!context.lessonId
         if (isOffTopic(latest, onTopicAlready)) {
-            return NextResponse.json({ reply: OFF_TOPIC_REDIRECT })
+            return frameResponse([{ type: 'token', value: OFF_TOPIC_REDIRECT }, { type: 'done' }])
         }
 
         // grounding: fetched server-side, never trusted from the client
@@ -107,6 +107,19 @@ export async function POST(request: NextRequest) {
 // open the status is already 200, so a failure after that has to travel in-band as an
 // error frame.
 //
+// A canned reply that never reaches the model still has to arrive in the same frame format
+// as a generated one. Any 200 from this route is NDJSON frames; a client should never have
+// to guess which of two shapes it is parsing. Failures before the stream opens are the
+// exception, and those are non-200 with a JSON { error } body.
+function frameResponse(frames: Frame[]): Response {
+    return new Response(frames.map((f) => JSON.stringify(f) + '\n').join(''), {
+        headers: {
+            'Content-Type': 'application/x-ndjson; charset=utf-8',
+            'Cache-Control': 'no-cache, no-transform',
+        },
+    })
+}
+
 // Wire format is NDJSON, one frame per line — see lib/ai/streamGuard.ts for the frames and
 // for the guide-don't-reveal enforcement. This function owns transport only: HTTP headers,
 // client disconnects, and turning a thrown error into an in-band frame.
