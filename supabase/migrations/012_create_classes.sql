@@ -10,7 +10,8 @@
 CREATE TABLE classes (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     course_id UUID NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
-    instructor_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    -- instructor_id is to be treated as "person who runs this class"
+    instructor_id UUID NULL REFERENCES auth.users(id) ON DELETE SET NULL,
     name TEXT NOT NULL,
     join_code TEXT NOT NULL UNIQUE,
     is_general BOOLEAN DEFAULT false,
@@ -22,7 +23,7 @@ CREATE TABLE class_members (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     class_id UUID NOT NULL REFERENCES classes(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    joined_at TIMESTAMPTZ DEFAULT NOW(),
+    joined_at NULL TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE (class_id, user_id)
 );
 
@@ -42,8 +43,10 @@ where is_general = true;
 --====================================================================================
 -- IMPORTANT: How do we generate join_code? Should we have a naming convention?
 --====================================================================================
-CREATE OR REPLACE FUNCTION create_general_class()
+CREATE OR REPLACE FUNCTION public.create_general_class()
 RETURNS TRIGGER
+SECURITY DEFINER
+SET search_path = public
 AS $$
 BEGIN
     INSERT INTO classes (course_id, instructor_id, name, join_code, is_general)
@@ -59,8 +62,10 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Create function to add enrollments to their respective general class
-CREATE OR REPLACE FUNCTION add_enrollment_to_general_class()
+CREATE OR REPLACE FUNCTION public.add_enrollment_to_general_class()
 RETURNS TRIGGER
+SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
     general_class_id UUID;
@@ -96,3 +101,5 @@ CREATE TRIGGER on_enrollment_insert_add_class_member
     AFTER INSERT ON enrollments
     FOR EACH ROW
     EXECUTE FUNCTION add_enrollment_to_general_class();
+
+-- Step 3. Update RLS 
