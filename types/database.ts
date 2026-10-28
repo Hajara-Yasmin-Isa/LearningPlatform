@@ -93,3 +93,20 @@ export interface UserLesson {
 
 // Roles a user can hold, matching the CHECK constraint on users.role
 export type UserRole = 'student' | 'instructor' | 'admin'
+
+export interface Class {
+  id: string
+  course_id: string
+  instructor_id: string | null
+  name: string
+  join_code: string | null
+  is_general: boolean
+  created_at: string
+}
+
+export interface ClassMembers {
+  id: string
+  class_id: string
+  user_id: string
+  joined_at: string
+}

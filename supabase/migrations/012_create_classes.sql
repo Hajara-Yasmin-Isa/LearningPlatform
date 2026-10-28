@@ -278,8 +278,19 @@ USING (
         JOIN public.users AS u
           ON u.id = (SELECT auth.uid())
         WHERE c.id = class_members.class_id
-          AND c.instructor_id = (SELECT auth.uid())
-          AND u.role IN ('instructor', 'admin')
+          AND u.role = 'instructor'
+          AND (
+              c.instructor_id = (SELECT auth.uid())
+              OR (
+                  c.is_general = true
+                  AND EXISTS (
+                      SELECT 1
+                      FROM public.courses AS co
+                      WHERE co.id = c.course_id
+                        AND co.instructor_id = (SELECT auth.uid())
+                  )
+              )
+          )
     )
 );
 
@@ -310,7 +321,18 @@ USING (
           ON u.id = (SELECT auth.uid())
         WHERE cm.user_id = enrollments.user_id
           AND c.course_id = enrollments.course_id
-          AND c.instructor_id = (SELECT auth.uid())
+          AND (
+            c.instructor_id = (SELECT auth.uid())
+            OR (
+                c.is_general = true
+                AND EXISTS (
+                    SELECT 1
+                    FROM public.courses AS co
+                    WHERE co.id = c.course_id
+                    AND co.instructor_id = (SELECT auth.uid())
+                )
+            )
+        )
           AND u.role = 'instructor'
     )
 );
@@ -331,7 +353,18 @@ USING (
           ON u.id = (SELECT auth.uid())
         WHERE cm.user_id = user_progress.user_id
           AND l.id = user_progress.lesson_id
-          AND c.instructor_id = (SELECT auth.uid())
+          AND (
+            c.instructor_id = (SELECT auth.uid())
+            OR (
+                c.is_general = true
+                AND EXISTS (
+                    SELECT 1
+                    FROM public.courses AS co
+                    WHERE co.id = c.course_id
+                    AND co.instructor_id = (SELECT auth.uid())
+                )
+            )
+        )
           AND u.role = 'instructor'
     )
 );
@@ -361,3 +394,100 @@ USING (
           AND u.role = 'admin'
     )
 );
+
+CREATE POLICY "Instructors can create classes for their courses"
+ON public.classes
+FOR INSERT
+TO authenticated
+WITH CHECK (
+    instructor_id = (SELECT auth.uid())
+    AND is_general = false
+    AND join_code IS NOT NULL
+    AND EXISTS (
+        SELECT 1
+        FROM public.users AS u
+        WHERE u.id = (SELECT auth.uid())
+          AND u.role = 'instructor'
+    )
+    AND EXISTS (
+        SELECT 1
+        FROM public.courses AS co
+        WHERE co.id = course_id
+          AND co.instructor_id = (SELECT auth.uid())
+    )
+);
+
+GRANT INSERT ON public.classes TO authenticated;
+
+CREATE OR REPLACE FUNCTION public.join_class_by_code(
+    p_join_code TEXT
+)
+RETURNS UUID
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+    target_class_id UUID;
+BEGIN
+    IF (SELECT auth.uid()) IS NULL THEN
+        RAISE EXCEPTION 'You must be logged in to join a class';
+    END IF;
+
+    SELECT id
+    INTO target_class_id
+    FROM public.classes
+    WHERE join_code = upper(trim(p_join_code))
+      AND is_general = false;
+
+    IF target_class_id IS NULL THEN
+        RAISE EXCEPTION 'Invalid class join code';
+    END IF;
+
+    INSERT INTO public.class_members (class_id, user_id)
+    VALUES (target_class_id, (SELECT auth.uid()))
+    ON CONFLICT (class_id, user_id) DO NOTHING;
+
+    RETURN target_class_id;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.join_class_by_code(TEXT)
+FROM PUBLIC, anon;
+
+GRANT EXECUTE ON FUNCTION public.join_class_by_code(TEXT)
+TO authenticated;
+
+CREATE POLICY "Instructors can view general classes for their courses"
+ON public.classes
+FOR SELECT
+TO authenticated
+USING (
+    is_general = true
+    AND EXISTS (
+        SELECT 1
+        FROM public.users AS u
+        JOIN public.courses AS co
+          ON co.instructor_id = u.id
+        WHERE u.id = (SELECT auth.uid())
+          AND u.role = 'instructor'
+          AND co.id = classes.course_id
+    )
+);
+
+CREATE POLICY "Instructors can view their assigned courses"
+ON public.courses
+FOR SELECT
+TO authenticated
+USING (
+    instructor_id = (SELECT auth.uid())
+    AND EXISTS (
+        SELECT 1
+        FROM public.users AS u
+        WHERE u.id = (SELECT auth.uid())
+          AND u.role = 'instructor'
+    )
+);
+
+GRANT SELECT ON public.classes TO authenticated;
+GRANT SELECT ON public.class_members TO authenticated;
