@@ -232,3 +232,132 @@ ALTER TABLE public.classes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.class_members ENABLE ROW LEVEL SECURITY;
 
 -- Step 3.b Add policies for classes and memberships
+CREATE POLICY "Admins can view all classes"
+ON public.classes
+FOR SELECT
+TO authenticated
+USING (
+    EXISTS (
+        SELECT 1
+        FROM public.users AS u
+        WHERE u.id = (SELECT auth.uid())
+          AND u.role = 'admin'
+    )
+);
+
+CREATE POLICY "Instructors can view their own classes"
+ON public.classes
+FOR SELECT
+TO authenticated
+USING (
+    instructor_id = (SELECT auth.uid())
+    AND EXISTS (
+        SELECT 1
+        FROM public.users AS u
+        WHERE u.id = (SELECT auth.uid())
+          AND u.role IN ('instructor', 'admin')
+    )
+);
+
+CREATE POLICY "Users can view their own class memberships"
+ON public.class_members
+FOR SELECT
+TO authenticated
+USING (
+    user_id = (SELECT auth.uid())
+);
+
+CREATE POLICY "Instructors can view members of their own classes"
+ON public.class_members
+FOR SELECT
+TO authenticated
+USING (
+    EXISTS (
+        SELECT 1
+        FROM public.classes AS c
+        JOIN public.users AS u
+          ON u.id = (SELECT auth.uid())
+        WHERE c.id = class_members.class_id
+          AND c.instructor_id = (SELECT auth.uid())
+          AND u.role IN ('instructor', 'admin')
+    )
+);
+
+CREATE POLICY "Admins can view all class memberships"
+ON public.class_members
+FOR SELECT
+TO authenticated
+USING (
+    EXISTS (
+        SELECT 1
+        FROM public.users AS u
+        WHERE u.id = (SELECT auth.uid())
+          AND u.role = 'admin'
+    )
+);
+
+CREATE POLICY "Instructors can view enrollments for their class members"
+ON public.enrollments
+FOR SELECT
+TO authenticated
+USING (
+    EXISTS (
+        SELECT 1
+        FROM public.class_members AS cm
+        JOIN public.classes AS c
+          ON c.id = cm.class_id
+        JOIN public.users AS u
+          ON u.id = (SELECT auth.uid())
+        WHERE cm.user_id = enrollments.user_id
+          AND c.course_id = enrollments.course_id
+          AND c.instructor_id = (SELECT auth.uid())
+          AND u.role = 'instructor'
+    )
+);
+
+CREATE POLICY "Instructors can view progress for their class members"
+ON public.user_progress
+FOR SELECT
+TO authenticated
+USING (
+    EXISTS (
+        SELECT 1
+        FROM public.class_members AS cm
+        JOIN public.classes AS c
+          ON c.id = cm.class_id
+        JOIN public.lessons AS l
+          ON l.course_id = c.course_id
+        JOIN public.users AS u
+          ON u.id = (SELECT auth.uid())
+        WHERE cm.user_id = user_progress.user_id
+          AND l.id = user_progress.lesson_id
+          AND c.instructor_id = (SELECT auth.uid())
+          AND u.role = 'instructor'
+    )
+);
+
+CREATE POLICY "Admins can view all enrollments"
+ON public.enrollments
+FOR SELECT
+TO authenticated
+USING (
+    EXISTS (
+        SELECT 1
+        FROM public.users AS u
+        WHERE u.id = (SELECT auth.uid())
+          AND u.role = 'admin'
+    )
+);
+
+CREATE POLICY "Admins can view all user progress"
+ON public.user_progress
+FOR SELECT
+TO authenticated
+USING (
+    EXISTS (
+        SELECT 1
+        FROM public.users AS u
+        WHERE u.id = (SELECT auth.uid())
+          AND u.role = 'admin'
+    )
+);
