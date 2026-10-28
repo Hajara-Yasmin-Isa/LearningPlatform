@@ -13,9 +13,16 @@ CREATE TABLE classes (
     -- instructor_id is to be treated as "person who runs this class"
     instructor_id UUID NULL REFERENCES auth.users(id) ON DELETE SET NULL,
     name TEXT NOT NULL,
-    join_code TEXT NOT NULL UNIQUE,
+    join_code TEXT UNIQUE,
     is_general BOOLEAN DEFAULT false,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    -- 
+    CONSTRAINT class_ownership_and_code_check
+    CHECK (
+        (is_general AND instructor_id IS NULL AND join_code IS NULL)
+        OR
+        (NOT is_general AND instructor_id IS NOT NULL AND join_code IS NOT NULL)
+    )
 );
 
 -- STEP 1b. Create class members table with foreign keys to classes table and users table
@@ -23,7 +30,7 @@ CREATE TABLE class_members (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     class_id UUID NOT NULL REFERENCES classes(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    joined_at NULL TIMESTAMPTZ DEFAULT NOW(),
+    joined_at TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE (class_id, user_id)
 );
 
@@ -39,22 +46,16 @@ where is_general = true;
 -- Create trigger that fires on enrollments insert
 
 -- Create function to create general class
-
---====================================================================================
--- IMPORTANT: How do we generate join_code? Should we have a naming convention?
---====================================================================================
 CREATE OR REPLACE FUNCTION public.create_general_class()
 RETURNS TRIGGER
 SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
-    INSERT INTO classes (course_id, instructor_id, name, join_code, is_general)
+    INSERT INTO classes (course_id, name, is_general)
     VALUES (
         NEW.id,
-        NEW.instructor_id,
         'General Class',
-        '',
         true
     );
     RETURN NEW;
@@ -62,36 +63,29 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Create function to add enrollments to their respective general class
-CREATE OR REPLACE FUNCTION public.add_enrollment_to_general_class()
-RETURNS TRIGGER
-SECURITY DEFINER
-SET search_path = public
-AS $$
-DECLARE
-    general_class_id UUID;
+CREATE OR REPLACE FUNCTION public.add_enrollment_to_general_class() RETURNS TRIGGER
+SECURITY DEFINER SET search_path = public
+LANGUAGE plpgsql AS $$
+DECLARE general_class_id UUID;
 BEGIN
-    -- Find the general class for this enrollment's course
-    SELECT id
-    INTO general_class_id
-    FROM classes
-    WHERE course_id = NEW.course_id
-      AND is_general = true;
+    SELECT id INTO general_class_id
+    FROM classes WHERE course_id = NEW.course_id AND is_general;
 
-    -- Don't silently accept an enrollment without a general class
+  -- self-heal rather than block the student's enrollment
     IF general_class_id IS NULL THEN
-        RAISE EXCEPTION 'No general class found for course %', NEW.course_id;
+        INSERT INTO classes (course_id, name, is_general)
+        VALUES (NEW.course_id, 'General Class', true)
+        RETURNING id INTO general_class_id;
     END IF;
 
-    -- Add the student to that class
     INSERT INTO class_members (class_id, user_id)
     VALUES (general_class_id, NEW.user_id)
     ON CONFLICT (class_id, user_id) DO NOTHING;
-
     RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+END $$;
 
--- 6-char codes, no look-alike characters; retries on the rare collision
+
+-- Join Code generator: 6-char codes, no look-alike characters; retries on the rare collision
 CREATE OR REPLACE FUNCTION generate_join_code() RETURNS TEXT
 LANGUAGE plpgsql AS $$
 DECLARE
@@ -108,10 +102,10 @@ BEGIN
   RETURN code;
 END $$;
 
-
 -- Create trigger for creating general class on course insertion 
 CREATE TRIGGER on_course_insertion
     AFTER INSERT ON courses
+    FOR EACH ROW
     EXECUTE FUNCTION create_general_class();
 
 -- Create trigger for adding new enrollments to general class
@@ -119,5 +113,8 @@ CREATE TRIGGER on_enrollment_insert_add_class_member
     AFTER INSERT ON enrollments
     FOR EACH ROW
     EXECUTE FUNCTION add_enrollment_to_general_class();
+
+
+
 
 -- Step 3. Update RLS 
