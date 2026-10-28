@@ -91,6 +91,24 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- 6-char codes, no look-alike characters; retries on the rare collision
+CREATE OR REPLACE FUNCTION generate_join_code() RETURNS TEXT
+LANGUAGE plpgsql AS $$
+DECLARE
+  alphabet TEXT := 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  code     TEXT;
+BEGIN
+  LOOP
+    code := '';
+    FOR i IN 1..6 LOOP
+      code := code || substr(alphabet, 1 + floor(random() * length(alphabet))::int, 1);
+    END LOOP;
+    EXIT WHEN NOT EXISTS (SELECT 1 FROM classes WHERE join_code = code);
+  END LOOP;
+  RETURN code;
+END $$;
+
+
 -- Create trigger for creating general class on course insertion 
 CREATE TRIGGER on_course_insertion
     AFTER INSERT ON courses
