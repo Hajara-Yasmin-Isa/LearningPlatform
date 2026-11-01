@@ -55,7 +55,9 @@ The evidence supports this: **prompt v2 fixed none of the factual errors.** The 
 | llama3.2:3b | E05 | Brings up range step values, which have nothing to do with the mistake. Misleading rather than false. | Correct = 1 |
 | gemma2:2b | E01 | Says the message must go inside the parentheses. The student already did that; the real problem is the missing quotes. | Correct = 1 |
 
-### Prompt v2 (observed, not formally scored)
+### Prompt v2 (scored 2026-11-01, see `scoring/v2/scores.csv`)
+
+Scored as false (Correct = 0): llama3.2 E01 and E07, qwen2.5 E01, phi3.5 E07 and C02. gemma2 had none. The rest of this table were scored as misleading (Correct = 1) or as unhelpful.
 
 | Model | Case | What it got wrong |
 |---|---|---|
@@ -78,7 +80,20 @@ The evidence supports this: **prompt v2 fixed none of the factual errors.** The 
 - Two kinds of error showed up: **wrong facts** (E07, C03) and **misreading the student's answer** (E01, E02). Neither improved with prompt v2.
 - **For phi3.5:** its leaks may be fixable, but its factual errors (E02, E07, E10 in v1; C02 and E07 in v2) are not. This is the biggest weakness in the case for phi3.5, and the proposal has to weigh it.
 
-## Current thinking
+## Decision (2026-11-01): gemma2:2b
+
+**Scoring prompt v2 overturned the tentative lean towards phi3.5.** With the stricter prompt, phi3.5 still gave the answer away 5 times, still made 2 factual errors, and still scored last (73/112). The condition for picking it ("if we can solve the leak problem") wasn't met.
+
+| Model (prompt v2) | Score | Fails | Gave the answer | Factual errors | Helpful |
+|---|---|---|---|---|---|
+| gemma2:2b | 89/112 | 2 | 2 | 0 | 1.20 |
+| llama3.2:3b | 90/112 | 2 | 0 | 2 | 1.40 |
+| qwen2.5:3b | 90/112 | 6 | 5 | 1 | 1.47 |
+| phi3.5 | 73/112 | 6 | 5 | 2 | 1.67 |
+
+gemma2 is the only model with zero factual errors under both prompts, and it ties for the fewest fails. Its weak spot is helpfulness (1.20), which is the job for B1.3's final prompt. Waiting on co-scoring (`scoring/v2/co-score/`) to confirm. The section below is the thinking from before v2 was scored, kept for the record.
+
+## Current thinking (before v2 was scored, 2026-10-09)
 
 **None of the four models is an obvious choice, which makes this a hard call.** Each one fails somewhere that matters for a tutor, and they fail in different ways. No model is good at all three essentials: being accurate, not giving the answer away, and actually helping.
 
@@ -153,6 +168,8 @@ Neither simple approach works yet. Leaks tend to be paraphrases, so plain text m
 
 - [ ] VM run and VM speed/memory, once B1.1 exists (`run_bakeoff.py --machine vm`).
 - [ ] Minimum machine spec (needs VM numbers).
-- [ ] Decide whether the final recommended prompt is v1, v2 or a v3.
+- [x] Score prompt v2 (all 60 cells).
+- [x] Decide the recommended model and prompt: gemma2:2b + v2 as the start for B1.3.
+- [ ] Co-scoring sample of 10 (sent 2026-11-01); record disagreements in proposal 002.
 - [x] Write `docs/proposals/002-local-model-bakeoff.md` (draft) and open a PR to `dev`.
-- [ ] Trello card title ("What should the instructor dashboard show?") doesn't match the description. Confirm with the team lead.
+- [x] Trello card confirmed as B1.2.
