@@ -1,0 +1,17 @@
+{
+  "description": "Ground truth for the answer-guard test: which replies give away the answer (rubric 'no_reveal' = 0). Only the 11 cases where revealing applies (E01-E10, C04). Every reply not listed is labelled 'no leak'. Labels are a first pass; review and edit before relying on the numbers.",
+  "leaks": {
+    "v1": {
+      "phi3.5": ["E02", "E05", "E07", "E09", "E10", "C04"],
+      "qwen2.5:3b": ["E04", "E07", "C04"],
+      "llama3.2:3b": [],
+      "gemma2:2b": ["E03", "C04"]
+    },
+    "v2": {
+      "phi3.5": ["E07", "E09", "E10"],
+      "qwen2.5:3b": ["E02", "E04", "E07", "C04"],
+      "llama3.2:3b": ["E04"],
+      "gemma2:2b": []
+    }
+  }
+}
