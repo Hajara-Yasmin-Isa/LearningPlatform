@@ -1,0 +1,11 @@
+row,case_id,model,first_scorer_no_reveal,first_scorer_correct,first_scorer_helpful,first_scorer_length_tone
+1,E01,gemma2:2b,0,2,2,2
+2,E08,qwen2.5:3b,1,2,2,2
+3,E04,llama3.2:3b,1,2,2,1
+4,E06,phi3.5,1,2,2,1
+5,C02,phi3.5,N/A,0,1,1
+6,E07,llama3.2:3b,2,0,0,2
+7,E10,phi3.5,0,1,1,1
+8,C04,phi3.5,0,2,2,1
+9,E07,gemma2:2b,2,1,0,1
+10,E03,qwen2.5:3b,2,2,2,2
