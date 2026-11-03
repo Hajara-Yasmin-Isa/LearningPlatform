@@ -1,4 +1,6 @@
 import { supabase as browserClient } from './client'
+import { SupabaseClient } from '@supabase/supabase-js';
+import { UserRole } from '@/types/database'
 
 // Error handling convention for this file: throws on unexpected Supabase
 // errors; returns null when there is no authenticated user or no profile row.
@@ -47,4 +49,21 @@ export async function updateUserProfile(
     .update({ name })
     .eq('id', user.id)
   if (updateUsersError) throw new Error(updateUsersError.message)
+}
+
+/** Returns the user's role, or null if they have no profile row; throws on unexpected error. */
+export async function getUserRole(
+  userId: string,
+  client: SupabaseClient
+): Promise<UserRole | null> {
+  const { data, error } = await client
+    .from('users')
+    .select('role')
+    .eq('id', userId)
+    .single()
+
+  if (error && error.code !== 'PGRST116') throw new Error(error.message)
+  if (!data) return null
+
+  return data.role as UserRole
 }
