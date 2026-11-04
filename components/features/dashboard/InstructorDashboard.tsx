@@ -1,10 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ClassCard } from './ClassCard'
 import { CreateLessonTab } from './CreateLessonTab'
 import { AnalyticsTab } from './AnalyticsTab'
 import { ManageStudentsTab } from './ManageStudentsTab'
+import { supabase } from '@/lib/supabase/client'
+import { getInstructorCourseStats } from '@/lib/supabase/instructor'
 
 const DUMMY_CLASSES = [
   { className: 'Python Fundamentals', studentCount: 28, activeStudentCount: 19 },
@@ -63,6 +65,31 @@ const QUICK_ACTIONS = [
 export function InstructorDashboard() {
   const [activeTab, setActiveTab] = useState<Tab>('create-lesson')
 
+  const [instructorId, setInstructorId] = useState<string | null>(null)
+  const [stats, setStats] = useState<
+    { enrollments: number; totalSections: number; averageCompletion: number }[]
+  >([])
+
+  useEffect(() => {
+    async function fetchUser() {
+      const { data: { user } } = await supabase.auth.getUser()
+      setInstructorId(user?.id ?? null)
+    }
+
+    fetchUser()
+  }, [])
+
+  useEffect(() => {
+    if (!instructorId) return
+
+    async function fetchStats() {
+      const data = await getInstructorCourseStats(instructorId!)
+      setStats(data)
+    }
+
+    fetchStats()
+  }, [instructorId])
+
   return (
     <div className="space-y-8">
       {/* Header row */}
@@ -109,11 +136,10 @@ export function InstructorDashboard() {
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              className={`px-5 py-3.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
-                activeTab === tab.id
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-300'
-              }`}
+              className={`px-5 py-3.5 text-sm font-medium transition-colors border-b-2 -mb-px ${activeTab === tab.id
+                ? 'border-blue-600 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-300'
+                }`}
             >
               {tab.label}
             </button>
@@ -123,7 +149,7 @@ export function InstructorDashboard() {
         {/* Tab content */}
         <div className="p-6">
           {activeTab === 'create-lesson' && <CreateLessonTab />}
-          {activeTab === 'analytics' && <AnalyticsTab />}
+          {activeTab === 'analytics' && <AnalyticsTab stats={stats} />}
           {activeTab === 'manage-students' && <ManageStudentsTab />}
         </div>
       </section>
