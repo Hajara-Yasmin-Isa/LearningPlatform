@@ -1,5 +1,6 @@
 import { notFound, redirect } from 'next/navigation'
 import MalamiChat from '@/components/features/malami/MalamiChat'
+import type { ExerciseSummary } from '@/components/features/malami/ExerciseContextPanel'
 import type { MalamiContext } from '@/components/features/malami/types'
 import { MALAMI_ENABLED } from '@/lib/featureFlags'
 import { createServerClient } from '@/lib/supabase/server'
@@ -25,9 +26,29 @@ export default async function MalamiPage({
   const params = await searchParams
   const context = buildContext(params)
 
+  // Entering from a failed exercise means the question itself is back on the lesson page,
+  // out of sight. Fetch enough to show it alongside the conversation — question and options
+  // only. The correct answer is deliberately not selected, so it cannot leak into the page.
+  let exercise: ExerciseSummary | undefined
+  if (context?.exerciseId) {
+    const { data } = await supabase
+      .from('exercises')
+      .select('question, options')
+      .eq('id', context.exerciseId)
+      .single()
+
+    if (data) {
+      exercise = {
+        question: data.question,
+        options: data.options,
+        userAnswer: context.userAnswer,
+      }
+    }
+  }
+
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-6">
-      <MalamiChat context={context} />
+      <MalamiChat context={context} exercise={exercise} />
     </main>
   )
 }

@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react'
 import ChatInput from './ChatInput'
 import ContextChip from './ContextChip'
 import ErrorNotice from './ErrorNotice'
+import ExerciseContextPanel, { type ExerciseSummary } from './ExerciseContextPanel'
 import MessageBubble from './MessageBubble'
 import TypingIndicator from './TypingIndicator'
 import WelcomeState from './WelcomeState'
@@ -16,7 +17,13 @@ import type { MalamiContext } from './types'
 // TODO: copy — Hausa wording from the team lead
 const EXERCISE_OPENING = 'I got this exercise wrong. Can you help me understand it?'
 
-export default function MalamiChat({ context }: { context?: MalamiContext }) {
+export default function MalamiChat({
+  context,
+  exercise,
+}: {
+  context?: MalamiContext
+  exercise?: ExerciseSummary
+}) {
   const { messages, pending, error, send, retry } = useMalamiChat(context)
   const bottomRef = useRef<HTMLDivElement>(null)
   const autoStarted = useRef(false)
@@ -50,6 +57,8 @@ export default function MalamiChat({ context }: { context?: MalamiContext }) {
         </div>
         {context && <ContextChip context={context} />}
       </header>
+
+      {exercise && <ExerciseContextPanel exercise={exercise} />}
 
       <div className="flex-1 overflow-y-auto px-5 py-4">
         {hasConversation ? (
