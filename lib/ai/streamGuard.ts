@@ -16,8 +16,8 @@ import { capReply, leaksAnswer, HINT_FALLBACK, MAX_REPLY_CHARS } from './malamiP
 //   error   stream failed mid-flight
 //   done    clean end
 export type Frame =
-    | { type: 'token'; value: string }
-    | { type: 'replace'; value: string }
+    | { type: 'token'; content: string }
+    | { type: 'replace'; content: string }
     | { type: 'error'; message: string }
     | { type: 'done' }
 
@@ -54,14 +54,14 @@ export async function* guardedStream(
         // model emits "mai" and "maita" as separate tokens and neither contains the answer
         // on its own.
         if (correctAnswer && leaksAnswer(accumulated, correctAnswer)) {
-            yield { type: 'replace', value: HINT_FALLBACK }
+            yield { type: 'replace', content: HINT_FALLBACK }
             yield { type: 'done' }
             return
         }
 
         const safeUpTo = Math.min(accumulated.length - holdback, MAX_REPLY_CHARS)
         if (safeUpTo > flushed) {
-            yield { type: 'token', value: accumulated.slice(flushed, safeUpTo) }
+            yield { type: 'token', content: accumulated.slice(flushed, safeUpTo) }
             flushed = safeUpTo
         }
         if (flushed >= MAX_REPLY_CHARS) break
@@ -70,7 +70,7 @@ export async function* guardedStream(
     // Generation finished and the final leak check passed, so the withheld tail can go out.
     const final = capReply(accumulated)
     if (final.length > flushed) {
-        yield { type: 'token', value: final.slice(flushed) }
+        yield { type: 'token', content: final.slice(flushed) }
     }
     yield { type: 'done' }
 }

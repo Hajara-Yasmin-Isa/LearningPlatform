@@ -11,8 +11,8 @@
 import { useRef, useState } from 'react'
 
 type Frame =
-    | { type: 'token'; value: string }
-    | { type: 'replace'; value: string }
+    | { type: 'token'; content: string }
+    | { type: 'replace'; content: string }
     | { type: 'error'; message: string }
     | { type: 'done' }
 
@@ -95,7 +95,7 @@ export default function MalamiTestPage() {
                             firstAt = performance.now()
                             setTtft(Math.round(firstAt - started))
                         }
-                        setVisible((v) => v + frame.value)
+                        setVisible((v) => v + frame.content)
                     }
 
                     // The leak guard fired: discard what was shown and swap in the
@@ -106,7 +106,7 @@ export default function MalamiTestPage() {
                             firstAt = performance.now()
                             setTtft(Math.round(firstAt - started))
                         }
-                        setVisible(frame.value)
+                        setVisible(frame.content)
                         setReplaced(true)
                     }
 

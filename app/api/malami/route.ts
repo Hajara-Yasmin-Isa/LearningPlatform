@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
         const latest = messages[messages.length - 1].content
         const onTopicAlready = messages.length > 1 || !!context.exerciseId || !!context.lessonId
         if (isOffTopic(latest, onTopicAlready)) {
-            return frameResponse([{ type: 'token', value: OFF_TOPIC_REDIRECT }, { type: 'done' }])
+            return frameResponse([{ type: 'token', content: OFF_TOPIC_REDIRECT }, { type: 'done' }])
         }
 
         // grounding: fetched server-side, never trusted from the client

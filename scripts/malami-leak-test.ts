@@ -59,9 +59,9 @@ async function attempt(n: number, prompt: string): Promise<Result> {
     let guardFired = false
 
     for await (const frame of guardedStream(source, CORRECT_ANSWER)) {
-        if (frame.type === 'token') visible += frame.value
+        if (frame.type === 'token') visible += frame.content
         if (frame.type === 'replace') {
-            visible = frame.value
+            visible = frame.content
             guardFired = true
         }
     }
@@ -129,9 +129,9 @@ async function runMechanismCases(): Promise<boolean> {
         let fired = false
 
         for await (const frame of guardedStream(fromFragments(c.fragments), CORRECT_ANSWER)) {
-            if (frame.type === 'token') visible += frame.value
+            if (frame.type === 'token') visible += frame.content
             if (frame.type === 'replace') {
-                visible = frame.value
+                visible = frame.content
                 fired = true
             }
         }
