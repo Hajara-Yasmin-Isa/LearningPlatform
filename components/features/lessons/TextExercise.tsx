@@ -7,13 +7,16 @@ import { gradeShortAnswer, isSelfCheckAnswer } from '@/lib/content/answerGrading
 interface TextExerciseProps {
   exercise: Exercise
   onComplete: () => void
+  // Fired when an attempt is graded wrong, carrying what the learner wrote. Optional so
+  // callers that do not offer help on failure are unaffected.
+  onFailedAttempt?: (userAnswer: string) => void
 }
 
 // Short answers are graded automatically with Hausa-aware normalization
 // (hooked letters, apostrophes, punctuation and spacing are forgiven).
 // Essay-style answers are shown the book's model answer to compare against,
 // and the learner confirms — the same self-check the printed book asks for.
-export default function TextExercise({ exercise, onComplete }: TextExerciseProps) {
+export default function TextExercise({ exercise, onComplete, onFailedAttempt }: TextExerciseProps) {
   const selfCheck = isSelfCheckAnswer(exercise.correct_answer)
   const [answer, setAnswer] = useState('')
   const [submitted, setSubmitted] = useState(false)
@@ -29,6 +32,7 @@ export default function TextExercise({ exercise, onComplete }: TextExerciseProps
     setIsCorrect(correct)
     setSubmitted(true)
     if (correct) onComplete()
+    else onFailedAttempt?.(answer)
   }
 
   function handleConfirmSelfCheck() {
@@ -37,6 +41,10 @@ export default function TextExercise({ exercise, onComplete }: TextExerciseProps
   }
 
   function handleRetry() {
+    // Self-check answers are never graded in code, so this is the only point at which the
+    // learner tells us they did not get it. The model answer is already on screen by now,
+    // so there is nothing left to give away.
+    if (selfCheck) onFailedAttempt?.(answer)
     if (!selfCheck) setAnswer('')
     setSubmitted(false)
     setIsCorrect(false)

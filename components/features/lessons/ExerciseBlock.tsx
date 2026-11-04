@@ -13,11 +13,23 @@ interface ExerciseBlockProps {
 
 export default function ExerciseBlock({ exercise, onComplete }: ExerciseBlockProps) {
   const [completed, setCompleted] = useState(false)
+  // The last answer that was graded wrong. Each exercise type grades differently and keeps
+  // that detail to itself, so failure is reported up to here where the shared "ask Malami"
+  // affordance lives. Null until the learner has actually got something wrong, which is
+  // what keeps the affordance hidden before the first attempt.
+  const [failedAnswer, setFailedAnswer] = useState<string | null>(null)
 
   function handleComplete() {
     setCompleted(true)
+    setFailedAnswer(null)
     onComplete()
   }
+
+  function handleFailedAttempt(userAnswer: string) {
+    setFailedAnswer(userAnswer)
+  }
+
+  const canAskMalami = !completed && failedAnswer !== null
 
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
@@ -29,16 +41,32 @@ export default function ExerciseBlock({ exercise, onComplete }: ExerciseBlockPro
       )}
 
       {exercise.exercise_type === 'multiple_choice' && (
-        <MultipleChoiceExercise exercise={exercise} onComplete={handleComplete} />
+        <MultipleChoiceExercise
+          exercise={exercise}
+          onComplete={handleComplete}
+          onFailedAttempt={handleFailedAttempt}
+        />
       )}
 
       {exercise.exercise_type === 'text' && (
-        <TextExercise exercise={exercise} onComplete={handleComplete} />
+        <TextExercise
+          exercise={exercise}
+          onComplete={handleComplete}
+          onFailedAttempt={handleFailedAttempt}
+        />
       )}
 
       {exercise.exercise_type === 'code' && (
-        <CodeExercise exercise={exercise} onComplete={handleComplete} />
+        <CodeExercise
+          exercise={exercise}
+          onComplete={handleComplete}
+          onFailedAttempt={handleFailedAttempt}
+        />
       )}
+
+      {/* Phase 2 renders the "ask Malami" affordance here, gated on canAskMalami and
+          MALAMI_ENABLED, carrying failedAnswer as context. */}
+      {canAskMalami && null}
     </div>
   )
 }
