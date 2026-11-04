@@ -5,6 +5,7 @@ import { Exercise } from '@/types/database'
 import MultipleChoiceExercise from './MultipleChoiceExercise'
 import TextExercise from './TextExercise'
 import CodeExercise from './CodeExercise';
+import AskMalamiButton from './AskMalamiButton'
 
 interface ExerciseBlockProps {
   exercise: Exercise
@@ -28,8 +29,6 @@ export default function ExerciseBlock({ exercise, onComplete }: ExerciseBlockPro
   function handleFailedAttempt(userAnswer: string) {
     setFailedAnswer(userAnswer)
   }
-
-  const canAskMalami = !completed && failedAnswer !== null
 
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
@@ -64,9 +63,11 @@ export default function ExerciseBlock({ exercise, onComplete }: ExerciseBlockPro
         />
       )}
 
-      {/* Phase 2 renders the "ask Malami" affordance here, gated on canAskMalami and
-          MALAMI_ENABLED, carrying failedAnswer as context. */}
-      {canAskMalami && null}
+      {!completed && failedAnswer !== null && (
+        <div className="mt-3">
+          <AskMalamiButton exerciseId={exercise.id} userAnswer={failedAnswer} />
+        </div>
+      )}
     </div>
   )
 }

@@ -38,7 +38,11 @@ function buildContext(params: SearchParams): MalamiContext | undefined {
 
   const lessonId = single(params.lessonId)
   const exerciseId = single(params.exerciseId)
+  // Only meaningful alongside an exercise — the route reads it inside that branch, and on
+  // its own it is an unattached string. Carried through so a learner arriving from a failed
+  // attempt gets a hint aimed at what they actually wrote.
+  const userAnswer = exerciseId ? single(params.userAnswer) : undefined
 
   if (!lessonId && !exerciseId) return undefined
-  return { lessonId, exerciseId }
+  return { lessonId, exerciseId, userAnswer }
 }
