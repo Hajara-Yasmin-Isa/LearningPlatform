@@ -3,6 +3,7 @@ import { getEnrolledCoursesWithProgress } from './courses'
 import { EnrolledCourseWithProgress } from '@/types/database'
 
 type SupabaseClient = typeof browserClient
+
 export interface EnrolledStudent {
   studentId: string
   name: string | undefined
