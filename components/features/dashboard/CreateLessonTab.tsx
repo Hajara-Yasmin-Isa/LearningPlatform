@@ -64,6 +64,7 @@ export function CreateLessonTab() {
                 <button
                   type="button"
                   className="px-2 py-1 text-sm border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50"
+                  onClick={() => setSections(sections.filter((s, i) => i !== index ))}
                 >
                   Remove
                 </button>
