@@ -96,10 +96,11 @@ export function CreateLessonTab() {
         <button
           type="button"
           className="px-2 py-1 text-sm border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50"
+          onClick={() => setSections([...sections, { title: "", content: "", id: crypto.randomUUID() }] )}
         >
           Add Section
         </button>
-      </div>
+      </div> 
 
       <div className="space-y-1">
         <label className="block text-sm font-medium text-gray-700">Content Type</label>
