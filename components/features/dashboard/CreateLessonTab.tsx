@@ -6,6 +6,24 @@ export function CreateLessonTab() {
   const [sections, setSections] = useState([{ title: "", content: "", id: crypto.randomUUID() }]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [errors, setErrors] = useState<{ title?: string; sections?: string }>({})
+  function handleValidate() {
+    const newErrors: { title?: string; sections?: string } = {}
+    if (title.trim() === "") {
+      newErrors.title = "A title is required"
+    }
+    if (sections.length === 0) {
+      newErrors.sections = "Sections are required"
+    }
+    setErrors(newErrors)
+    if (Object.keys(newErrors).length === 0) {
+      console.log({
+        title: title,
+        description: description,
+        sections: sections.map((s, i) => ({ title: s.title, content: s.content, section_order: i + 1 })),
+      })
+    }
+  }
   return (
     <div className="space-y-6">
       <div>
@@ -22,6 +40,7 @@ export function CreateLessonTab() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
+          {errors.title && <p className="text-sm text-red-600">{errors.title}</p>}
         </div>
         <div className="space-y-1">
           <label className="block text-sm font-medium text-gray-700">Assign to Class</label>
@@ -117,6 +136,7 @@ export function CreateLessonTab() {
         >
           Add Section
         </button>
+        {errors.sections && <p className="text-sm text-red-600">{errors.sections}</p>}
       </div>
 
       <div className="space-y-1">
@@ -140,6 +160,13 @@ export function CreateLessonTab() {
           className="px-4 py-2 rounded-lg bg-blue-600 text-white disabled:opacity-50"
         >
           Save lesson
+        </button>
+        <button
+        type="button"
+        className="px-4 py-2 rounded-lg bg-blue-600 text-white disabled:opacity-50"
+        onClick={handleValidate}
+        >
+          Check lesson
         </button>
         <p className="text-sm text-gray-500">Saving arrives next sprint</p>
       </div>
