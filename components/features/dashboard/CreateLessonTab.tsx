@@ -1,15 +1,11 @@
-const EXAMPLE_SECTIONS = [
-  {
-    title: 'What is a variable?',
-    content: 'A variable is a named box that stores a value your program can use later.',
-  },
-  {
-    title: 'Naming your variables',
-    content: 'Good names describe what the value means, like studentCount instead of x.',
-  },
-]
+"use client";
+
+import { useState } from "react";
 
 export function CreateLessonTab() {
+  const [sections, setSections] = useState([ {title: "", content: ""} ]);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   return (
     <div className="space-y-6">
       <div>
@@ -23,6 +19,8 @@ export function CreateLessonTab() {
           <input className="w-full h-10 bg-white rounded-lg border border-gray-200 px-3 focus:outline-none focus:ring-2 focus:ring-blue-600"
             placeholder="Enter lesson title"
             type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
           />
         </div>
         <div className="space-y-1">
@@ -36,12 +34,14 @@ export function CreateLessonTab() {
         <textarea className="w-full bg-white rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600 resize-none"
           rows={4}
           placeholder="Enter lesson title"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
         />
       </div>
 
       <div className="space-y-3">
         <label className="block text-sm font-medium text-gray-700">Sections</label>
-        {EXAMPLE_SECTIONS.map((section, index) => (
+        {sections.map((section, index) => (
           <div
             key={section.title}
             className="p-4 space-y-3 bg-white border border-gray-200 rounded-xl shadow-sm"
