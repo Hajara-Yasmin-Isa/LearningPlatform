@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 export function CreateLessonTab() {
-  const [sections, setSections] = useState([{ title: "", content: "", id: crypto.randomUUID()}]);
+  const [sections, setSections] = useState([{ title: "", content: "", id: crypto.randomUUID() }]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   return (
@@ -51,20 +51,36 @@ export function CreateLessonTab() {
               <div className="flex gap-2">
                 <button
                   type="button"
-                  className="px-2 py-1 text-sm border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50"
+                  className="disabled:opacity-50 disabled:cursor-not-allowed px-2 py-1 text-sm border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50"
+                  disabled={index === 0}
+                  onClick={() => {
+                    const next = [...sections]
+                    const temp = next[index - 1]
+                    next[index - 1] = next[index]
+                    next[index] = temp
+                    setSections(next)
+                  }}
                 >
                   ↑
                 </button>
                 <button
                   type="button"
-                  className="px-2 py-1 text-sm border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50"
+                  className="disabled:opacity-50 disabled:cursor-not-allowed px-2 py-1 text-sm border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50"
+                  disabled={index === sections.length - 1}
+                  onClick={() => {
+                    const next = [...sections]
+                    const temp = next[index + 1]
+                    next[index + 1] = next[index]
+                    next[index] = temp
+                    setSections(next)
+                  }}
                 >
                   ↓
                 </button>
                 <button
                   type="button"
                   className="px-2 py-1 text-sm border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50"
-                  onClick={() => setSections(sections.filter((s, i) => i !== index ))}
+                  onClick={() => setSections(sections.filter((s, i) => i !== index))}
                 >
                   Remove
                 </button>
@@ -77,7 +93,7 @@ export function CreateLessonTab() {
               value={section.title}
               onChange={(e) =>
                 setSections(
-                  sections.map((s, i) => (i === index ? { ...s, title: e.target.value} : s))
+                  sections.map((s, i) => (i === index ? { ...s, title: e.target.value } : s))
                 )
               }
             />
@@ -88,7 +104,7 @@ export function CreateLessonTab() {
               value={section.content}
               onChange={(e) =>
                 setSections(
-                  sections.map((s, i) => (i === index ? { ...s, content: e.target.value} : s))
+                  sections.map((s, i) => (i === index ? { ...s, content: e.target.value } : s))
                 )
               }
             />
@@ -97,11 +113,11 @@ export function CreateLessonTab() {
         <button
           type="button"
           className="px-2 py-1 text-sm border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50"
-          onClick={() => setSections([...sections, { title: "", content: "", id: crypto.randomUUID() }] )}
+          onClick={() => setSections([...sections, { title: "", content: "", id: crypto.randomUUID() }])}
         >
           Add Section
         </button>
-      </div> 
+      </div>
 
       <div className="space-y-1">
         <label className="block text-sm font-medium text-gray-700">Content Type</label>
