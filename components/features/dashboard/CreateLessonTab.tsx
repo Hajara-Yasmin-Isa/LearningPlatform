@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 export function CreateLessonTab() {
-  const [sections, setSections] = useState([ {title: "", content: ""} ]);
+  const [sections, setSections] = useState([{ title: "", content: "", id: crypto.randomUUID()}]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   return (
@@ -43,7 +43,7 @@ export function CreateLessonTab() {
         <label className="block text-sm font-medium text-gray-700">Sections</label>
         {sections.map((section, index) => (
           <div
-            key={section.title}
+            key={section.id}
             className="p-4 space-y-3 bg-white border border-gray-200 rounded-xl shadow-sm"
           >
             <div className="flex items-center justify-between">
@@ -73,11 +73,23 @@ export function CreateLessonTab() {
               type="text"
               placeholder="Section title"
               className="w-full h-10 bg-white rounded-lg border border-gray-200 px-3 focus:outline-none focus:ring-2 focus:ring-blue-600"
+              value={section.title}
+              onChange={(e) =>
+                setSections(
+                  sections.map((s, i) => (i === index ? { ...s, title: e.target.value} : s))
+                )
+              }
             />
             <textarea
               rows={4}
               placeholder="Section content"
               className="w-full bg-white rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600 resize-none"
+              value={section.content}
+              onChange={(e) =>
+                setSections(
+                  sections.map((s, i) => (i === index ? { ...s, content: e.target.value} : s))
+                )
+              }
             />
           </div>
         ))}
