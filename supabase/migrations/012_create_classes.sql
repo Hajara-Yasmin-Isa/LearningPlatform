@@ -29,11 +29,11 @@
 --     supabase/tests/verify_classes_rls.sql). Cross-table checks therefore go through small
 --     SECURITY DEFINER helpers (is_class_member, instructs_class, ...), which read without RLS.
 --
--- Scope note for the reviewer: the policies below let the instructor of a COURSE see the members of
--- that course's general class (the `is_general AND courses.instructor_id = auth.uid()` branches).
--- The A2.1 card's strict wording is "only students in classes where classes.instructor_id =
--- auth.uid()". Those branches are marked "course-owner visibility" and can be removed as one block
--- if the strict reading is chosen; PR 97's dashboard then needs to read through classes instead.
+-- Visibility rule (decided by the team lead, 12 Nov 2026): the instructor of a COURSE sees the
+-- members of that course's general class as well as the classes they run themselves. That is the
+-- `is_general AND courses.instructor_id = auth.uid()` branch, marked "course-owner visibility"
+-- below. It is what lets the instructor dashboard (A1.3 / A1.4) count a course's enrollees.
+-- Later cards (A2.2, A3.3) build on this rule; do not narrow it without a new decision.
 
 -- ---------------------------------------------------------------------------------------------
 -- STEP 1. Tables
