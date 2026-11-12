@@ -176,32 +176,7 @@ export async function getEnrolledCoursesWithProgress(
     sectionsCompletedByCourseId.set(courseId, (sectionsCompletedByCourseId.get(courseId) ?? 0) + 1)
   }
 
-  // Count total sections per course via lessons -> sections
-  const { data: lessons, error: lessonsError } = await client
-    .from('lessons')
-    .select('id, course_id')
-    .in('course_id', courseIds)
-
-  if (lessonsError) throw new Error(lessonsError.message)
-
-  const lessonIds = (lessons ?? []).map(l => l.id as string)
-  const lessonToCourse = new Map<string, string>(
-    (lessons ?? []).map(l => [l.id as string, l.course_id as string])
-  )
-
-  const { data: sections, error: sectionsError } = await client
-    .from('sections')
-    .select('id, lesson_id')
-    .in('lesson_id', lessonIds)
-
-  if (sectionsError) throw new Error(sectionsError.message)
-
-  const totalSectionsByCourseId = new Map<string, number>()
-  for (const section of sections ?? []) {
-    const courseId = lessonToCourse.get(section.lesson_id as string)
-    if (!courseId) continue
-    totalSectionsByCourseId.set(courseId, (totalSectionsByCourseId.get(courseId) ?? 0) + 1)
-  }
+  const { totalSectionsByCourse: totalSectionsByCourseId } = await getSectionMapsForCourses(courseIds, client)
 
   return typedEnrollments.map((enrollment) => ({
     course: enrollment.courses,
@@ -209,6 +184,45 @@ export async function getEnrolledCoursesWithProgress(
     totalSections: totalSectionsByCourseId.get(enrollment.course_id) ?? 0,
   }))
 }
+/**
+ * Lessons -> sections for a set of courses, as lookup maps. Shared by the student
+ * progress view and the instructor dashboard so "total sections" is computed one way.
+ */
+export async function getSectionMapsForCourses(
+  courseIds: string[],
+  client: SupabaseClient = supabase
+): Promise<{ sectionToCourse: Map<string, string>; totalSectionsByCourse: Map<string, number> }> {
+  const sectionToCourse = new Map<string, string>()
+  const totalSectionsByCourse = new Map<string, number>()
+  if (courseIds.length === 0) return { sectionToCourse, totalSectionsByCourse }
+
+  const { data: lessons, error: lessonsError } = await client
+    .from('lessons')
+    .select('id, course_id')
+    .in('course_id', courseIds)
+  if (lessonsError) throw new Error(lessonsError.message)
+
+  const lessonToCourse = new Map<string, string>(
+    (lessons ?? []).map(l => [l.id as string, l.course_id as string])
+  )
+  const lessonIds = [...lessonToCourse.keys()]
+  if (lessonIds.length === 0) return { sectionToCourse, totalSectionsByCourse }
+
+  const { data: sections, error: sectionsError } = await client
+    .from('sections')
+    .select('id, lesson_id')
+    .in('lesson_id', lessonIds)
+  if (sectionsError) throw new Error(sectionsError.message)
+
+  for (const section of sections ?? []) {
+    const courseId = lessonToCourse.get(section.lesson_id as string)
+    if (!courseId) continue
+    sectionToCourse.set(section.id as string, courseId)
+    totalSectionsByCourse.set(courseId, (totalSectionsByCourse.get(courseId) ?? 0) + 1)
+  }
+  return { sectionToCourse, totalSectionsByCourse }
+}
+
 export async function isCourseComplete(
   userId: string,
   courseId: string,

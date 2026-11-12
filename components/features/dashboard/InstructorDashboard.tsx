@@ -5,8 +5,9 @@ import { ClassCard } from './ClassCard'
 import { CreateLessonTab } from './CreateLessonTab'
 import { AnalyticsTab } from './AnalyticsTab'
 import { ManageStudentsTab } from './ManageStudentsTab'
-import { supabase } from '@/lib/supabase/client'
-import { getInstructorCourseStats } from '@/lib/supabase/instructor'
+import type { LoadStatus } from './dashboardTypes'
+import { getInstructorDashboardData } from '@/lib/supabase/instructor'
+import type { EnrolledStudent, InstructorCourseStats } from '@/types/database'
 
 const DUMMY_CLASSES = [
   { className: 'Python Fundamentals', studentCount: 28, activeStudentCount: 19 },
@@ -62,32 +63,46 @@ const QUICK_ACTIONS = [
   },
 ]
 
-export function InstructorDashboard() {
+interface InstructorDashboardProps {
+  /** Comes from the server page, which has already authenticated the user. */
+  instructorId: string
+}
+
+// Review notes (A1.3 / A1.4): the data for both tabs is loaded here, once.
+// The first version re-fetched the user in two places with supabase.auth.getUser()
+// (the server page already knew who it was), ran the analytics chain here and the
+// student chain inside the tab, and had no error handling on this effect, so a
+// failed query became an unhandled promise rejection and the tab showed its
+// empty state as if the fetch had succeeded.
+export function InstructorDashboard({ instructorId }: InstructorDashboardProps) {
   const [activeTab, setActiveTab] = useState<Tab>('create-lesson')
 
-  const [instructorId, setInstructorId] = useState<string | null>(null)
-  const [stats, setStats] = useState<
-    { enrollments: number; totalSections: number; averageCompletion: number }[]
-  >([])
+  const [status, setStatus] = useState<LoadStatus>('loading')
+  const [stats, setStats] = useState<InstructorCourseStats[]>([])
+  const [students, setStudents] = useState<EnrolledStudent[]>([])
 
   useEffect(() => {
-    async function fetchUser() {
-      const { data: { user } } = await supabase.auth.getUser()
-      setInstructorId(user?.id ?? null)
+    let cancelled = false
+
+    async function load() {
+      try {
+        const data = await getInstructorDashboardData(instructorId)
+        if (cancelled) return
+        setStats(data.stats)
+        setStudents(data.students)
+        setStatus('ready')
+      } catch (err) {
+        // Log the error, never the data.
+        console.error('[InstructorDashboard] failed to load instructor data', err)
+        if (!cancelled) setStatus('error')
+      }
     }
 
-    fetchUser()
-  }, [])
-
-  useEffect(() => {
-    if (!instructorId) return
-
-    async function fetchStats() {
-      const data = await getInstructorCourseStats(instructorId!)
-      setStats(data)
+    load()
+    // Ignore a response that arrives after this component is gone or the id changed.
+    return () => {
+      cancelled = true
     }
-
-    fetchStats()
   }, [instructorId])
 
   return (
@@ -136,10 +151,11 @@ export function InstructorDashboard() {
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              className={`px-5 py-3.5 text-sm font-medium transition-colors border-b-2 -mb-px ${activeTab === tab.id
-                ? 'border-blue-600 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-300'
-                }`}
+              className={`px-5 py-3.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
+                activeTab === tab.id
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-300'
+              }`}
             >
               {tab.label}
             </button>
@@ -149,8 +165,8 @@ export function InstructorDashboard() {
         {/* Tab content */}
         <div className="p-6">
           {activeTab === 'create-lesson' && <CreateLessonTab />}
-          {activeTab === 'analytics' && <AnalyticsTab stats={stats} />}
-          {activeTab === 'manage-students' && <ManageStudentsTab />}
+          {activeTab === 'analytics' && <AnalyticsTab stats={stats} status={status} />}
+          {activeTab === 'manage-students' && <ManageStudentsTab students={students} status={status} />}
         </div>
       </section>
     </div>

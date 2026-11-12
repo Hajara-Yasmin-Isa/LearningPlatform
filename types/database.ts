@@ -93,3 +93,27 @@ export interface UserLesson {
 
 // Roles a user can hold, matching the CHECK constraint on users.role
 export type UserRole = 'student' | 'instructor' | 'admin'
+
+// Instructor dashboard (A1.3 "My students", A1.4 "Real analytics").
+// One place for these shapes: the data layer and both tabs import them from here.
+export interface InstructorCourseStats {
+  courseId: string
+  title: string
+  enrollments: number
+  totalSections: number
+  /** 0–100: mean over enrolled students of (sections completed / total sections) */
+  averageCompletion: number
+}
+
+export interface EnrolledStudentCourse {
+  courseId: string
+  courseTitle: string
+  sectionsCompleted: number
+  totalSections: number
+}
+
+export interface EnrolledStudent {
+  studentId: string
+  name: string | null
+  courses: EnrolledStudentCourse[]
+}
