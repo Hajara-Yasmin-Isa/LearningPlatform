@@ -94,6 +94,7 @@ export interface UserLesson {
 // Roles a user can hold, matching the CHECK constraint on users.role
 export type UserRole = 'student' | 'instructor' | 'admin'
 
+// Classes model (A2.1). Row types are singular, like every other type in this file.
 export interface Class {
   id: string
   course_id: string
@@ -104,7 +105,7 @@ export interface Class {
   created_at: string
 }
 
-export interface ClassMembers {
+export interface ClassMember {
   id: string
   class_id: string
   user_id: string
