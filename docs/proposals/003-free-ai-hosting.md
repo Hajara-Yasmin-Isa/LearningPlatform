@@ -1,10 +1,6 @@
-# NNN — Title
+# 003 — Free AI hosting for Malami
 
-**Author(s):Elham Isa** · **10/8:** · **Trello card:** <link= https://trello.com/c/WAkQktia/106-b14-research-ai-3-free-hosting-how-does-this-run-in-production-for-0> · **Status:** Draft | Presented | Approved | Revise | Parked
-
-> Copy this file to `docs/proposals/NNN-short-title.md` using the next free number.
-> Keep it to 1–2 pages. Present it at the day-10 sprint sync; the decision gets recorded
-> in the Status line above and on the Trello card.
+**Author(s):** Elham Isa · **Date:** 2026-10-08 · **Trello card:** [B1.4](https://trello.com/c/WAkQktia/106-b14-research-ai-3-free-hosting-how-does-this-run-in-production-for-0) · **Status:** Draft
 
 ## 1. Question
 Which zero-cost hosting path can serve Malami's model calls at acceptable Hausa quality and latency, and survive growth to 1,000 active learners?
@@ -20,14 +16,16 @@ Same prompt, same Hausa brevity system prompt, five Cloudflare-hosted models. Ca
 
 | Model | Neurons | Completion tokens | Calls/day | Hausa output |
 |---|---|---|---|---|
-| llama-3.1-8b-instruct-fp8 | 1.1 | 11 | ~8,700 | **Failed** — 11 tokens, no answer |
+| llama-3.1-8b-instruct-fp8 | 1.1 | 11 | ~9,100 | **Failed** — 11 tokens, no answer |
 | **llama-4-scout-17b-16e-instruct** | **10.3** | **116** | **~970** | **Coherent, correct, on task** |
 | mistral-small-3.1-24b-instruct | 14.5 | 256 | ~690 | **Failed** — looped one sentence |
-| gemma-4-26b-a4b-it | 36.1 | 1,318 | ~277 | Good, but see 3.2 |
+| gemma-4-26b-a4b-it | 36.1 | 1,318 | ~277 | Good, but see the cost table below |
 | glm-4.7-flash | 48.8 | 1,334 | ~200 | Ignored Hausa-only instruction |
 
 Example of a failure, Llama 3.1 8B in full: "Ananun Hausa ya takaice."
 Example of a pass, Llama 4 Scout: "Sharhi kalma ce da ake amfani da ita wajen bayyana ra'ayi. Lokacin da mutum yake karanta wani aiki, ya gama karantawa, to yana iya bayyana ra'ayinsa game da aikin da ya karanta…"
+
+Gemma 4 26B, attempts to cut its cost (same prompt):
 
 | Configuration | Completion tokens | Neurons |
 |---|---|---|
@@ -38,9 +36,19 @@ Example of a pass, Llama 4 Scout: "Sharhi kalma ce da ake amfani da ita wajen ba
 
 The brevity prompt obeyed the instruction for the visible answer (~60 words) and still burned ~1,200 tokens of reasoning. Only truncation reduced cost, and truncation cuts answers mid-sentence, which is worse for a learner than a slow answer.
 
-Llama 4 Scout at ~970 calls/day supports roughly 65–195 active learners, against a target of 1,000. Closing that is demand-side engineering, not a hosting change: cap conversation history per call (history growth drives prompt tokens), cache repeated questions, instruct for brevity, rate-limit per learner with a graceful message.
+Load math (B1.4 task 3), using the card's assumption of 5–10 model calls per learner per day and the measured 10.3 Neurons per Llama 4 Scout call:
+
+| Active learners | Calls/day | Neurons/day | Free tier (10,000/day) |
+|---|---|---|---|
+| 100 | 500–1,000 | 5,150–10,300 | Fits at 5 turns; at 10 turns just over the cap |
+| 1,000 | 5,000–10,000 | 51,500–103,000 | 5–10× the cap |
+
+So the free tier covers a cohort of about 100 learners, not 1,000. Demand-side engineering (cap conversation history per call, cache repeated questions, instruct for brevity, rate-limit per learner with a graceful message) stretches the free tier but cannot close a 5–10× gap. Beyond roughly 100–200 learners the choice is the named ceiling in §5 or a different host.
+
 ## 4. Alternatives considered
-Hugging face returned that credits need to be purchased so it was actually not a free option. Rejected as primary. CPU-only inference serves requests near-serially. Another option is: ia @cf/meta/m2m100-1.2b, which supports Hausa (ha). Triples calls per turn against a 10,000-Neuron ceiling, adds latency, and compounds translation error at both ends. Reconsider only if direct Hausa quality fails the 10-prompt eval.
+Hugging face returned that credits need to be purchased so it was actually not a free option. Rejected as primary. CPU-only inference serves requests near-serially. Another option is translation via @cf/meta/m2m100-1.2b, which supports Hausa (ha). Triples calls per turn against a 10,000-Neuron ceiling, adds latency, and compounds translation error at both ends. Reconsider only if direct Hausa quality fails the 10-prompt eval.
+
+Still open from the card (tasks 1–2), to be filled in before the decision is recorded: hands-on numbers for the Oracle Always Free VM behind an authenticated proxy and for NCSA compute (scoped with the lead), latency measured from Nigeria for each option, and a named fallback provider.
 
 ## 5. Risks
 
@@ -50,20 +58,20 @@ Hugging face returned that credits need to be purchased so it was actually not a
 
 - Response shapes differ between models on one provider (result.response vs. OpenAI-style choices[0].message.content). The adapter must normalise this.
 
-- Cost. $0 target, no paid APIs. Proposed ceiling $25/month if infeasible
+- Cost. $0 target, no paid APIs. Named ceiling if the free tier is outgrown: Cloudflare Workers Paid is $5/month plus $0.011 per 1,000 Neurons above the daily 10,000 ([pricing](https://developers.cloudflare.com/workers-ai/platform/pricing/)), which at 1,000 learners is about $19–36/month (5–10 turns/day). Taking that exception is the lead's decision.
 
 ## 6. Success metric
 
 - Failure rate under 1% over a one-week measurement window
-Daily calls at target learner count fit the free allocation with ≥30% headroom
+- Daily calls at the first cohort size (100 learners) fit the free allocation with ≥30% headroom; at 1,000 learners the monthly cost stays under the named ceiling in §5
 - Hausa output rated acceptable on ≥8 of 10 first-pass eval prompts by a fluent reviewer (small set; expand to 50 before the build card)
 
 ## 7. Build sketch
-— Provider adapter behind one interface; normalises response shapes, configured by B1.3 env vars
-— Llama 4 Scout integration and API token handling
-— Fallback provider behind the same interface, with switch runbook and monthly drill
-— Per-learner rate limit with a graceful message, not a 500
-— History trimming / summarisation to cap prompt tokens per call
-— Response cache for repeated questions
-— Latency, failure and Neuron logging so §6 keeps being measured after launch
-— Expand Hausa eval set to 50 prompts with a reviewer rubric
+- Provider adapter behind one interface; normalises response shapes. Prerequisite: today B1.3's client (`lib/ai/ollamaClient.ts`) is Ollama-specific (`OLLAMA_BASE_URL`, `OLLAMA_MODEL`, `/api/chat`), so the adapter is new work, not configuration
+- Llama 4 Scout integration and API token handling
+- Fallback provider behind the same interface, with switch runbook and monthly drill
+- Per-learner rate limit with a graceful message, not a 500
+- History trimming / summarisation to cap prompt tokens per call
+- Response cache for repeated questions
+- Latency, failure and Neuron logging so §6 keeps being measured after launch
+- Expand Hausa eval set to 50 prompts with a reviewer rubric
