@@ -94,6 +94,24 @@ export interface UserLesson {
 // Roles a user can hold, matching the CHECK constraint on users.role
 export type UserRole = 'student' | 'instructor' | 'admin'
 
+// Classes model (A2.1). Row types are singular, like every other type in this file.
+export interface Class {
+  id: string
+  course_id: string
+  instructor_id: string | null
+  name: string
+  join_code: string | null
+  is_general: boolean
+  created_at: string
+}
+
+export interface ClassMember {
+  id: string
+  class_id: string
+  user_id: string
+  joined_at: string
+}
+
 // Instructor dashboard (A1.3 "My students", A1.4 "Real analytics").
 // One place for these shapes: the data layer and both tabs import them from here.
 export interface InstructorCourseStats {
