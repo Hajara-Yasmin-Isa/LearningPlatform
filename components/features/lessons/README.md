@@ -30,12 +30,14 @@ Upserts a `UserProgress` row with `completed: true`. Safe to call more than once
 ## Components
 
 ### `ExerciseBlock.tsx`
-Routes to the correct exercise component based on `exercise_type`. Shows "Correct!" on success, "Try again" on failure — never reveals the answer.
+Routes to the correct exercise component based on `exercise_type`. Shows "Correct!" on success, "Try again" on failure — never reveals the answer. After a failed attempt (never before the first try) it also renders `AskMalamiButton`, which links to `/malami?exerciseId=…&userAnswer=…` so the learner can hand that attempt to Malami. The button renders nothing when `NEXT_PUBLIC_MALAMI` is off.
 
 | Prop | Type |
 |------|------|
 | `exercise` | `Exercise` |
 | `onComplete` | `() => void` |
+
+Each exercise component accepts an optional `onFailedAttempt?: (userAnswer: string) => void`, fired when an attempt is graded wrong (for self-check text answers, when the learner retries after seeing the model answer; for code, when tests fail but not when the runner is unreachable). `ExerciseBlock` uses it to decide when the Malami button appears.
 
 ### `MultipleChoiceExercise.tsx`
 Renders options as buttons. Case-sensitive comparison against `correct_answer`.

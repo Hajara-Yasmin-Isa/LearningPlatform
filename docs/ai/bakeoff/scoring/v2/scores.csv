@@ -1,0 +1,61 @@
+case_id,model,no_reveal,correct,helpful,length_tone,total,max,fail,reason
+E01,phi3.5,0,2,2,1,5,8,FAIL,"Reveal=0: 'should be inside quotation marks' is the exact fix. Tone=1: wrapped in quotes, question repeated."
+E02,phi3.5,1,2,1,1,5,8,,"Reveal=1: follow-up mentions underscores. Helpful=1: talks about spaces, not the student's hyphen. Tone=1: garbled 'underscs', quotes."
+E03,phi3.5,2,2,2,1,7,8,,"Tone=1: wrapped in quotes, question repeated."
+E04,phi3.5,1,2,2,1,6,8,,"Reveal=1: 'starts counting from 0' leaves two options. Tone=1: quotes, repeated question."
+E05,phi3.5,1,2,2,1,6,8,,Reveal=1: 'what should it be to include 2' is nearly the fix. Tone=1: repeated question.
+E06,phi3.5,1,2,2,1,6,8,,"Reveal=1: describes the space wrapping the content and rules out margin. Tone=1: quotes, repeated question."
+E07,phi3.5,0,0,1,1,2,8,FAIL,"Reveal=0: 'use # before the ID' is the fix. Correct=0: says 'title' is an attribute, not an ID; here it is the id."
+E08,phi3.5,1,2,2,1,6,8,,Reveal=1: restates the AND rule. Tone=1: wrapped in quotes.
+E09,phi3.5,0,2,1,1,4,8,FAIL,Reveal=0: 'logarithmic growth' points to O(log n) (same as v1).
+E10,phi3.5,0,1,1,1,3,8,FAIL,"Reveal=0: names cycles. Correct=1: ties cycles to directed vs undirected graphs, which is misleading. Tone=1: quotes."
+C01,phi3.5,N/A,2,2,1,5,6,,"Tone=1: far over the 4-sentence limit, two code blocks."
+C02,phi3.5,N/A,0,1,1,2,6,FAIL,Correct=0: claims 'we discussed' this in the lessons; the lessons don't cover it.
+C03,phi3.5,N/A,2,2,1,5,6,,"Tone=1: wrapped in quotes, question repeated."
+C04,phi3.5,0,2,2,1,5,8,FAIL,Reveal=0: 'which option aligns with counting from 0 to just before 5' leaves only one option. Tone=1: long.
+C05,phi3.5,N/A,2,2,2,6,6,,
+E01,qwen2.5:3b,2,0,0,2,4,8,FAIL,Correct=0: tells the student to remove a space after 'Hello'; that isn't the mistake (missing quotes).
+E02,qwen2.5:3b,0,2,1,2,5,8,FAIL,Reveal=0: 'try again with an underscore' leaves only student_name.
+E03,qwen2.5:3b,2,2,2,2,8,8,,"Short, points at the decimal, doesn't name the type."
+E04,qwen2.5:3b,0,2,1,2,5,8,FAIL,Reveal=0: 'starts from 0 and goes up to 4' is the answer.
+E05,qwen2.5:3b,0,2,1,2,5,8,FAIL,Reveal=0: 'change the range to include one more number' is the exact fix in words.
+E06,qwen2.5:3b,2,2,1,2,7,8,,Helpful=1: vague nudge.
+E07,qwen2.5:3b,0,1,1,2,4,8,FAIL,Reveal=0: 'Try getElementById instead'. Correct=1: misleading reason ('first match').
+E08,qwen2.5:3b,1,2,2,2,7,8,,Reveal=1: restates the AND rule (same as v1).
+E09,qwen2.5:3b,2,2,2,2,8,8,,Halving hint without naming the answer.
+E10,qwen2.5:3b,2,2,2,2,8,8,,Points at the property a tree has that a graph doesn't.
+C01,qwen2.5:3b,N/A,2,2,2,6,6,,
+C02,qwen2.5:3b,N/A,2,2,2,6,6,,
+C03,qwen2.5:3b,N/A,2,2,2,6,6,,
+C04,qwen2.5:3b,0,2,1,2,5,8,FAIL,Reveal=0: 'range(5) produces numbers 0 to 4'.
+C05,qwen2.5:3b,N/A,2,2,2,6,6,,
+E01,llama3.2:3b,2,0,0,2,4,8,FAIL,"Correct=0: says the parentheses are missing; they aren't, the quotes are."
+E02,llama3.2:3b,2,2,2,2,8,8,,Names the hyphen as the problem without pointing at an option.
+E03,llama3.2:3b,1,2,1,2,6,8,,Reveal=1: says 'float' in the follow-up question. Helpful=1: the float+int tangent doesn't help.
+E04,llama3.2:3b,1,2,2,1,6,8,,Reveal=1: 'only goes up to 4' leaves two options. Tone=1: confusing 'without stopping it' follow-up.
+E05,llama3.2:3b,1,2,2,2,7,8,,"Reveal=1: explains range(2) gives 0 to 1, so the fix is one step away."
+E06,llama3.2:3b,2,2,1,1,6,8,,"Tone=1: circular ('outside the border, but what's outside the border?')."
+E07,llama3.2:3b,2,0,0,2,4,8,FAIL,Correct=0: claims querySelector can't select by id (false; querySelector('#title') works).
+E08,llama3.2:3b,1,2,2,1,6,8,,Reveal=1: restates the AND rule and points at FALSE (same as v1). Tone=1: awkward 'find a common truth'.
+E09,llama3.2:3b,2,2,2,2,8,8,,Explains O(n) is linear search and points at how size affects time.
+E10,llama3.2:3b,2,2,1,2,7,8,,"Helpful=1: correct that node count isn't it, but no pointer towards connections or cycles."
+C01,llama3.2:3b,N/A,2,1,1,4,6,,Treats a normal loops question as off-topic ('I can only help with computing').
+C02,llama3.2:3b,N/A,2,2,2,6,6,,Desk/filing cabinet analogy.
+C03,llama3.2:3b,N/A,2,2,1,5,6,,"Tone=1: wrapped in quotes, 'Great try!' when there was no try."
+C04,llama3.2:3b,2,2,1,2,7,8,,Holds firm; asks the student to test their own answer.
+C05,llama3.2:3b,N/A,2,2,2,6,6,,
+E01,gemma2:2b,0,2,2,2,6,8,FAIL,Reveal=0: 'print() takes text inside quotation marks' is the exact fix in words.
+E02,gemma2:2b,0,1,1,2,4,8,FAIL,"Reveal=0: 'lowercase letters with underscores' recites the rule so only student_name fits. Correct=1: that's a convention, not a rule."
+E03,gemma2:2b,2,1,1,2,6,8,,Correct=1: 'what kind of number can be rounded to a whole number' is confusing. Helpful=1: ends by restating the question.
+E04,gemma2:2b,2,2,2,2,8,8,,"Asks for the starting number, which is exactly the student's mistake."
+E05,gemma2:2b,2,1,0,2,5,8,,"Correct=1, Helpful=0: asks about the starting number, which is already right; points the wrong way."
+E06,gemma2:2b,2,2,1,2,7,8,,Helpful=1: mostly restates the question.
+E07,gemma2:2b,2,1,0,1,4,8,,"Correct=1, Helpful=0: asks about selecting the 'title' tag, which is what the student already did; confusing."
+E08,gemma2:2b,2,2,1,2,7,8,,Helpful=1: ends by restating the question.
+E09,gemma2:2b,2,2,1,2,7,8,,Helpful=1: ends by restating the question.
+E10,gemma2:2b,2,2,1,2,7,8,,Helpful=1: generic 'think about the definition'.
+C01,gemma2:2b,N/A,2,2,2,6,6,,Simple robot/cookie analogy.
+C02,gemma2:2b,N/A,2,2,2,6,6,,
+C03,gemma2:2b,N/A,2,2,1,5,6,,"Tone=1: says the same thing twice, then asks the student to explain it back."
+C04,gemma2:2b,2,2,1,2,7,8,,Holds firm; vague nudge.
+C05,gemma2:2b,N/A,1,1,2,4,6,,Correct=1: invents a 'change the text color' exercise (copied from the prompt's example).

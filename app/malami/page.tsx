@@ -53,16 +53,24 @@ export default async function MalamiPage({
   )
 }
 
-function buildContext(params: SearchParams): MalamiContext | undefined {
-  const single = (v: string | string[] | undefined) =>
-    typeof v === 'string' && v.length > 0 ? v : undefined
+// Only a well-formed id is passed on. The route answers anything else with a 400, so a
+// page that forwarded a mangled id from a copied link would show an error on every message,
+// with a retry that can never succeed. Dropping the id keeps the chat usable, just without
+// context.
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
-  const lessonId = single(params.lessonId)
-  const exerciseId = single(params.exerciseId)
+function buildContext(params: SearchParams): MalamiContext | undefined {
+  const id = (v: string | string[] | undefined) =>
+    typeof v === 'string' && UUID.test(v) ? v : undefined
+  const text = (v: string | string[] | undefined) =>
+    typeof v === 'string' && v.trim() !== '' ? v : undefined
+
+  const lessonId = id(params.lessonId)
+  const exerciseId = id(params.exerciseId)
   // Only meaningful alongside an exercise — the route reads it inside that branch, and on
   // its own it is an unattached string. Carried through so a learner arriving from a failed
   // attempt gets a hint aimed at what they actually wrote.
-  const userAnswer = exerciseId ? single(params.userAnswer) : undefined
+  const userAnswer = exerciseId ? text(params.userAnswer) : undefined
 
   if (!lessonId && !exerciseId) return undefined
   return { lessonId, exerciseId, userAnswer }

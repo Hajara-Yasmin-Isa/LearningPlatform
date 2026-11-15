@@ -4,7 +4,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { rateLimit } from '@/lib/rateLimit'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+// Created per request, not at module load — see app/api/auth/send-email/route.ts.
+function getResend(): Resend | null {
+  const key = process.env.RESEND_API_KEY
+  return key ? new Resend(key) : null
+}
 
 export async function POST(request: NextRequest) {
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
@@ -47,7 +51,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Wani abu ya faru. Don Allah sake gwadawa.' }, { status: 500 })
   }
 
- // Send confirmation email
+  // Send confirmation email. The signup is already saved, so a missing key is logged
+  // and the visitor still gets a success response rather than a false error.
+  const resend = getResend()
+  if (!resend) {
+    console.error('[waitlist] RESEND_API_KEY is not set; welcome email skipped')
+    return NextResponse.json({ success: true }, { status: 201 })
+  }
+
   await resend.emails.send({
     from: 'Littafin Fasaha <hello@littafinfasaha.com>', // Use hello@ instead of noreply for a friendlier feel
     to: email,

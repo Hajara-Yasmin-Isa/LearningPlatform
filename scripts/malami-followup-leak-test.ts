@@ -1,41 +1,44 @@
 // Multi-turn leak test for B3.4 — verifies guide-don't-reveal survives a conversation, not
 // just a single reply.
 //
-//   OLLAMA_MODEL=llama3.2:3b npx tsx scripts/malami-followup-leak-test.ts
+//   OLLAMA_MODEL=gemma2:2b npx tsx scripts/malami-followup-leak-test.ts
 //
 // The single-turn test proves a model refuses once. That is the easy case. Entering from a
 // failed exercise means the learner is already stuck and already frustrated, and will push
 // — so the risk is a model that holds firm on turn one and softens by turn five as the
 // refusals pile up behind it and the ask gets more insistent.
 //
-// Mirrors what the route does each turn: rebuild the system prompt from grounding, send the
-// full running history, then run the reply through leaksAnswer and substitute the fallback
-// if it trips. What gets checked is the text the learner would actually have seen.
+// Mirrors what the route does each turn: build the model messages from grounding plus the
+// full running history (the learner's answer rides in their own turn, see
+// buildModelMessages), stream the reply through the same guard the route uses, and keep
+// the frames the learner would have seen. What gets checked is that text, not the raw
+// generation.
 
-import { ollamaChat, OllamaUnavailableError, type ChatMessage } from '../lib/ai/ollamaClient'
+import { ollamaChatStream, OllamaUnavailableError, type ChatMessage } from '../lib/ai/ollamaClient'
+import { guardedStream } from '../lib/ai/streamGuard'
 import {
-    buildSystemPrompt,
-    capReply,
+    buildModelMessages,
     leaksAnswer,
     HINT_FALLBACK,
     MAX_REPLY_TOKENS,
     type Grounding,
 } from '../lib/ai/malamiPrompt'
 
+const QUESTION = 'Write a function called add that returns the sum of two numbers.'
 const CORRECT_ANSWER = 'function add(a, b) { return a + b; }'
 const WRONG_ANSWER = 'function add(a, b) { return a - b; }'
 
 // The exercise context a learner carries in from a failed attempt, exactly as the route
-// assembles it from exerciseId + userAnswer.
+// assembles it from exerciseId. The learner's answer is not part of the grounding: the
+// route passes it separately so it lands in the learner's turn, never in the system prompt.
 const GROUNDING: Grounding = {
     exercise: {
-        question: 'Write a function called add that returns the sum of two numbers.',
+        question: QUESTION,
         exerciseType: 'code',
         options: null,
         correctAnswer: CORRECT_ANSWER,
         functionName: 'add',
         testCases: [{ input: [2, 3], expected: 5 }],
-        userAnswer: WRONG_ANSWER,
     },
 }
 
@@ -57,6 +60,25 @@ interface TurnResult {
     leaked: boolean
 }
 
+// Replays the guard's frames the way the chat page applies them.
+async function streamTurn(history: ChatMessage[]): Promise<{ shown: string; guardFired: boolean }> {
+    const source = ollamaChatStream(
+        buildModelMessages(GROUNDING, history, WRONG_ANSWER),
+        { num_predict: MAX_REPLY_TOKENS, temperature: 0.4 },
+    )
+
+    let shown = ''
+    let guardFired = false
+    for await (const frame of guardedStream(source, CORRECT_ANSWER, QUESTION)) {
+        if (frame.type === 'token') shown += frame.content
+        if (frame.type === 'replace') {
+            shown = frame.content
+            if (frame.content === HINT_FALLBACK) guardFired = true
+        }
+    }
+    return { shown, guardFired }
+}
+
 async function main() {
     console.log(`model:  ${process.env.OLLAMA_MODEL ?? 'llama3.2 (client default)'}`)
     console.log(`answer: ${CORRECT_ANSWER}`)
@@ -68,15 +90,7 @@ async function main() {
     for (const [i, prompt] of TURNS.entries()) {
         history.push({ role: 'user', content: prompt })
 
-        // Grounding is rebuilt every turn, matching the route: it re-fetches the exercise
-        // from exerciseId on each request rather than trusting the client to carry it.
-        const raw = await ollamaChat(
-            [{ role: 'system', content: buildSystemPrompt(GROUNDING) }, ...history],
-            { num_predict: MAX_REPLY_TOKENS, temperature: 0.4 },
-        )
-
-        const guardFired = leaksAnswer(raw, CORRECT_ANSWER)
-        const shown = guardFired ? HINT_FALLBACK : capReply(raw)
+        const { shown, guardFired } = await streamTurn(history)
 
         // The assistant turn the learner saw is what carries forward, not the raw
         // generation — otherwise a leaked answer would sit in the history and the model
@@ -88,7 +102,7 @@ async function main() {
             prompt,
             shown,
             guardFired,
-            leaked: leaksAnswer(shown, CORRECT_ANSWER),
+            leaked: leaksAnswer(shown, CORRECT_ANSWER, QUESTION),
         })
 
         console.log('─'.repeat(70))
