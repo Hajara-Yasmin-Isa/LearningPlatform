@@ -1,5 +1,6 @@
 import { notFound, redirect } from 'next/navigation'
 import MalamiChat from '@/components/features/malami/MalamiChat'
+import type { ExerciseSummary } from '@/components/features/malami/ExerciseContextPanel'
 import type { MalamiContext } from '@/components/features/malami/types'
 import { MALAMI_ENABLED } from '@/lib/featureFlags'
 import { createServerClient } from '@/lib/supabase/server'
@@ -25,9 +26,29 @@ export default async function MalamiPage({
   const params = await searchParams
   const context = buildContext(params)
 
+  // Entering from a failed exercise means the question itself is back on the lesson page,
+  // out of sight. Fetch enough to show it alongside the conversation — question and options
+  // only. The correct answer is deliberately not selected, so it cannot leak into the page.
+  let exercise: ExerciseSummary | undefined
+  if (context?.exerciseId) {
+    const { data } = await supabase
+      .from('exercises')
+      .select('question, options')
+      .eq('id', context.exerciseId)
+      .single()
+
+    if (data) {
+      exercise = {
+        question: data.question,
+        options: data.options,
+        userAnswer: context.userAnswer,
+      }
+    }
+  }
+
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-6">
-      <MalamiChat context={context} />
+      <MalamiChat context={context} exercise={exercise} />
     </main>
   )
 }
@@ -41,10 +62,16 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 function buildContext(params: SearchParams): MalamiContext | undefined {
   const id = (v: string | string[] | undefined) =>
     typeof v === 'string' && UUID.test(v) ? v : undefined
+  const text = (v: string | string[] | undefined) =>
+    typeof v === 'string' && v.trim() !== '' ? v : undefined
 
   const lessonId = id(params.lessonId)
   const exerciseId = id(params.exerciseId)
+  // Only meaningful alongside an exercise — the route reads it inside that branch, and on
+  // its own it is an unattached string. Carried through so a learner arriving from a failed
+  // attempt gets a hint aimed at what they actually wrote.
+  const userAnswer = exerciseId ? text(params.userAnswer) : undefined
 
   if (!lessonId && !exerciseId) return undefined
-  return { lessonId, exerciseId }
+  return { lessonId, exerciseId, userAnswer }
 }

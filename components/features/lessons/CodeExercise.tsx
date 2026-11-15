@@ -7,9 +7,12 @@ import type { RunCodeResult } from '@/learning-engine/code-runner/runCode'
 interface CodeExerciseProps {
   exercise: Exercise
   onComplete: () => void
+  // Fired when a run fails its tests, carrying the code the learner submitted. Not fired
+  // when the runner itself is unreachable — that is our failure, not a failed attempt.
+  onFailedAttempt?: (userAnswer: string) => void
 }
 
-export default function CodeExercise({ exercise, onComplete }: CodeExerciseProps) {
+export default function CodeExercise({ exercise, onComplete, onFailedAttempt }: CodeExerciseProps) {
   const [code, setCode] = useState('')
   const [result, setResult] = useState<RunCodeResult | null>(null)
   const [isRunning, setIsRunning] = useState(false)
@@ -26,6 +29,8 @@ export default function CodeExercise({ exercise, onComplete }: CodeExerciseProps
       setResult(data)
       if (data.passed) {
         onComplete()
+      } else {
+        onFailedAttempt?.(code)
       }
     } catch {
       setResult({ passed: false, output: null, error: "Server couldn't be reached. Please try again." })

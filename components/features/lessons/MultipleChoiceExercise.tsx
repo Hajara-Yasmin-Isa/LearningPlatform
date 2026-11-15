@@ -6,9 +6,12 @@ import { Exercise } from '@/types/database'
 interface MultipleChoiceExerciseProps {
   exercise: Exercise
   onComplete: () => void
+  // Fired when an attempt is graded wrong, carrying what the learner chose. Optional so
+  // callers that do not offer help on failure are unaffected.
+  onFailedAttempt?: (userAnswer: string) => void
 }
 
-export default function MultipleChoiceExercise({ exercise, onComplete }: MultipleChoiceExerciseProps) {
+export default function MultipleChoiceExercise({ exercise, onComplete, onFailedAttempt }: MultipleChoiceExerciseProps) {
   const [selected, setSelected] = useState<string | null>(null)
   const [submitted, setSubmitted] = useState(false)
   const [isCorrect, setIsCorrect] = useState(false)
@@ -21,6 +24,7 @@ export default function MultipleChoiceExercise({ exercise, onComplete }: Multipl
     setIsCorrect(correct)
     setSubmitted(true)
     if (correct) onComplete()
+    else onFailedAttempt?.(selected)
   }
 
   function handleRetry() {

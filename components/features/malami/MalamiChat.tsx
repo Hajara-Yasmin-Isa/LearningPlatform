@@ -4,20 +4,43 @@ import { useEffect, useRef } from 'react'
 import ChatInput from './ChatInput'
 import ContextChip from './ContextChip'
 import ErrorNotice from './ErrorNotice'
+import ExerciseContextPanel, { type ExerciseSummary } from './ExerciseContextPanel'
 import MessageBubble from './MessageBubble'
 import TypingIndicator from './TypingIndicator'
 import WelcomeState from './WelcomeState'
 import { useMalamiChat } from './useMalamiChat'
 import type { MalamiContext } from './types'
 
-export default function MalamiChat({ context }: { context?: MalamiContext }) {
+// Opens the conversation for a learner arriving from a failed exercise, so the first thing
+// they see is a hint rather than an empty box they have to find words for. Sent as their
+// turn because it is their request — they asked for help by coming here.
+// TODO: copy — Hausa wording from the team lead
+const EXERCISE_OPENING = 'I got this exercise wrong. Can you help me understand it?'
+
+export default function MalamiChat({
+  context,
+  exercise,
+}: {
+  context?: MalamiContext
+  exercise?: ExerciseSummary
+}) {
   const { messages, pending, error, send, retry } = useMalamiChat(context)
   const bottomRef = useRef<HTMLDivElement>(null)
+  const autoStarted = useRef(false)
 
   // Keep the newest turn in view as the conversation grows.
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, pending])
+
+  // Entering with exercise context means the learner came from a failed attempt, so the
+  // conversation starts itself. The ref guard matters: effects run twice in development
+  // under StrictMode, and without it the learner would open on two identical turns.
+  useEffect(() => {
+    if (autoStarted.current || !context?.exerciseId) return
+    autoStarted.current = true
+    send(EXERCISE_OPENING)
+  }, [context, send])
 
   const hasConversation = messages.length > 0
   // While waiting, the reply bubble exists but is empty; show the dots until
@@ -34,6 +57,8 @@ export default function MalamiChat({ context }: { context?: MalamiContext }) {
         </div>
         {context && <ContextChip context={context} />}
       </header>
+
+      {exercise && <ExerciseContextPanel exercise={exercise} />}
 
       <div className="flex-1 overflow-y-auto px-5 py-4">
         {hasConversation ? (
