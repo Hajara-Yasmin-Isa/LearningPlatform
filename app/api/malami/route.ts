@@ -1,32 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { rateLimit } from '@/lib/rateLimit'
-import { ollamaChat, OllamaUnavailableError, type ChatMessage } from '@/lib/ai/ollamaClient'
+import { ollamaChatStream, OllamaUnavailableError, type ChatMessage } from '@/lib/ai/ollamaClient'
+import { guardedStream, type Frame } from '@/lib/ai/streamGuard'
 import {
     buildModelMessages,
-    capReply,
     isOffTopic,
-    leaksAnswer,
-    EMPTY_REPLY_FALLBACK,
-    HINT_FALLBACK,
     MAX_HISTORY,
     MAX_MESSAGE_CHARS,
     MAX_REPLY_TOKENS,
     OFF_TOPIC_REDIRECT,
+    type ExerciseGrounding,
     type Grounding,
 } from '@/lib/ai/malamiPrompt'
 
 // POST /api/malami
 // body: { messages: ChatMessage[], context?: { lessonId?, exerciseId?, userAnswer? } }
-// reply: { reply: string }
+// reply: every 200 is NDJSON, one frame per line (the frames are defined in
+//        lib/ai/streamGuard.ts); anything that fails before the stream opens is an
+//        ordinary non-200 with a JSON { error } body.
 //
 // One pipeline, multiple entry points: a plain chat is messages only;
 // an exercise hint is the same call with context.exerciseId set.
 
-// How long the host may let one call run. The Ollama client waits up to 60 s for a reply
-// (TIMEOUT_MS in lib/ai/ollamaClient.ts); without this line the platform's own default
-// applies instead, and Vercel's has been as low as 10 s. A slow but healthy model would
-// then surface as a gateway timeout, not as our clean 503. Keep the two numbers together.
+// How long the host may let one call run. Without this line the platform's own default
+// applies instead, and Vercel's has been as low as 10 s, which would cut a healthy reply
+// off mid-stream. The Ollama client itself allows a streamed reply up to 180 s
+// (STREAM_TIMEOUT_MS in lib/ai/ollamaClient.ts). A reply still generating when the host's
+// limit hits ends without a `done` frame, which the chat page treats as the end of the
+// reply, so the learner keeps what had arrived. Raise the two numbers together.
 export const maxDuration = 60
 
 interface MalamiContext {
@@ -36,6 +38,11 @@ interface MalamiContext {
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+const NDJSON_HEADERS = {
+    'Content-Type': 'application/x-ndjson; charset=utf-8',
+    'Cache-Control': 'no-cache, no-transform',
+}
 
 export async function POST(request: NextRequest) {
     try {
@@ -72,10 +79,12 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'messages must be a non-empty array ending with a user turn' }, { status: 400 })
         }
 
-        // topic boundary in code (prompt handles the rest)
+        // topic boundary in code (prompt handles the rest). A canned reply that never reaches
+        // the model still travels in the same frame format as a generated one, so the client
+        // never has to guess which of two shapes it is parsing.
         const latest = messages[messages.length - 1].content
         if (isOffTopic(latest)) {
-            return NextResponse.json({ reply: OFF_TOPIC_REDIRECT })
+            return frameResponse([{ type: 'token', content: OFF_TOPIC_REDIRECT }, { type: 'done' }])
         }
 
         // grounding: fetched server-side, never trusted from the client
@@ -111,22 +120,10 @@ export async function POST(request: NextRequest) {
 
         // The learner's answer is passed separately so it lands in their own turn, not in
         // the system prompt. See buildModelMessages() for why that matters.
-        const raw = await ollamaChat(
+        return await streamReply(
             buildModelMessages(grounding, messages, context.userAnswer),
-            { num_predict: MAX_REPLY_TOKENS, temperature: 0.4 },
+            grounding.exercise,
         )
-
-        if (raw.trim() === '') {
-            return NextResponse.json({ reply: EMPTY_REPLY_FALLBACK })
-        }
-
-        // guide-don't-reveal contract. The question is passed too, so an answer the learner
-        // can already read in the question is not treated as a leak when the model restates it.
-        if (grounding.exercise && leaksAnswer(raw, grounding.exercise.correctAnswer, grounding.exercise.question)) {
-            return NextResponse.json({ reply: HINT_FALLBACK })
-        }
-
-        return NextResponse.json({ reply: capReply(raw) })
 
     } catch (e) {
         if (e instanceof OllamaUnavailableError) {
@@ -145,6 +142,71 @@ export async function POST(request: NextRequest) {
             { error: 'Request failed' }, { status: 500 }
         )
     }
+}
+
+// A fixed set of frames sent as one body, for replies that never reach the model.
+function frameResponse(frames: Frame[]): Response {
+    return new Response(frames.map((f) => JSON.stringify(f) + '\n').join(''), { headers: NDJSON_HEADERS })
+}
+
+// Wire format is NDJSON, one frame per line. lib/ai/streamGuard.ts owns the frames and the
+// guide-don't-reveal enforcement; this function owns transport only: HTTP headers, client
+// disconnects, and turning a thrown error into an in-band frame.
+//
+// The first frame is awaited before any status code is committed. The request to the model
+// server is only made on that first read, so a server that is down still surfaces here as
+// a thrown OllamaUnavailableError and becomes the ordinary 503 above, which the chat page
+// shows as its "Malami is unavailable" notice with a retry. Once the stream is open the 200
+// has already gone out, so anything that fails after that has to travel as an error frame.
+// Waiting for the first frame costs nothing visible: the page shows a typing indicator
+// until the first token arrives either way.
+async function streamReply(messages: ChatMessage[], exercise?: ExerciseGrounding): Promise<Response> {
+    const abort = new AbortController()
+    const source = ollamaChatStream(messages, {
+        num_predict: MAX_REPLY_TOKENS,
+        temperature: 0.4,
+        signal: abort.signal,
+    })
+    const frames = guardedStream(source, exercise?.correctAnswer, exercise?.question)
+    const first = await frames.next()
+
+    const encoder = new TextEncoder()
+    const stream = new ReadableStream<Uint8Array>({
+        async start(controller) {
+            const send = (frame: Frame) =>
+                controller.enqueue(encoder.encode(JSON.stringify(frame) + '\n'))
+
+            try {
+                if (!first.done) send(first.value)
+                for await (const frame of frames) send(frame)
+            } catch (e) {
+                // The learner left mid-reply: the stream is already closed and there is
+                // nobody to tell.
+                if (abort.signal.aborted) return
+                if (e instanceof OllamaUnavailableError) {
+                    console.warn('[api/malami] model server dropped mid-stream:', e.message)
+                } else {
+                    console.error('[api/malami] stream failed:', e)
+                }
+                send({
+                    type: 'error',
+                    message: e instanceof OllamaUnavailableError
+                        ? 'Malami is unavailable right now. Please try again shortly.'
+                        : 'Request failed',
+                })
+            } finally {
+                if (!abort.signal.aborted) controller.close()
+            }
+        },
+
+        // the learner navigated away or stopped the reply — abandon generation rather than
+        // let the model keep producing into a connection nobody is reading
+        cancel() {
+            abort.abort()
+        },
+    })
+
+    return new Response(stream, { headers: NDJSON_HEADERS })
 }
 
 // Accepts a missing context, or an object whose ids (if present) look like UUIDs.
