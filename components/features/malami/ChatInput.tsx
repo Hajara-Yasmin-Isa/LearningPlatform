@@ -2,7 +2,10 @@
 
 import { useState, type FormEvent, type KeyboardEvent } from 'react'
 
-const MAX_LENGTH = 2000 // matches the per-message cap in /api/malami
+// Matches MAX_MESSAGE_CHARS in lib/ai/malamiPrompt.ts, repeated here on purpose. This is a
+// client component, and importing that module would bundle Malami's whole system prompt
+// into the browser for anyone to read.
+const MAX_LENGTH = 2000
 
 export default function ChatInput({
   onSend,

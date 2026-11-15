@@ -37,7 +37,10 @@ export default function MalamiChat({ context }: { context?: MalamiContext }) {
 
       <div className="flex-1 overflow-y-auto px-5 py-4">
         {hasConversation ? (
-          <div className="flex flex-col gap-3">
+          // aria-live makes a screen reader announce text added here, so Malami's reply is
+          // read out when it arrives instead of sitting silently on the page. "polite" waits
+          // for the user to finish what they are doing first.
+          <div role="log" aria-live="polite" className="flex flex-col gap-3">
             {messages.map((m) =>
               m.content === '' ? null : <MessageBubble key={m.id} message={m} />,
             )}
