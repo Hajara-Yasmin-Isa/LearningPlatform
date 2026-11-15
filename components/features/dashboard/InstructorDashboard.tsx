@@ -1,10 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ClassCard } from './ClassCard'
 import { CreateLessonTab } from './CreateLessonTab'
 import { AnalyticsTab } from './AnalyticsTab'
 import { ManageStudentsTab } from './ManageStudentsTab'
+import type { LoadStatus } from './dashboardTypes'
+import { getInstructorDashboardData } from '@/lib/supabase/instructor'
+import type { EnrolledStudent, InstructorCourseStats } from '@/types/database'
 
 const DUMMY_CLASSES = [
   { className: 'Python Fundamentals', studentCount: 28, activeStudentCount: 19 },
@@ -60,8 +63,47 @@ const QUICK_ACTIONS = [
   },
 ]
 
-export function InstructorDashboard() {
+interface InstructorDashboardProps {
+  /** Comes from the server page, which has already authenticated the user. */
+  instructorId: string
+}
+
+// Review notes (A1.3 / A1.4): the data for both tabs is loaded here, once.
+// The first version re-fetched the user in two places with supabase.auth.getUser()
+// (the server page already knew who it was), ran the analytics chain here and the
+// student chain inside the tab, and had no error handling on this effect, so a
+// failed query became an unhandled promise rejection and the tab showed its
+// empty state as if the fetch had succeeded.
+export function InstructorDashboard({ instructorId }: InstructorDashboardProps) {
   const [activeTab, setActiveTab] = useState<Tab>('create-lesson')
+
+  const [status, setStatus] = useState<LoadStatus>('loading')
+  const [stats, setStats] = useState<InstructorCourseStats[]>([])
+  const [students, setStudents] = useState<EnrolledStudent[]>([])
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function load() {
+      try {
+        const data = await getInstructorDashboardData(instructorId)
+        if (cancelled) return
+        setStats(data.stats)
+        setStudents(data.students)
+        setStatus('ready')
+      } catch (err) {
+        // Log the error, never the data.
+        console.error('[InstructorDashboard] failed to load instructor data', err)
+        if (!cancelled) setStatus('error')
+      }
+    }
+
+    load()
+    // Ignore a response that arrives after this component is gone or the id changed.
+    return () => {
+      cancelled = true
+    }
+  }, [instructorId])
 
   return (
     <div className="space-y-8">
@@ -123,8 +165,8 @@ export function InstructorDashboard() {
         {/* Tab content */}
         <div className="p-6">
           {activeTab === 'create-lesson' && <CreateLessonTab />}
-          {activeTab === 'analytics' && <AnalyticsTab />}
-          {activeTab === 'manage-students' && <ManageStudentsTab />}
+          {activeTab === 'analytics' && <AnalyticsTab stats={stats} status={status} />}
+          {activeTab === 'manage-students' && <ManageStudentsTab students={students} status={status} />}
         </div>
       </section>
     </div>

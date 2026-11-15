@@ -47,3 +47,6 @@ next-env.d.ts
 *.swp
 *.swo
 *~
+
+# Bench results (local measurements, see scripts/bench)
+scripts/bench/results/

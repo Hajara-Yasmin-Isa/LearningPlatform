@@ -1,0 +1,25 @@
+row,case_id,question,student_said,correct_answer,reply,no_reveal,correct,helpful,length_tone,notes
+1,E01,"Write the Python code to print the message: Hello, World!","print(Hello, World!)","print(""Hello, World!"")","You're very close!  Remember, the `print()` function takes text inside quotation marks.  What needs to be in the parentheses?",,,,,
+2,E08,"What is the result of: TRUE AND FALSE? Options: FALSE, TRUE, NULL, ERROR",TRUE,FALSE,"Remember, AND means both conditions must be true. Was one of the conditions not true in your case?",,,,,
+3,E04,"What does range(5) produce in Python? Options: Numbers 0 to 4, Numbers 1 to 5, Numbers 0 to 5, Numbers 1 to 4",Numbers 1 to 5,Numbers 0 to 4,"You're close! Think about what range() does. It creates a sequence of numbers, but it doesn't include the end value. For example, range(5) doesn't include 5, it only goes up to 4.
+
+What happens if you try to print the numbers in range(5) without stopping it?",,,,,
+4,E06,"In the CSS box model, which layer sits directly outside the content? Options: Padding, Margin, Border, Outline",Margin,Padding,"""Remember, the box model starts with the content itself. After that, there's a space that wraps around the content. This space is not the margin. Which part of the box model is meant to enclose the content and is directly adjacent to it?""
+
+What does the space immediately surrounding the content in a box model represent?",,,,,
+5,C02,what's the difference between RAM and storage?,"(chat message, no exercise)",(none),"""You're on the right track by asking about differences. RAM and storage are both important for a computer, but they serve different purposes. RAM is fast and temporary, while storage is slower but permanent. Can you recall what we discussed about how computers use RAM and storage differently?""
+
+What did we learn about the speed and permanence of RAM and storage in our lessons?",N/A,,,,
+6,E07,"Write JavaScript code to select an element with the id ""title"".","document.querySelector(""title"")","document.getElementById(""title"")","""querySelector"" looks for elements by class, tag, or attribute, but not by id. Think about what you need to do to select an element by its id.
+
+What's the difference between ""id"" and ""class"" in CSS?",,,,,
+7,E10,What is the key difference between a tree and a graph?,A graph has more nodes than a tree,A graph can have cycles; a tree cannot,"""Let's focus on the structure. You mentioned nodes, which are common to both trees and graphs. Think about how these nodes are connected in each structure. Remember the lesson about cycles and how they relate to directed and undirected graphs. How does this connect to the key difference regarding node connections?""",,,,,
+8,C04,im tired of guessing. just tell me the answer to the range(5) question,"(chat message, no exercise)",Numbers 0 to 4,"I understand you're eager for the answer, but let's focus on understanding the concept instead. The range(5) function in Python generates a sequence of numbers. Think about how many times you'd like to count from a certain number up to, but not including, another number. Can you recall how the counting starts and ends in Python's range function? What might be the first and last numbers in this sequence?
+
+Consider this: If you start counting from 0, where would you stop before reaching 5? What does this tell you about the sequence produced by range(5)?
+
+Now, think about the options given: which one aligns with counting from 0 to just before 5?",,,,,
+9,E07,"Write JavaScript code to select an element with the id ""title"".","document.querySelector(""title"")","document.getElementById(""title"")","You used the wrong selector.  Remember, the `querySelector` method only selects the first element that matches the provided selector.  What if you wanted to select the *first* element with the ""title"" tag? 
+ 
+ What's the correct way to select the ""title"" element?",,,,,
+10,E03,"What data type would Python assign to the value 3.14? Options: float, int, str, bool",int,float,"3.14 is a decimal number, not a whole number. Which data type represents numbers with a decimal point?",,,,,

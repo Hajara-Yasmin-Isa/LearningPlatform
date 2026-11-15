@@ -1,0 +1,163 @@
+{
+  "description": "Shared test set for the local model bake-off (docs/proposals/002-local-model-bakeoff.md). 10 exercise cases from supabase/seed/seed_lessons.sql, each with a plausible wrong answer, plus 5 conversational cases. Every model gets every case with the same prompt.",
+  "exercise_cases": [
+    {
+      "id": "E01",
+      "exercise_id": "40000000-0000-0000-0000-000000000004",
+      "section_title": "Your First Python Program",
+      "section_content": "The first program most developers write in any language displays \"Hello, World!\" on the screen. In Python, this is just one line: print(\"Hello, World!\"). The print() function is a built-in function that outputs text to the console. When you run this program, Python reads the instruction, calls the print function with the text you provided, and displays it. This simple example teaches the most fundamental idea in programming: giving the computer instructions that it executes in order.",
+      "question": "Write the Python code to print the message: Hello, World!",
+      "exercise_type": "text",
+      "options": null,
+      "correct_answer": "print(\"Hello, World!\")",
+      "student_answer": "print(Hello, World!)",
+      "why_this_mistake": "Forgets that text must be in quotes to be a string."
+    },
+    {
+      "id": "E02",
+      "exercise_id": "40000000-0000-0000-0000-000000000005",
+      "section_title": "What are Variables?",
+      "section_content": "A variable is a named container that stores a value in your program. In Python, you create a variable by writing its name, an equals sign, and the value — for example, name = \"Ammar\" or age = 20. You do not need to declare the type beforehand; Python figures it out automatically. Variable names should be descriptive and use lowercase letters with underscores (e.g., student_name). Once created, you can use a variable's name anywhere in your program to access or change its stored value.",
+      "question": "Which of the following is a valid Python variable name?",
+      "exercise_type": "multiple_choice",
+      "options": ["student_name", "2name", "student-name", "student name"],
+      "correct_answer": "student_name",
+      "student_answer": "student-name",
+      "why_this_mistake": "Hyphens look like underscores, but Python reads them as a minus sign."
+    },
+    {
+      "id": "E03",
+      "exercise_id": "40000000-0000-0000-0000-000000000007",
+      "section_title": "Common Data Types",
+      "section_content": "Python has several built-in data types you will use regularly. A string (str) is a sequence of characters in quotes, like \"hello\". An integer (int) is a whole number like 42. A float is a decimal number like 3.14. A boolean (bool) can only be True or False. You can check the type of any value using the type() function — for example, type(42) returns <class \"int\">. Understanding data types is important because different types support different operations: you can add two integers, but adding a string and an integer causes a TypeError.",
+      "question": "What data type would Python assign to the value 3.14?",
+      "exercise_type": "multiple_choice",
+      "options": ["float", "int", "str", "bool"],
+      "correct_answer": "float",
+      "student_answer": "int",
+      "why_this_mistake": "Thinks any number is an int; misses the whole vs decimal distinction."
+    },
+    {
+      "id": "E04",
+      "exercise_id": "40000000-0000-0000-0000-000000000011",
+      "section_title": "For Loops",
+      "section_content": "A for loop lets you repeat a block of code for each item in a sequence. In Python, a common use is iterating over a list: for item in [\"apple\", \"banana\", \"cherry\"]: print(item). You can also use range() to repeat code a fixed number of times — for i in range(5): print(i) prints 0 through 4. Loops are one of the most powerful tools in programming because they let you process large amounts of data without writing repetitive code. The loop variable takes on each value from the sequence in turn.",
+      "question": "What does range(5) produce in Python?",
+      "exercise_type": "multiple_choice",
+      "options": ["Numbers 0 to 4", "Numbers 1 to 5", "Numbers 0 to 5", "Numbers 1 to 4"],
+      "correct_answer": "Numbers 0 to 4",
+      "student_answer": "Numbers 1 to 5",
+      "why_this_mistake": "Counts from 1 like in everyday life instead of from 0."
+    },
+    {
+      "id": "E05",
+      "exercise_id": "40000000-0000-0000-0000-000000000012",
+      "section_title": "For Loops",
+      "section_content": "A for loop lets you repeat a block of code for each item in a sequence. In Python, a common use is iterating over a list: for item in [\"apple\", \"banana\", \"cherry\"]: print(item). You can also use range() to repeat code a fixed number of times — for i in range(5): print(i) prints 0 through 4. Loops are one of the most powerful tools in programming because they let you process large amounts of data without writing repetitive code. The loop variable takes on each value from the sequence in turn.",
+      "question": "Write a Python for loop that prints each number from 0 to 2.",
+      "exercise_type": "text",
+      "options": null,
+      "correct_answer": "for i in range(3): print(i)",
+      "student_answer": "for i in range(2): print(i)",
+      "why_this_mistake": "Off-by-one: assumes range(n) includes n."
+    },
+    {
+      "id": "E06",
+      "exercise_id": "40000000-0000-0000-0000-000000000019",
+      "section_title": "The Box Model",
+      "section_content": "Every element on a web page is a rectangular box. The CSS box model describes how these boxes are sized and spaced. From the inside out, a box has: content (the text or image), padding (space between content and border), border (a line around the padding), and margin (space outside the border). For example, setting padding: 20px adds 20 pixels of space inside the border on all four sides. Understanding the box model is essential for controlling layout and spacing on any web page.",
+      "question": "In the CSS box model, which layer sits directly outside the content?",
+      "exercise_type": "multiple_choice",
+      "options": ["Padding", "Margin", "Border", "Outline"],
+      "correct_answer": "Padding",
+      "student_answer": "Margin",
+      "why_this_mistake": "Mixes up padding (inside the border) and margin (outside the border)."
+    },
+    {
+      "id": "E07",
+      "exercise_id": "40000000-0000-0000-0000-000000000024",
+      "section_title": "DOM Manipulation",
+      "section_content": "The DOM (Document Object Model) is the browser's in-memory representation of your HTML page. JavaScript can read and modify the DOM, changing the content, structure, and styles of a page on the fly. You can select an element using document.getElementById(\"myId\") or document.querySelector(\".myClass\"), then change its text with element.textContent = \"New text\" or its style with element.style.color = \"red\". This ability to change the page dynamically is what makes modern websites feel like applications rather than static documents.",
+      "question": "Write JavaScript code to select an element with the id \"title\".",
+      "exercise_type": "text",
+      "options": null,
+      "correct_answer": "document.getElementById(\"title\")",
+      "student_answer": "document.querySelector(\"title\")",
+      "why_this_mistake": "Subtle: querySelector needs \"#title\" for an id; \"title\" selects the <title> tag. Tests whether the model is factually precise. Note that document.querySelector(\"#title\") is also a correct answer."
+    },
+    {
+      "id": "E08",
+      "exercise_id": "40000000-0000-0000-0000-000000000025",
+      "section_title": "Boolean Logic",
+      "section_content": "Boolean logic is the foundation of computing. Every decision a computer makes — from a simple if statement to a complex database query — comes down to evaluating conditions that are either true or false. The three fundamental boolean operations are AND (both conditions must be true), OR (at least one must be true), and NOT (inverts a value). These can be combined into truth tables to reason about complex conditions. Understanding boolean logic helps you write correct conditionals, design efficient queries, and think clearly about algorithms.",
+      "question": "What is the result of: TRUE AND FALSE?",
+      "exercise_type": "multiple_choice",
+      "options": ["FALSE", "TRUE", "NULL", "ERROR"],
+      "correct_answer": "FALSE",
+      "student_answer": "TRUE",
+      "why_this_mistake": "Confuses AND with OR."
+    },
+    {
+      "id": "E09",
+      "exercise_id": "40000000-0000-0000-0000-000000000027",
+      "section_title": "Introduction to Algorithms",
+      "section_content": "An algorithm is a step-by-step procedure for solving a problem. Good algorithms are correct (they produce the right answer), efficient (they use minimal time and memory), and clear (they can be implemented by someone else). Computer scientists use Big O notation to describe how performance scales as input size grows. A linear search through an unsorted list is O(n) — it takes proportionally longer as the list grows. A binary search on a sorted list is O(log n) — much faster for large inputs. Learning to think algorithmically is one of the most valuable skills in computer science.",
+      "question": "What is the Big O time complexity of a binary search on a sorted list?",
+      "exercise_type": "multiple_choice",
+      "options": ["O(log n)", "O(n)", "O(n²)", "O(1)"],
+      "correct_answer": "O(log n)",
+      "student_answer": "O(n)",
+      "why_this_mistake": "Confuses binary search with linear search."
+    },
+    {
+      "id": "E10",
+      "exercise_id": "40000000-0000-0000-0000-000000000036",
+      "section_title": "Graphs",
+      "section_content": "A graph is a data structure consisting of nodes (vertices) connected by edges. Unlike trees, graphs can have cycles — paths that loop back to a starting node — and a node can have any number of connections. Graphs can be directed (edges have a direction, like a one-way street) or undirected (edges go both ways). They model social networks, maps, dependency systems, and the internet itself. The two fundamental traversal algorithms are Breadth-First Search (BFS), which explores level by level, and Depth-First Search (DFS), which goes as deep as possible before backtracking.",
+      "question": "What is the key difference between a tree and a graph?",
+      "exercise_type": "text",
+      "options": null,
+      "correct_answer": "A graph can have cycles; a tree cannot",
+      "student_answer": "A graph has more nodes than a tree",
+      "why_this_mistake": "Picks a surface-level difference (size) instead of the structural one (cycles)."
+    }
+  ],
+  "conversation_cases": [
+    {
+      "id": "C01",
+      "section_title": "For Loops",
+      "student_message": "can you explain loops again but simpler? i didnt really get it",
+      "what_good_looks_like": "Plain-language explanation, one tiny example, checks understanding. No jargon dump.",
+      "probes": "simplification"
+    },
+    {
+      "id": "C02",
+      "section_title": null,
+      "student_message": "what's the difference between RAM and storage?",
+      "what_good_looks_like": "Correct, short, uses an everyday analogy. Not in the lessons, but on-topic for computing, so it should answer.",
+      "probes": "factual accuracy outside the lesson content"
+    },
+    {
+      "id": "C03",
+      "section_title": "The Box Model",
+      "student_message": "i keep mixing up padding and margin. whats the difference",
+      "what_good_looks_like": "Explains inside vs outside the border, ideally with an analogy. Consistent with the lesson.",
+      "probes": "explaining a common confusion"
+    },
+    {
+      "id": "C04",
+      "section_title": "For Loops",
+      "exercise_ref": "E04",
+      "student_message": "im tired of guessing. just tell me the answer to the range(5) question",
+      "what_good_looks_like": "Stays kind, does NOT give \"0 to 4\", offers a smaller step (e.g. try running it, or what number does Python start counting at?).",
+      "probes": "pressure to reveal the answer"
+    },
+    {
+      "id": "C05",
+      "section_title": null,
+      "student_message": "who do you think will win the premier league this year?",
+      "what_good_looks_like": "Friendly, short redirect back to computing. Does not answer the football question.",
+      "probes": "off-topic boundary"
+    }
+  ]
+}

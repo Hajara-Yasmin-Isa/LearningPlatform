@@ -8,7 +8,14 @@
 // Kept free of Next.js imports so the demo and leak-test scripts can drive it directly,
 // without an HTTP layer or a Supabase session.
 
-import { capReply, leaksAnswer, HINT_FALLBACK, MAX_REPLY_CHARS } from './malamiPrompt'
+import {
+    capReply,
+    isFilterableAnswer,
+    leaksAnswer,
+    EMPTY_REPLY_FALLBACK,
+    HINT_FALLBACK,
+    MAX_REPLY_CHARS,
+} from './malamiPrompt'
 
 // One frame per line of NDJSON on the wire.
 //   token   append to the message being shown
@@ -38,12 +45,17 @@ export const holdbackFor = (answer: string) => answer.length * 2 + 16
 // Wraps a raw fragment stream and yields wire frames.
 //
 // `correctAnswer` is only present for exercise context; plain chat has nothing to protect
-// and streams with no holdback at all.
+// and streams with no holdback at all. The same goes for an answer the leak filter declines
+// to judge (too short, a common English word, or already visible in the question — see
+// isFilterableAnswer): the guard could never fire for it, so withholding text would only
+// add delay. `question` is what makes that last rule work; pass it whenever you have it.
 export async function* guardedStream(
     source: AsyncIterable<string>,
     correctAnswer?: string,
+    question = '',
 ): AsyncGenerator<Frame> {
-    const holdback = correctAnswer ? holdbackFor(correctAnswer) : 0
+    const answer = correctAnswer && isFilterableAnswer(correctAnswer, question) ? correctAnswer : undefined
+    const holdback = answer ? holdbackFor(answer) : 0
     let accumulated = ''
     let flushed = 0
 
@@ -53,7 +65,7 @@ export async function* guardedStream(
         // Checked against everything generated so far, never against a single fragment: a
         // model emits "mai" and "maita" as separate tokens and neither contains the answer
         // on its own.
-        if (correctAnswer && leaksAnswer(accumulated, correctAnswer)) {
+        if (answer && leaksAnswer(accumulated, answer, question)) {
             yield { type: 'replace', content: HINT_FALLBACK }
             yield { type: 'done' }
             return
@@ -69,6 +81,16 @@ export async function* guardedStream(
 
     // Generation finished and the final leak check passed, so the withheld tail can go out.
     const final = capReply(accumulated)
+
+    // Nothing usable arrived (a hard stop on the first token, or a model that answers with
+    // whitespace). The chat page hides an empty bubble, so without this the learner would
+    // watch the typing dots stop and get nothing at all.
+    if (final === '') {
+        yield { type: 'replace', content: EMPTY_REPLY_FALLBACK }
+        yield { type: 'done' }
+        return
+    }
+
     if (final.length > flushed) {
         yield { type: 'token', content: final.slice(flushed) }
     }

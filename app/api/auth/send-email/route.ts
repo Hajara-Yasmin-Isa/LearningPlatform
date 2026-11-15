@@ -3,7 +3,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { rateLimit } from '@/lib/rateLimit'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+// Created per request, not at module load. `new Resend(undefined)` throws, and because
+// `npm run build` imports every route, that made the build fail on any machine without
+// RESEND_API_KEY. Returning null lets the handler fail cleanly instead of crashing at import.
+function getResend(): Resend | null {
+  const key = process.env.RESEND_API_KEY
+  return key ? new Resend(key) : null
+}
 
 // Verifies the Standard Webhooks signature Supabase includes on every hook call.
 // Secret format: "v1,whsec_<base64>" — set in Supabase dashboard and SUPABASE_HOOK_SECRET env var.
@@ -131,6 +137,14 @@ export async function POST(request: NextRequest) {
   const payload = JSON.parse(rawBody)
   const { user, email_data } = payload
   const { email_action_type, token_hash } = email_data
+
+  // Checked only after the signature check above, so an outside caller learns nothing
+  // about how this server is configured.
+  const resend = getResend()
+  if (!resend) {
+    console.error('[auth/send-email] RESEND_API_KEY is not set; cannot send auth emails')
+    return NextResponse.json({ error: 'Email is not configured' }, { status: 500 })
+  }
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://littafinfasaha.com'
   const year = new Date().getFullYear()

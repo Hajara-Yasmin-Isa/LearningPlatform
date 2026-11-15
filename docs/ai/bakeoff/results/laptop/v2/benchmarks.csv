@@ -1,0 +1,5 @@
+machine,model,median_tokens_per_sec,median_seconds_to_reply,memory_mb
+laptop,llama3.2:3b,50.3,1.36,2226
+laptop,qwen2.5:3b,60.0,0.88,1992
+laptop,gemma2:2b,67.5,1.21,1739
+laptop,phi3.5,56.3,1.71,2921

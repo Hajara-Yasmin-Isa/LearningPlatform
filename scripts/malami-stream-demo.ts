@@ -10,9 +10,11 @@
 //   OLLAMA_BASE_URL=http://localhost:11434 OLLAMA_MODEL=llama3.2:3b npx tsx scripts/malami-stream-demo.ts
 
 import { ollamaChatStream, OllamaUnavailableError, type ChatMessage } from '../lib/ai/ollamaClient'
-import { buildSystemPrompt, MAX_REPLY_TOKENS, type Grounding } from '../lib/ai/malamiPrompt'
+import { buildModelMessages, MAX_REPLY_TOKENS, type Grounding } from '../lib/ai/malamiPrompt'
 
-const PROMPTS: { label: string; grounding: Grounding; messages: ChatMessage[] }[] = [
+// `userAnswer` travels in the learner's own turn, not in the grounding — see
+// buildModelMessages() for why.
+const PROMPTS: { label: string; grounding: Grounding; messages: ChatMessage[]; userAnswer?: string }[] = [
     {
         label: 'plain chat',
         grounding: {},
@@ -28,10 +30,10 @@ const PROMPTS: { label: string; grounding: Grounding; messages: ChatMessage[] }[
                 correctAnswer: 'function add(a, b) { return a + b; }',
                 functionName: 'add',
                 testCases: [{ input: [2, 3], expected: 5 }],
-                userAnswer: 'function add(a, b) { return a - b; }',
             },
         },
         messages: [{ role: 'user', content: 'My function is not passing. What am I doing wrong?' }],
+        userAnswer: 'function add(a, b) { return a - b; }',
     },
 ]
 
@@ -47,6 +49,7 @@ async function measure(
     label: string,
     grounding: Grounding,
     messages: ChatMessage[],
+    userAnswer?: string,
 ): Promise<Measurement> {
     const started = Date.now()
     let ttftMs = -1
@@ -54,7 +57,7 @@ async function measure(
     let fragments = 0
 
     const stream = ollamaChatStream(
-        [{ role: 'system', content: buildSystemPrompt(grounding) }, ...messages],
+        buildModelMessages(grounding, messages, userAnswer),
         { num_predict: MAX_REPLY_TOKENS, temperature: 0.4 },
     )
 
@@ -74,10 +77,10 @@ async function main() {
 
     const results: Measurement[] = []
 
-    for (const { label, grounding, messages } of PROMPTS) {
+    for (const { label, grounding, messages, userAnswer } of PROMPTS) {
         console.log(`${'='.repeat(60)}\n${label.toUpperCase()}\n${'='.repeat(60)}`)
         console.log(`> ${messages[messages.length - 1].content}\n`)
-        results.push(await measure(label, grounding, messages))
+        results.push(await measure(label, grounding, messages, userAnswer))
         console.log('\n')
     }
 
