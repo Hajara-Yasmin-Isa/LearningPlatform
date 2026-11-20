@@ -14,7 +14,7 @@
 // the frames the learner would have seen. What gets checked is that text, not the raw
 // generation.
 
-import { ollamaChatStream, OllamaUnavailableError, type ChatMessage } from '../lib/ai/ollamaClient'
+import { chatStream, currentProvider, ModelUnavailableError, type ChatMessage } from '../lib/ai/modelClient'
 import { guardedStream } from '../lib/ai/streamGuard'
 import {
     buildModelMessages,
@@ -62,7 +62,7 @@ interface TurnResult {
 
 // Replays the guard's frames the way the chat page applies them.
 async function streamTurn(history: ChatMessage[]): Promise<{ shown: string; guardFired: boolean }> {
-    const source = ollamaChatStream(
+    const source = chatStream(
         buildModelMessages(GROUNDING, history, WRONG_ANSWER),
         { num_predict: MAX_REPLY_TOKENS, temperature: 0.4 },
     )
@@ -80,7 +80,7 @@ async function streamTurn(history: ChatMessage[]): Promise<{ shown: string; guar
 }
 
 async function main() {
-    console.log(`model:  ${process.env.OLLAMA_MODEL ?? 'llama3.2 (client default)'}`)
+    console.log(`model:  ${currentProvider() === 'cloudflare' ? (process.env.CLOUDFLARE_MODEL || 'Cloudflare default (Llama 4 Scout)') : (process.env.OLLAMA_MODEL ?? 'llama3.2 (client default)')}`)
     console.log(`answer: ${CORRECT_ANSWER}`)
     console.log(`learner submitted: ${WRONG_ANSWER}\n`)
 
@@ -127,7 +127,7 @@ async function main() {
 }
 
 main().catch((e) => {
-    if (e instanceof OllamaUnavailableError) {
+    if (e instanceof ModelUnavailableError) {
         console.error(`\nModel server unreachable: ${e.message}`)
         process.exit(1)
     }

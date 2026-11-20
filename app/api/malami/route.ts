@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { rateLimit } from '@/lib/rateLimit'
-import { ollamaChatStream, OllamaUnavailableError, type ChatMessage } from '@/lib/ai/ollamaClient'
+import { chatStream, ModelUnavailableError, type ChatMessage } from '@/lib/ai/modelClient'
 import { guardedStream, type Frame } from '@/lib/ai/streamGuard'
 import {
     buildModelMessages,
@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
         )
 
     } catch (e) {
-        if (e instanceof OllamaUnavailableError) {
+        if (e instanceof ModelUnavailableError) {
             // Expected failure mode (model server down or slow): worth a line in the log so
             // an outage is visible, but not an error-level one.
             console.warn('[api/malami] model server unavailable:', e.message)
@@ -155,14 +155,14 @@ function frameResponse(frames: Frame[]): Response {
 //
 // The first frame is awaited before any status code is committed. The request to the model
 // server is only made on that first read, so a server that is down still surfaces here as
-// a thrown OllamaUnavailableError and becomes the ordinary 503 above, which the chat page
+// a thrown ModelUnavailableError and becomes the ordinary 503 above, which the chat page
 // shows as its "Malami is unavailable" notice with a retry. Once the stream is open the 200
 // has already gone out, so anything that fails after that has to travel as an error frame.
 // Waiting for the first frame costs nothing visible: the page shows a typing indicator
 // until the first token arrives either way.
 async function streamReply(messages: ChatMessage[], exercise?: ExerciseGrounding): Promise<Response> {
     const abort = new AbortController()
-    const source = ollamaChatStream(messages, {
+    const source = chatStream(messages, {
         num_predict: MAX_REPLY_TOKENS,
         temperature: 0.4,
         signal: abort.signal,
@@ -183,14 +183,14 @@ async function streamReply(messages: ChatMessage[], exercise?: ExerciseGrounding
                 // The learner left mid-reply: the stream is already closed and there is
                 // nobody to tell.
                 if (abort.signal.aborted) return
-                if (e instanceof OllamaUnavailableError) {
+                if (e instanceof ModelUnavailableError) {
                     console.warn('[api/malami] model server dropped mid-stream:', e.message)
                 } else {
                     console.error('[api/malami] stream failed:', e)
                 }
                 send({
                     type: 'error',
-                    message: e instanceof OllamaUnavailableError
+                    message: e instanceof ModelUnavailableError
                         ? 'Malami is unavailable right now. Please try again shortly.'
                         : 'Request failed',
                 })
