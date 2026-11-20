@@ -9,7 +9,7 @@
 // Run against the same host the app uses:
 //   OLLAMA_BASE_URL=http://localhost:11434 OLLAMA_MODEL=llama3.2:3b npx tsx scripts/malami-stream-demo.ts
 
-import { ollamaChatStream, OllamaUnavailableError, type ChatMessage } from '../lib/ai/ollamaClient'
+import { chatStream, currentProvider, ModelUnavailableError, type ChatMessage } from '../lib/ai/modelClient'
 import { buildModelMessages, MAX_REPLY_TOKENS, type Grounding } from '../lib/ai/malamiPrompt'
 
 // `userAnswer` travels in the learner's own turn, not in the grounding — see
@@ -56,7 +56,7 @@ async function measure(
     let text = ''
     let fragments = 0
 
-    const stream = ollamaChatStream(
+    const stream = chatStream(
         buildModelMessages(grounding, messages, userAnswer),
         { num_predict: MAX_REPLY_TOKENS, temperature: 0.4 },
     )
@@ -73,7 +73,7 @@ async function measure(
 
 async function main() {
     console.log(`host:  ${process.env.OLLAMA_BASE_URL ?? 'http://localhost:11434'}`)
-    console.log(`model: ${process.env.OLLAMA_MODEL ?? 'llama3.2 (client default)'}\n`)
+    console.log(`model: ${currentProvider() === 'cloudflare' ? (process.env.CLOUDFLARE_MODEL || 'Cloudflare default (Llama 4 Scout)') : (process.env.OLLAMA_MODEL ?? 'llama3.2 (client default)')}\n`)
 
     const results: Measurement[] = []
 
@@ -99,7 +99,7 @@ async function main() {
 }
 
 main().catch((e) => {
-    if (e instanceof OllamaUnavailableError) {
+    if (e instanceof ModelUnavailableError) {
         console.error(`\nModel server unreachable: ${e.message}`)
         console.error('Is Ollama running? Check OLLAMA_BASE_URL and OLLAMA_MODEL.')
         process.exit(1)

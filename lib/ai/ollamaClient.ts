@@ -1,5 +1,8 @@
 // Thin typed client for Ollama's /api/chat endpoint.
 // Server-side only. Host is a config change: OLLAMA_BASE_URL (dev / VM / prod).
+// Used for local development; production goes through lib/ai/modelClient.ts.
+
+import { ModelUnavailableError } from './modelErrors'
 
 export type ChatRole = 'system' | 'user' | 'assistant'
 
@@ -16,8 +19,9 @@ export interface ChatOptions {
 }
 
 // Thrown for anything that means "the model server didn't give us a reply":
-// connection refused, timeout, non-2xx. The route maps this to a 503.
-export class OllamaUnavailableError extends Error {
+// connection refused, timeout, non-2xx. A ModelUnavailableError, so the route handles it
+// the same way as a Cloudflare failure.
+export class OllamaUnavailableError extends ModelUnavailableError {
     constructor(message: string) {
         super(message)
         this.name = 'OllamaUnavailableError'

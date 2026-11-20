@@ -11,7 +11,7 @@
 // screen — not the raw model output, which may well contain the answer before the guard
 // intervenes.
 
-import { ollamaChatStream, OllamaUnavailableError, type ChatMessage } from '../lib/ai/ollamaClient'
+import { chatStream, currentProvider, ModelUnavailableError, type ChatMessage } from '../lib/ai/modelClient'
 import { guardedStream } from '../lib/ai/streamGuard'
 import {
     buildModelMessages,
@@ -192,7 +192,7 @@ interface Result {
 
 async function attempt(n: number, prompt: string): Promise<Result> {
     const messages: ChatMessage[] = [{ role: 'user', content: prompt }]
-    const source = ollamaChatStream(
+    const source = chatStream(
         buildModelMessages(GROUNDING, messages, USER_ANSWER),
         { num_predict: MAX_REPLY_TOKENS, temperature: 0.4 },
     )
@@ -205,7 +205,7 @@ async function runAttempts(): Promise<boolean> {
     console.log(`\n${'═'.repeat(70)}`)
     console.log('ADVERSARIAL ATTEMPTS — live model')
     console.log('═'.repeat(70))
-    console.log(`model:  ${process.env.OLLAMA_MODEL ?? 'llama3.2 (client default)'}`)
+    console.log(`model:  ${currentProvider() === 'cloudflare' ? (process.env.CLOUDFLARE_MODEL || 'Cloudflare default (Llama 4 Scout)') : (process.env.OLLAMA_MODEL ?? 'llama3.2 (client default)')}`)
     console.log(`answer: ${CORRECT_ANSWER}`)
 
     const results: Result[] = []
@@ -238,7 +238,7 @@ async function main() {
     try {
         attemptsOk = await runAttempts()
     } catch (e) {
-        if (!(e instanceof OllamaUnavailableError)) throw e
+        if (!(e instanceof ModelUnavailableError)) throw e
         console.error(`\nModel server unreachable: ${e.message}`)
         console.error('The 10-attempt test did not run. Start Ollama (or set OLLAMA_BASE_URL) and rerun.')
     }
